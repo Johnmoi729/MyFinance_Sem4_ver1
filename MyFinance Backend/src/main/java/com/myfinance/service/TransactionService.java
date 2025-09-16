@@ -15,6 +15,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -113,6 +114,32 @@ public class TransactionService {
 
     public List<TransactionResponse> getRecentTransactions(Long userId) {
         List<Transaction> transactions = transactionRepository.findTop10ByUserIdOrderByCreatedAtDesc(userId);
+        return transactions.stream()
+                .map(this::mapToTransactionResponse)
+                .collect(Collectors.toList());
+    }
+
+    public List<TransactionResponse> searchTransactions(Long userId, String searchTerm) {
+        if (searchTerm == null || searchTerm.trim().isEmpty()) {
+            return getUserTransactions(userId);
+        }
+        
+        List<Transaction> transactions = transactionRepository.searchTransactions(userId, searchTerm.trim());
+        return transactions.stream()
+                .map(this::mapToTransactionResponse)
+                .collect(Collectors.toList());
+    }
+
+    public List<TransactionResponse> getTransactionsWithFilters(Long userId, 
+                                                              TransactionType type,
+                                                              Long categoryId,
+                                                              LocalDate startDate,
+                                                              LocalDate endDate,
+                                                              String searchTerm) {
+        List<Transaction> transactions = transactionRepository.findTransactionsWithFilters(
+            userId, type, categoryId, startDate, endDate, 
+            (searchTerm != null && !searchTerm.trim().isEmpty()) ? searchTerm.trim() : null
+        );
         return transactions.stream()
                 .map(this::mapToTransactionResponse)
                 .collect(Collectors.toList());

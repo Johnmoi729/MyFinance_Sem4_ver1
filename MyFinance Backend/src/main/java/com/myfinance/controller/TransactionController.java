@@ -14,6 +14,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @RestController
@@ -62,6 +63,49 @@ public class TransactionController {
         } else {
             transactions = transactionService.getUserTransactions(userId);
         }
+
+        return ResponseEntity.ok(ApiResponse.success(transactions));
+    }
+
+    @GetMapping("/search")
+    public ResponseEntity<ApiResponse<List<TransactionResponse>>> searchTransactions(
+            @RequestHeader("Authorization") String authHeader,
+            @RequestParam String searchTerm) {
+
+        Long userId = extractUserIdFromToken(authHeader);
+        List<TransactionResponse> transactions = transactionService.searchTransactions(userId, searchTerm);
+
+        return ResponseEntity.ok(ApiResponse.success(transactions));
+    }
+
+    @GetMapping("/filter")
+    public ResponseEntity<ApiResponse<List<TransactionResponse>>> getTransactionsWithFilters(
+            @RequestHeader("Authorization") String authHeader,
+            @RequestParam(required = false) String type,
+            @RequestParam(required = false) Long categoryId,
+            @RequestParam(required = false) String startDate,
+            @RequestParam(required = false) String endDate,
+            @RequestParam(required = false) String searchTerm) {
+
+        Long userId = extractUserIdFromToken(authHeader);
+        
+        TransactionType transactionType = null;
+        if (type != null && !type.isEmpty()) {
+            transactionType = TransactionType.valueOf(type.toUpperCase());
+        }
+        
+        LocalDate start = null;
+        if (startDate != null && !startDate.isEmpty()) {
+            start = LocalDate.parse(startDate);
+        }
+        
+        LocalDate end = null;
+        if (endDate != null && !endDate.isEmpty()) {
+            end = LocalDate.parse(endDate);
+        }
+        
+        List<TransactionResponse> transactions = transactionService.getTransactionsWithFilters(
+                userId, transactionType, categoryId, start, end, searchTerm);
 
         return ResponseEntity.ok(ApiResponse.success(transactions));
     }

@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState } from 'react';
 import { transactionAPI } from '../services/api';
 
 const TransactionContext = createContext();
@@ -185,6 +185,44 @@ export const TransactionProvider = ({ children }) => {
         return categories.filter(category => category.type === type);
     };
 
+    // Search transactions
+    const searchTransactions = async (searchTerm) => {
+        try {
+            setLoading(true);
+            const response = await transactionAPI.searchTransactions(searchTerm);
+            
+            if (response && response.success) {
+                setTransactions(response.data || []);
+            } else {
+                setTransactions([]);
+            }
+        } catch (error) {
+            console.error('Failed to search transactions:', error);
+            setTransactions([]);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    // Load transactions with filters
+    const loadTransactionsWithFilters = async (filters) => {
+        try {
+            setLoading(true);
+            const response = await transactionAPI.getTransactionsWithFilters(filters);
+            
+            if (response && response.success) {
+                setTransactions(response.data || []);
+            } else {
+                setTransactions([]);
+            }
+        } catch (error) {
+            console.error('Failed to load filtered transactions:', error);
+            setTransactions([]);
+        } finally {
+            setLoading(false);
+        }
+    };
+
     // Refresh all data
     const refreshData = async () => {
         await Promise.all([
@@ -206,6 +244,8 @@ export const TransactionProvider = ({ children }) => {
         addTransaction,
         updateTransaction,
         deleteTransaction,
+        searchTransactions,
+        loadTransactionsWithFilters,
         getTransactionsByType,
         getTotalIncome,
         getTotalExpenses,

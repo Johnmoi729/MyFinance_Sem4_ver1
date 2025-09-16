@@ -347,6 +347,45 @@ class TransactionAPI extends ApiService {
             };
         }
     }
+
+    // Search transactions
+    async searchTransactions(searchTerm) {
+        try {
+            const response = await this.get(`/api/transactions/search?searchTerm=${encodeURIComponent(searchTerm)}`);
+            return response;
+        } catch (error) {
+            return {
+                success: false,
+                message: 'Không thể tìm kiếm giao dịch',
+                data: []
+            };
+        }
+    }
+
+    // Get transactions with filters
+    async getTransactionsWithFilters(filters = {}) {
+        try {
+            const params = new URLSearchParams();
+            
+            if (filters.type) params.append('type', filters.type);
+            if (filters.categoryId) params.append('categoryId', filters.categoryId.toString());
+            if (filters.startDate) params.append('startDate', filters.startDate);
+            if (filters.endDate) params.append('endDate', filters.endDate);
+            if (filters.searchTerm) params.append('searchTerm', filters.searchTerm);
+            
+            const queryString = params.toString();
+            const url = queryString ? `/api/transactions/filter?${queryString}` : '/api/transactions/filter';
+            
+            const response = await this.get(url);
+            return response;
+        } catch (error) {
+            return {
+                success: false,
+                message: 'Không thể tải giao dịch với bộ lọc',
+                data: []
+            };
+        }
+    }
 }
 
 // Category API methods

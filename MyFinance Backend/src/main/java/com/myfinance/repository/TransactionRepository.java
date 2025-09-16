@@ -40,4 +40,29 @@ public interface TransactionRepository extends JpaRepository<Transaction, Long> 
 
     // Count transactions by category
     long countByUserIdAndCategoryId(Long userId, Long categoryId);
+
+    // Search transactions by description or amount
+    @Query("SELECT t FROM Transaction t WHERE t.userId = :userId AND " +
+           "(LOWER(t.description) LIKE LOWER(CONCAT('%', :searchTerm, '%')) OR " +
+           "CAST(t.amount AS string) LIKE CONCAT('%', :searchTerm, '%')) " +
+           "ORDER BY t.transactionDate DESC")
+    List<Transaction> searchTransactions(@Param("userId") Long userId, 
+                                       @Param("searchTerm") String searchTerm);
+
+    // Find transactions with multiple filters
+    @Query("SELECT t FROM Transaction t WHERE t.userId = :userId " +
+           "AND (:type IS NULL OR t.type = :type) " +
+           "AND (:categoryId IS NULL OR t.category.id = :categoryId) " +
+           "AND (:startDate IS NULL OR t.transactionDate >= :startDate) " +
+           "AND (:endDate IS NULL OR t.transactionDate <= :endDate) " +
+           "AND (:searchTerm IS NULL OR " +
+           "LOWER(t.description) LIKE LOWER(CONCAT('%', :searchTerm, '%')) OR " +
+           "CAST(t.amount AS string) LIKE CONCAT('%', :searchTerm, '%')) " +
+           "ORDER BY t.transactionDate DESC")
+    List<Transaction> findTransactionsWithFilters(@Param("userId") Long userId,
+                                                 @Param("type") TransactionType type,
+                                                 @Param("categoryId") Long categoryId,
+                                                 @Param("startDate") LocalDate startDate,
+                                                 @Param("endDate") LocalDate endDate,
+                                                 @Param("searchTerm") String searchTerm);
 }

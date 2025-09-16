@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTransaction } from '../../context/TransactionContext';
+import { useCategory } from '../../context/CategoryContext';
 import { formatCurrency, formatDate, getTransactionTypeLabel, getTransactionTypeColor } from '../../services/api';
 
 const TransactionsPage = () => {
@@ -10,26 +11,93 @@ const TransactionsPage = () => {
         loading, 
         loadTransactions, 
         deleteTransaction,
+        searchTransactions,
+        loadTransactionsWithFilters,
         getTotalIncome,
         getTotalExpenses,
         getBalance
     } = useTransaction();
     
+    const { categories, loadCategories } = useCategory();
+    
     const [filter, setFilter] = useState('ALL'); // ALL, INCOME, EXPENSE
     const [deleteConfirm, setDeleteConfirm] = useState(null);
     const [message, setMessage] = useState({ text: '', type: '' });
+    const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
+    const [searchTerm, setSearchTerm] = useState('');
+    const [filters, setFilters] = useState({
+        type: '',
+        categoryId: '',
+        startDate: '',
+        endDate: '',
+        searchTerm: ''
+    });
 
     // Load transactions when component mounts
     useEffect(() => {
         const loadData = async () => {
-            if (filter === 'ALL') {
-                await loadTransactions();
-            } else {
-                await loadTransactions(filter);
-            }
+            await Promise.all([
+                loadCategories(),
+                loadTransactions()
+            ]);
         };
         loadData();
-    }, [filter]);
+    }, []);
+
+    // Handle search
+    const handleSearch = async (e) => {
+        e.preventDefault();
+        if (searchTerm.trim()) {
+            await searchTransactions(searchTerm.trim());
+        } else {
+            await loadTransactions();
+        }
+    };
+
+    // Handle filter change
+    const handleFilterChange = (filterType, value) => {
+        setFilters(prev => ({
+            ...prev,
+            [filterType]: value
+        }));
+    };
+
+    // Apply advanced filters
+    const applyAdvancedFilters = async () => {
+        const activeFilters = {};
+        
+        if (filters.type) activeFilters.type = filters.type;
+        if (filters.categoryId) activeFilters.categoryId = parseInt(filters.categoryId);
+        if (filters.startDate) activeFilters.startDate = filters.startDate;
+        if (filters.endDate) activeFilters.endDate = filters.endDate;
+        if (filters.searchTerm) activeFilters.searchTerm = filters.searchTerm;
+        
+        await loadTransactionsWithFilters(activeFilters);
+    };
+
+    // Clear all filters
+    const clearAllFilters = async () => {
+        setFilters({
+            type: '',
+            categoryId: '',
+            startDate: '',
+            endDate: '',
+            searchTerm: ''
+        });
+        setSearchTerm('');
+        setFilter('ALL');
+        await loadTransactions();
+    };
+
+    // Handle basic filter (quick filters)
+    const handleBasicFilter = async (filterType) => {
+        setFilter(filterType);
+        if (filterType === 'ALL') {
+            await loadTransactions();
+        } else {
+            await loadTransactions(filterType);
+        }
+    };
 
     const handleDelete = async (id) => {
         const result = await deleteTransaction(id);
@@ -83,10 +151,127 @@ const TransactionsPage = () => {
                         </div>
                     </div>
 
-                    {/* Filter Buttons */}
+                    {/* Search Bar */}
+                    <form onSubmit={handleSearch} className="mb-4">
+                        <div className="flex gap-2">
+                            <input
+                                type="text"
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                                placeholder="Tìm kiếm theo mô tả hoặc số tiền..."
+                                className="flex-1 p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                            />
+                            <button
+                                type="submit"
+                                className="px-6 py-3 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+                            >
+                                Tìm kiếm
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
+                                className={`px-4 py-3 rounded-md border transition-colors ${
+                                    showAdvancedFilters 
+                                        ? 'bg-gray-100 border-gray-400' 
+                                        : 'border-gray-300 hover:bg-gray-50'
+                                }`}
+                            >
+                                🔽 Bộ lọc
+                            </button>
+                        </div>
+                    </form>
+
+                    {/* Advanced Filters */}
+                    {showAdvancedFilters && (
+                        <div className="mb-4 p-4 bg-gray-50 rounded-lg border">
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-4">
+                                {/* Type Filter */}
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Loại</label>
+                                    <select
+                                        value={filters.type}
+                                        onChange={(e) => handleFilterChange('type', e.target.value)}
+                                        className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
+                                    >
+                                        <option value="">Tất cả</option>
+                                        <option value="INCOME">Thu nhập</option>
+                                        <option value="EXPENSE">Chi tiêu</option>
+                                    </select>
+                                </div>
+
+                                {/* Category Filter */}
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Danh mục</label>
+                                    <select
+                                        value={filters.categoryId}
+                                        onChange={(e) => handleFilterChange('categoryId', e.target.value)}
+                                        className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
+                                    >
+                                        <option value="">Tất cả</option>
+                                        {categories.map(category => (
+                                            <option key={category.id} value={category.id}>
+                                                {category.name}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
+
+                                {/* Start Date */}
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Từ ngày</label>
+                                    <input
+                                        type="date"
+                                        value={filters.startDate}
+                                        onChange={(e) => handleFilterChange('startDate', e.target.value)}
+                                        className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
+                                    />
+                                </div>
+
+                                {/* End Date */}
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Đến ngày</label>
+                                    <input
+                                        type="date"
+                                        value={filters.endDate}
+                                        onChange={(e) => handleFilterChange('endDate', e.target.value)}
+                                        className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
+                                    />
+                                </div>
+
+                                {/* Search Term */}
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Tìm kiếm</label>
+                                    <input
+                                        type="text"
+                                        value={filters.searchTerm}
+                                        onChange={(e) => handleFilterChange('searchTerm', e.target.value)}
+                                        placeholder="Mô tả hoặc số tiền"
+                                        className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="flex gap-2">
+                                <button
+                                    onClick={applyAdvancedFilters}
+                                    className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+                                >
+                                    Áp dụng bộ lọc
+                                </button>
+                                <button
+                                    onClick={clearAllFilters}
+                                    className="px-4 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600 transition-colors"
+                                >
+                                    Xóa bộ lọc
+                                </button>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Quick Filter Buttons */}
                     <div className="flex space-x-4">
                         <button
-                            onClick={() => setFilter('ALL')}
+                            onClick={() => handleBasicFilter('ALL')}
                             className={`px-4 py-2 rounded-md font-medium transition-colors ${
                                 filter === 'ALL'
                                     ? 'bg-blue-600 text-white'
@@ -96,7 +281,7 @@ const TransactionsPage = () => {
                             Tất cả
                         </button>
                         <button
-                            onClick={() => setFilter('INCOME')}
+                            onClick={() => handleBasicFilter('INCOME')}
                             className={`px-4 py-2 rounded-md font-medium transition-colors ${
                                 filter === 'INCOME'
                                     ? 'bg-green-600 text-white'
@@ -106,7 +291,7 @@ const TransactionsPage = () => {
                             Thu nhập
                         </button>
                         <button
-                            onClick={() => setFilter('EXPENSE')}
+                            onClick={() => handleBasicFilter('EXPENSE')}
                             className={`px-4 py-2 rounded-md font-medium transition-colors ${
                                 filter === 'EXPENSE'
                                     ? 'bg-red-600 text-white'
