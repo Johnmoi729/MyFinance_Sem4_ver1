@@ -349,12 +349,83 @@ class TransactionAPI extends ApiService {
     }
 }
 
+// Category API methods
+class CategoryAPI extends ApiService {
+    // Add new category
+    async addCategory(categoryData) {
+        try {
+            const response = await this.post('/api/categories', categoryData);
+            return response;
+        } catch (error) {
+            return {
+                success: false,
+                message: 'Không thể thêm danh mục'
+            };
+        }
+    }
+
+    // Get category by ID
+    async getCategory(id) {
+        try {
+            const response = await this.get(`/api/categories/${id}`);
+            return response;
+        } catch (error) {
+            return {
+                success: false,
+                message: 'Không thể tải danh mục'
+            };
+        }
+    }
+
+    // Get user categories
+    async getUserCategories(type = '') {
+        try {
+            const typeParam = type ? `?type=${type}` : '';
+            const response = await this.get(`/api/categories${typeParam}`);
+            return response;
+        } catch (error) {
+            return {
+                success: false,
+                message: 'Không thể tải danh sách danh mục',
+                data: []
+            };
+        }
+    }
+
+    // Update category
+    async updateCategory(id, categoryData) {
+        try {
+            const response = await this.put(`/api/categories/${id}`, categoryData);
+            return response;
+        } catch (error) {
+            return {
+                success: false,
+                message: 'Không thể cập nhật danh mục'
+            };
+        }
+    }
+
+    // Delete category
+    async deleteCategory(id) {
+        try {
+            const response = await this.delete(`/api/categories/${id}`);
+            return response;
+        } catch (error) {
+            return {
+                success: false,
+                message: 'Không thể xóa danh mục'
+            };
+        }
+    }
+}
+
 // Create instances
 const userAPI = new UserAPI();
 const transactionAPI = new TransactionAPI();
+const categoryAPI = new CategoryAPI();
 
 // Export APIs
-export { userAPI, transactionAPI };
+export { userAPI, transactionAPI, categoryAPI };
 
 // Utility functions
 export const formatCurrency = (amount) => {

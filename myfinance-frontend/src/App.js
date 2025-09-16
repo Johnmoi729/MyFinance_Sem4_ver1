@@ -2,6 +2,7 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import { TransactionProvider } from './context/TransactionContext';
+import { CategoryProvider } from './context/CategoryContext';
 
 // Components
 import ProtectedRoute from './components/common/ProtectedRoute';
@@ -17,6 +18,10 @@ import DashboardPage from './pages/dashboard/DashboardPage';
 import ProfilePage from './pages/dashboard/ProfilePage';
 import TransactionsPage from './pages/transactions/TransactionsPage';
 import AddTransactionPage from './pages/transactions/AddTransactionPage';
+import EditTransactionPage from './pages/transactions/EditTransactionPage';
+import CategoriesPage from './pages/categories/CategoriesPage';
+import AddCategoryPage from './pages/categories/AddCategoryPage';
+import EditCategoryPage from './pages/categories/EditCategoryPage';
 
 import './App.css';
 
@@ -24,7 +29,8 @@ function App() {
   return (
       <AuthProvider>
         <TransactionProvider>
-          <Router>
+          <CategoryProvider>
+            <Router>
             <div className="min-h-screen bg-gray-50 flex flex-col">
               <Header />
               <main className="flex-1">
@@ -68,6 +74,26 @@ function App() {
                     <AddTransactionPage />
                   </ProtectedRoute>
                 } />
+                <Route path="/transactions/edit/:id" element={
+                  <ProtectedRoute>
+                    <EditTransactionPage />
+                  </ProtectedRoute>
+                } />
+                <Route path="/categories" element={
+                  <ProtectedRoute>
+                    <CategoriesPage />
+                  </ProtectedRoute>
+                } />
+                <Route path="/categories/add" element={
+                  <ProtectedRoute>
+                    <AddCategoryPage />
+                  </ProtectedRoute>
+                } />
+                <Route path="/categories/edit/:id" element={
+                  <ProtectedRoute>
+                    <EditCategoryPage />
+                  </ProtectedRoute>
+                } />
 
                 {/* Fallback route */}
                 <Route path="*" element={<Navigate to="/dashboard" replace />} />
@@ -75,7 +101,8 @@ function App() {
               </main>
               <Footer />
             </div>
-          </Router>
+            </Router>
+          </CategoryProvider>
         </TransactionProvider>
       </AuthProvider>
   );

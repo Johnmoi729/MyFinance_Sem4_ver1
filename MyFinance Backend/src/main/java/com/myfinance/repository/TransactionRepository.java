@@ -37,4 +37,7 @@ public interface TransactionRepository extends JpaRepository<Transaction, Long> 
 
     // Find transactions by category
     List<Transaction> findByUserIdAndCategoryIdOrderByTransactionDateDesc(Long userId, Long categoryId);
+
+    // Count transactions by category
+    long countByUserIdAndCategoryId(Long userId, Long categoryId);
 }

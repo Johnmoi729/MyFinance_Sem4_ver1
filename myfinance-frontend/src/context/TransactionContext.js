@@ -68,6 +68,22 @@ export const TransactionProvider = ({ children }) => {
         }
     };
 
+    // Get single transaction
+    const getTransaction = async (id) => {
+        try {
+            const response = await transactionAPI.getTransaction(id);
+            
+            if (response && response.success) {
+                return { success: true, data: response.data };
+            } else {
+                return { success: false, message: response.message };
+            }
+        } catch (error) {
+            console.error('Failed to get transaction:', error);
+            return { success: false, message: 'Đã xảy ra lỗi khi tải giao dịch' };
+        }
+    };
+
     // Add new transaction
     const addTransaction = async (transactionData) => {
         try {
@@ -186,6 +202,7 @@ export const TransactionProvider = ({ children }) => {
         loadTransactions,
         loadRecentTransactions,
         loadCategories,
+        getTransaction,
         addTransaction,
         updateTransaction,
         deleteTransaction,

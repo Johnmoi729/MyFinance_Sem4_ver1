@@ -51,6 +51,12 @@ const Header = () => {
                         >
                             Thêm giao dịch
                         </Link>
+                        <Link
+                            to="/categories"
+                            className={`px-3 py-2 rounded-md text-sm font-medium hover:bg-blue-700 transition-colors ${isActive('/categories')}`}
+                        >
+                            Danh mục
+                        </Link>
                     </nav>
 
                     {/* User menu */}
