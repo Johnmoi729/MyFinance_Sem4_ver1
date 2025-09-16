@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useTransaction } from '../../context/TransactionContext';
 import { useCategory } from '../../context/CategoryContext';
 import { formatCurrency, formatDate, getTransactionTypeLabel, getTransactionTypeColor } from '../../services/api';
+import VietnameseDateInput from '../../components/common/VietnameseDateInput';
 
 const TransactionsPage = () => {
     const navigate = useNavigate();
@@ -219,22 +220,20 @@ const TransactionsPage = () => {
                                 {/* Start Date */}
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-1">Từ ngày</label>
-                                    <input
-                                        type="date"
+                                    <VietnameseDateInput
                                         value={filters.startDate}
-                                        onChange={(e) => handleFilterChange('startDate', e.target.value)}
-                                        className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
+                                        onChange={(value) => handleFilterChange('startDate', value)}
+                                        placeholder="dd/mm/yyyy"
                                     />
                                 </div>
 
                                 {/* End Date */}
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-1">Đến ngày</label>
-                                    <input
-                                        type="date"
+                                    <VietnameseDateInput
                                         value={filters.endDate}
-                                        onChange={(e) => handleFilterChange('endDate', e.target.value)}
-                                        className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
+                                        onChange={(value) => handleFilterChange('endDate', value)}
+                                        placeholder="dd/mm/yyyy"
                                     />
                                 </div>
 

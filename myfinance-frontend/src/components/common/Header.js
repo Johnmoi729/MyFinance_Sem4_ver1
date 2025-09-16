@@ -57,6 +57,12 @@ const Header = () => {
                         >
                             Danh mục
                         </Link>
+                        <Link
+                            to="/budgets"
+                            className={`px-3 py-2 rounded-md text-sm font-medium hover:bg-blue-700 transition-colors ${isActive('/budgets')}`}
+                        >
+                            Ngân sách
+                        </Link>
                     </nav>
 
                     {/* User menu */}

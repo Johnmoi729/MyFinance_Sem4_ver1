@@ -74,7 +74,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/auth/**").authenticated()
                         .requestMatchers("/api/transactions/**").authenticated()
                         .requestMatchers("/api/categories/**").authenticated()
-                        .requestMatchers("/api/budget/**").authenticated()
+                        .requestMatchers("/api/budgets/**").authenticated()
                         .requestMatchers("/api/reports/**").authenticated()
 
                         // All other requests need authentication

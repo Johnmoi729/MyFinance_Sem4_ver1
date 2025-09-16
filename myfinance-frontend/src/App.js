@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { AuthProvider } from './context/AuthContext';
 import { TransactionProvider } from './context/TransactionContext';
 import { CategoryProvider } from './context/CategoryContext';
+import { BudgetProvider } from './context/BudgetContext';
 
 // Components
 import ProtectedRoute from './components/common/ProtectedRoute';
@@ -22,6 +23,9 @@ import EditTransactionPage from './pages/transactions/EditTransactionPage';
 import CategoriesPage from './pages/categories/CategoriesPage';
 import AddCategoryPage from './pages/categories/AddCategoryPage';
 import EditCategoryPage from './pages/categories/EditCategoryPage';
+import BudgetsPage from './pages/budgets/BudgetsPage';
+import AddBudgetPage from './pages/budgets/AddBudgetPage';
+import EditBudgetPage from './pages/budgets/EditBudgetPage';
 
 import './App.css';
 
@@ -30,6 +34,7 @@ function App() {
       <AuthProvider>
         <TransactionProvider>
           <CategoryProvider>
+            <BudgetProvider>
             <Router>
             <div className="min-h-screen bg-gray-50 flex flex-col">
               <Header />
@@ -94,6 +99,21 @@ function App() {
                     <EditCategoryPage />
                   </ProtectedRoute>
                 } />
+                <Route path="/budgets" element={
+                  <ProtectedRoute>
+                    <BudgetsPage />
+                  </ProtectedRoute>
+                } />
+                <Route path="/budgets/add" element={
+                  <ProtectedRoute>
+                    <AddBudgetPage />
+                  </ProtectedRoute>
+                } />
+                <Route path="/budgets/edit/:id" element={
+                  <ProtectedRoute>
+                    <EditBudgetPage />
+                  </ProtectedRoute>
+                } />
 
                 {/* Fallback route */}
                 <Route path="*" element={<Navigate to="/dashboard" replace />} />
@@ -102,6 +122,7 @@ function App() {
               <Footer />
             </div>
             </Router>
+            </BudgetProvider>
           </CategoryProvider>
         </TransactionProvider>
       </AuthProvider>

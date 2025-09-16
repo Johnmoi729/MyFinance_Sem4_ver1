@@ -115,7 +115,7 @@ export const CategoryProvider = ({ children }) => {
 
     // Get categories by type
     const getCategoriesByType = (type) => {
-        return categories.filter(category => category.type === type);
+        return (categories || []).filter(category => category.type === type);
     };
 
     const value = {
