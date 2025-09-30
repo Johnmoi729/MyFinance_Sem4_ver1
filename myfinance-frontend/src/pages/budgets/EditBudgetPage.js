@@ -45,8 +45,10 @@ const EditBudgetPage = () => {
       }
     };
 
-    loadBudget();
-  }, [id, getBudgetById, navigate]);
+    if (id) {
+      loadBudget();
+    }
+  }, [id]); // Remove function dependencies to prevent infinite loop
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;

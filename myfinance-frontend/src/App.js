@@ -1,9 +1,7 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
-import { TransactionProvider } from './context/TransactionContext';
-import { CategoryProvider } from './context/CategoryContext';
-import { BudgetProvider } from './context/BudgetContext';
+import IntegratedProviders from './components/providers/IntegratedProviders';
 
 // Components
 import ProtectedRoute from './components/common/ProtectedRoute';
@@ -26,15 +24,14 @@ import EditCategoryPage from './pages/categories/EditCategoryPage';
 import BudgetsPage from './pages/budgets/BudgetsPage';
 import AddBudgetPage from './pages/budgets/AddBudgetPage';
 import EditBudgetPage from './pages/budgets/EditBudgetPage';
+import BudgetSettingsPage from './pages/budgets/BudgetSettingsPage';
 
 import './App.css';
 
 function App() {
   return (
       <AuthProvider>
-        <TransactionProvider>
-          <CategoryProvider>
-            <BudgetProvider>
+        <IntegratedProviders>
             <Router>
             <div className="min-h-screen bg-gray-50 flex flex-col">
               <Header />
@@ -114,6 +111,11 @@ function App() {
                     <EditBudgetPage />
                   </ProtectedRoute>
                 } />
+                <Route path="/budgets/settings" element={
+                  <ProtectedRoute>
+                    <BudgetSettingsPage />
+                  </ProtectedRoute>
+                } />
 
                 {/* Fallback route */}
                 <Route path="*" element={<Navigate to="/dashboard" replace />} />
@@ -122,9 +124,7 @@ function App() {
               <Footer />
             </div>
             </Router>
-            </BudgetProvider>
-          </CategoryProvider>
-        </TransactionProvider>
+        </IntegratedProviders>
       </AuthProvider>
   );
 }

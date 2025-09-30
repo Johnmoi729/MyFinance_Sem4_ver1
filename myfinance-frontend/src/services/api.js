@@ -458,13 +458,234 @@ class CategoryAPI extends ApiService {
     }
 }
 
+// Budget API methods
+class BudgetAPI extends ApiService {
+    // Create new budget
+    async createBudget(budgetData) {
+        try {
+            const response = await this.post('/api/budgets', budgetData);
+            return response;
+        } catch (error) {
+            return {
+                success: false,
+                message: 'Không thể tạo ngân sách'
+            };
+        }
+    }
+
+    // Get budget by ID
+    async getBudget(budgetId) {
+        try {
+            const response = await this.get(`/api/budgets/${budgetId}`);
+            return response;
+        } catch (error) {
+            return {
+                success: false,
+                message: 'Không thể tải thông tin ngân sách'
+            };
+        }
+    }
+
+    // Get user budgets with filters
+    async getUserBudgets(filters = {}) {
+        try {
+            const params = new URLSearchParams();
+            if (filters.type) params.append('type', filters.type);
+            if (filters.year) params.append('year', filters.year);
+            if (filters.month) params.append('month', filters.month);
+            if (filters.categoryId) params.append('categoryId', filters.categoryId);
+
+            const queryString = params.toString();
+            const url = queryString ? `/api/budgets?${queryString}` : '/api/budgets';
+            const response = await this.get(url);
+            return response;
+        } catch (error) {
+            return {
+                success: false,
+                message: 'Không thể tải danh sách ngân sách',
+                data: []
+            };
+        }
+    }
+
+    // Get current month budgets
+    async getCurrentMonthBudgets() {
+        try {
+            const response = await this.get('/api/budgets/current');
+            return response;
+        } catch (error) {
+            return {
+                success: false,
+                message: 'Không thể tải ngân sách tháng hiện tại',
+                data: []
+            };
+        }
+    }
+
+    // Get budgets for specific period
+    async getBudgetsForPeriod(year, month) {
+        try {
+            const response = await this.get(`/api/budgets/period/${year}/${month}`);
+            return response;
+        } catch (error) {
+            return {
+                success: false,
+                message: 'Không thể tải ngân sách theo thời gian',
+                data: []
+            };
+        }
+    }
+
+    // Update budget
+    async updateBudget(budgetId, budgetData) {
+        try {
+            const response = await this.put(`/api/budgets/${budgetId}`, budgetData);
+            return response;
+        } catch (error) {
+            return {
+                success: false,
+                message: 'Không thể cập nhật ngân sách'
+            };
+        }
+    }
+
+    // Delete budget
+    async deleteBudget(budgetId) {
+        try {
+            const response = await this.delete(`/api/budgets/${budgetId}`);
+            return response;
+        } catch (error) {
+            return {
+                success: false,
+                message: 'Không thể xóa ngân sách'
+            };
+        }
+    }
+
+    // ===== BUDGET ANALYTICS METHODS =====
+
+    // Get budget usage analytics
+    async getBudgetUsageAnalytics() {
+        try {
+            const response = await this.get('/api/budgets/analytics/usage');
+            return response;
+        } catch (error) {
+            return {
+                success: false,
+                message: 'Không thể tải thống kê sử dụng ngân sách',
+                data: []
+            };
+        }
+    }
+
+    // Get current month budget usage
+    async getCurrentMonthBudgetUsage() {
+        try {
+            const response = await this.get('/api/budgets/analytics/usage/current');
+            return response;
+        } catch (error) {
+            return {
+                success: false,
+                message: 'Không thể tải thống kê sử dụng ngân sách tháng hiện tại',
+                data: []
+            };
+        }
+    }
+
+    // Get budget warnings
+    async getBudgetWarnings() {
+        try {
+            const response = await this.get('/api/budgets/analytics/warnings');
+            return response;
+        } catch (error) {
+            return {
+                success: false,
+                message: 'Không thể tải cảnh báo ngân sách',
+                data: null
+            };
+        }
+    }
+
+    // Get budget performance
+    async getBudgetPerformance() {
+        try {
+            const response = await this.get('/api/budgets/analytics/performance');
+            return response;
+        } catch (error) {
+            return {
+                success: false,
+                message: 'Không thể tải hiệu suất ngân sách',
+                data: null
+            };
+        }
+    }
+
+    // Get budget dashboard
+    async getBudgetDashboard() {
+        try {
+            const response = await this.get('/api/budgets/analytics/dashboard');
+            return response;
+        } catch (error) {
+            return {
+                success: false,
+                message: 'Không thể tải tổng quan ngân sách',
+                data: null
+            };
+        }
+    }
+}
+
+// Budget Settings API methods
+class BudgetSettingsAPI extends ApiService {
+    // Get budget settings
+    async getBudgetSettings() {
+        try {
+            const response = await this.get('/api/budget-settings');
+            return response;
+        } catch (error) {
+            return {
+                success: false,
+                message: 'Không thể tải cài đặt ngân sách'
+            };
+        }
+    }
+
+    // Update budget settings
+    async updateBudgetSettings(settingsData) {
+        try {
+            const response = await this.put('/api/budget-settings', settingsData);
+            return response;
+        } catch (error) {
+            return {
+                success: false,
+                message: 'Không thể cập nhật cài đặt ngân sách'
+            };
+        }
+    }
+
+    // Reset budget settings
+    async resetBudgetSettings() {
+        try {
+            const response = await this.post('/api/budget-settings/reset', {});
+            return response;
+        } catch (error) {
+            return {
+                success: false,
+                message: 'Không thể đặt lại cài đặt ngân sách'
+            };
+        }
+    }
+}
+
 // Create instances
 const userAPI = new UserAPI();
 const transactionAPI = new TransactionAPI();
 const categoryAPI = new CategoryAPI();
+const budgetAPI = new BudgetAPI();
+const budgetSettingsAPI = new BudgetSettingsAPI();
 
 // Export APIs
-export { userAPI, transactionAPI, categoryAPI };
+export { userAPI, transactionAPI, categoryAPI, budgetAPI, budgetSettingsAPI };
 
 // Utility functions
 export const formatCurrency = (amount) => {

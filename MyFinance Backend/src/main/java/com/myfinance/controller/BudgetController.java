@@ -3,6 +3,10 @@ package com.myfinance.controller;
 import com.myfinance.dto.request.BudgetRequest;
 import com.myfinance.dto.response.ApiResponse;
 import com.myfinance.dto.response.BudgetResponse;
+import com.myfinance.dto.response.BudgetUsageResponse;
+import com.myfinance.dto.response.BudgetWarningResponse;
+import com.myfinance.dto.response.BudgetPerformanceResponse;
+import com.myfinance.dto.response.BudgetDashboardResponse;
 import com.myfinance.entity.TransactionType;
 import com.myfinance.service.BudgetService;
 import com.myfinance.util.JwtUtil;
@@ -145,6 +149,63 @@ public class BudgetController {
         budgetService.deleteBudget(id, userId);
 
         return ResponseEntity.ok(ApiResponse.success("Ngân sách đã được xóa thành công", null));
+    }
+
+    // ===== BUDGET ANALYTICS ENDPOINTS =====
+
+    @GetMapping("/analytics/usage")
+    public ResponseEntity<ApiResponse<List<BudgetUsageResponse>>> getBudgetUsageAnalytics(
+            @RequestHeader("Authorization") String authHeader) {
+
+        log.info("GET /api/budgets/analytics/usage called");
+        Long userId = extractUserIdFromToken(authHeader);
+        List<BudgetUsageResponse> usage = budgetService.getBudgetUsageAnalytics(userId);
+
+        return ResponseEntity.ok(ApiResponse.success("Đã tải thống kê sử dụng ngân sách", usage));
+    }
+
+    @GetMapping("/analytics/usage/current")
+    public ResponseEntity<ApiResponse<List<BudgetUsageResponse>>> getCurrentMonthBudgetUsage(
+            @RequestHeader("Authorization") String authHeader) {
+
+        log.info("GET /api/budgets/analytics/usage/current called");
+        Long userId = extractUserIdFromToken(authHeader);
+        List<BudgetUsageResponse> usage = budgetService.getCurrentMonthBudgetUsage(userId);
+
+        return ResponseEntity.ok(ApiResponse.success("Đã tải thống kê sử dụng ngân sách tháng hiện tại", usage));
+    }
+
+    @GetMapping("/analytics/warnings")
+    public ResponseEntity<ApiResponse<BudgetWarningResponse>> getBudgetWarnings(
+            @RequestHeader("Authorization") String authHeader) {
+
+        log.info("GET /api/budgets/analytics/warnings called");
+        Long userId = extractUserIdFromToken(authHeader);
+        BudgetWarningResponse warnings = budgetService.getBudgetWarnings(userId);
+
+        return ResponseEntity.ok(ApiResponse.success("Đã tải cảnh báo ngân sách", warnings));
+    }
+
+    @GetMapping("/analytics/performance")
+    public ResponseEntity<ApiResponse<BudgetPerformanceResponse>> getBudgetPerformance(
+            @RequestHeader("Authorization") String authHeader) {
+
+        log.info("GET /api/budgets/analytics/performance called");
+        Long userId = extractUserIdFromToken(authHeader);
+        BudgetPerformanceResponse performance = budgetService.getBudgetPerformance(userId);
+
+        return ResponseEntity.ok(ApiResponse.success("Đã tải hiệu suất ngân sách", performance));
+    }
+
+    @GetMapping("/analytics/dashboard")
+    public ResponseEntity<ApiResponse<BudgetDashboardResponse>> getBudgetDashboard(
+            @RequestHeader("Authorization") String authHeader) {
+
+        log.info("GET /api/budgets/analytics/dashboard called");
+        Long userId = extractUserIdFromToken(authHeader);
+        BudgetDashboardResponse dashboard = budgetService.getBudgetDashboard(userId);
+
+        return ResponseEntity.ok(ApiResponse.success("Đã tải tổng quan ngân sách", dashboard));
     }
 
     private Long extractUserIdFromToken(String authHeader) {

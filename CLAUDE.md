@@ -107,7 +107,7 @@ MyFinance is a full-stack personal finance management application with:
 
 ---
 
-### 🟡 **FLOW 3: Budget Planning Module** [50% COMPLETED]
+### 🟢 **FLOW 3: Budget Planning Module** [COMPLETED]
 
 **✅ Phase 3A: Budget Management Foundation** [COMPLETED]
 - ✅ Budget entity design (MySQL tables)
@@ -119,29 +119,34 @@ MyFinance is a full-stack personal finance management application with:
 - ✅ Budget UI pages matching transaction design patterns
 - ✅ Budget service layer with proper error handling
 
-**🔲 Phase 3B: Budget Tracking & Warnings** [PENDING - NEXT PHASE]
+**✅ Phase 3B: Budget Tracking & Warnings** [COMPLETED]
 - **Real-time Budget Tracking**:
-  - Calculate actual spending vs budget limits per category
-  - Display spending percentage (e.g., "75% of budget used")
-  - Show remaining budget amounts
-  - Visual progress bars for budget usage
-  
+  - ✅ Calculate actual spending vs budget limits per category
+  - ✅ Display spending percentage with visual progress bars
+  - ✅ Show remaining budget amounts with status messages
+  - ✅ Color-coded budget status (Green/Yellow/Red)
+  - ✅ Real-time updates when transactions change
+
 - **Intelligent Warning System**:
-  - Configurable threshold alerts (50%, 75%, 90% usage)
-  - Over-budget notifications when limits exceeded
-  - Predictive warnings based on spending patterns
-  - Color-coded budget status (Green/Yellow/Red)
-  
-- **Budget Analytics**:
-  - Monthly budget performance comparisons
-  - Category spending trends vs budgets
-  - Budget optimization suggestions
-  - Historical budget vs actual analysis
-  
+  - ✅ Configurable threshold alerts (user-customizable 50-100%)
+  - ✅ Over-budget notifications when limits exceeded
+  - ✅ Multi-level warnings (Warning/Critical/Over-budget)
+  - ✅ User settings page for threshold configuration
+  - ✅ Default thresholds: 75% warning, 90% critical
+
+- **Budget Analytics & Visualization**:
+  - ✅ Budget usage analytics with comprehensive DTOs
+  - ✅ Budget warning system with alert management
+  - ✅ Budget performance metrics and trends
+  - ✅ Visual progress components (BudgetProgressBar, BudgetStatusBadge)
+  - ✅ Budget usage cards with detailed information
+  - ✅ Warning alert components with action buttons
+
 - **Dashboard Integration**:
-  - Budget overview widget on main dashboard
-  - Quick budget status alerts
-  - Summary cards showing total budgeted vs actual spending
+  - ✅ Budget overview widget on main dashboard (3-column layout)
+  - ✅ Real-time budget status alerts and summaries
+  - ✅ Quick access to budget warnings and management
+  - ✅ Integration with existing quick actions
 
 ---
 
@@ -239,6 +244,20 @@ budgets (
   FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE RESTRICT,
   UNIQUE KEY unique_user_category_period (user_id, category_id, budget_year, budget_month)
 );
+
+-- User Budget Settings table (Flow 3B)
+user_budget_settings (
+  id BIGINT PRIMARY KEY AUTO_INCREMENT,
+  user_id BIGINT UNIQUE NOT NULL,
+  warning_threshold DOUBLE NOT NULL DEFAULT 75.0, -- Percentage for warning alerts
+  critical_threshold DOUBLE NOT NULL DEFAULT 90.0, -- Percentage for critical alerts
+  notifications_enabled BOOLEAN NOT NULL DEFAULT TRUE,
+  email_alerts_enabled BOOLEAN NOT NULL DEFAULT FALSE,
+  daily_summary_enabled BOOLEAN NOT NULL DEFAULT TRUE,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
 ```
 
 ### Future Tables (Phase 4)
@@ -316,10 +335,19 @@ GET    /api/budgets/current - Get current month budgets
 GET    /api/budgets/period/{year}/{month} - Get budgets for specific period
 GET    /api/budgets/test - Debug endpoint for troubleshooting
 
-// Phase 3B - Budget Analytics (Pending)
-GET    /api/budgets/analytics/usage - Budget usage analytics
-GET    /api/budgets/analytics/warnings - Budget warning status
+// Budget Analytics (Phase 3B - Completed)
+GET    /api/budgets/analytics/usage - All budget usage analytics
+GET    /api/budgets/analytics/usage/current - Current month budget usage
+GET    /api/budgets/analytics/warnings - Budget warning alerts
 GET    /api/budgets/analytics/performance - Budget performance metrics
+GET    /api/budgets/analytics/dashboard - Dashboard budget summary
+```
+
+### Budget Settings Endpoints (Phase 3B)
+```
+GET    /api/budget-settings - Get user budget threshold settings
+PUT    /api/budget-settings - Update user budget threshold settings
+POST   /api/budget-settings/reset - Reset settings to defaults
 ```
 
 ### Reports Endpoints (Phase 4 - Future)
@@ -474,6 +502,526 @@ npm run build                # Build for production
 - **CORS**: Configure for production domain
 - **Database**: Migration strategy for production
 - **Monitoring**: Logging and error tracking setup
+
+---
+
+## 🏛️ **COMPREHENSIVE CODE PATTERNS & ARCHITECTURE GUIDE**
+
+This section documents all established patterns and conventions in the MyFinance codebase to ensure consistency in future development.
+
+### 🎯 **Backend Patterns**
+
+#### **Controller Pattern**
+```java
+@RestController
+@RequestMapping("/api/[entity]")
+@RequiredArgsConstructor
+@Slf4j  // Only when logging is needed
+public class EntityController {
+    private final EntityService entityService;
+    private final JwtUtil jwtUtil;
+
+    @PostMapping
+    public ResponseEntity<ApiResponse<EntityResponse>> createEntity(
+            @Valid @RequestBody EntityRequest request,
+            @RequestHeader("Authorization") String authHeader) {
+
+        Long userId = extractUserIdFromToken(authHeader);
+        EntityResponse response = entityService.createEntity(request, userId);
+
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(ApiResponse.success("Vietnamese success message", response));
+    }
+
+    private Long extractUserIdFromToken(String authHeader) {
+        String token = authHeader.replace("Bearer ", "");
+        return jwtUtil.extractUserId(token);
+    }
+}
+```
+
+**Controller Conventions:**
+- Use `@RestController` + `@RequestMapping("/api/prefix")`
+- `@RequiredArgsConstructor` for dependency injection
+- Consistent JWT token extraction: `extractUserIdFromToken(authHeader)`
+- All responses wrapped in `ApiResponse<T>`
+- Vietnamese success/error messages
+- HTTP status codes: 201 (creation), 200 (success), 404 (not found), 400 (bad request)
+
+#### **Service Layer Pattern**
+```java
+@Service
+@RequiredArgsConstructor
+@Slf4j
+@Transactional  // On class or methods as needed
+public class EntityService {
+    private final EntityRepository entityRepository;
+    private final RelatedRepository relatedRepository;
+
+    public EntityResponse createEntity(EntityRequest request, Long userId) {
+        // 1. Validate input and user permissions
+        // 2. Check business rules
+        // 3. Create and populate entity
+        // 4. Save to repository
+        // 5. Map to response DTO
+        return mapToEntityResponse(savedEntity);
+    }
+
+    // Always validate user ownership
+    private Entity validateUserOwnership(Long entityId, Long userId) {
+        return entityRepository.findByIdAndUserId(entityId, userId)
+                .orElseThrow(() -> new ResourceNotFoundException("Vietnamese error message"));
+    }
+}
+```
+
+#### **Entity Design Pattern**
+```java
+@Entity
+@Table(name = "entity_table", uniqueConstraints = {
+    @UniqueConstraint(columnNames = {"user_id", "business_key"})
+})
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+public class Entity {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(name = "user_id", nullable = false)
+    @NotNull
+    private Long userId;  // Manual FK for security
+
+    @ManyToOne(fetch = FetchType.EAGER)  // EAGER for frequently accessed
+    @JoinColumn(name = "category_id", nullable = false)
+    @NotNull
+    private Category category;
+
+    @Column(name = "created_at", updatable = false)
+    private LocalDateTime createdAt;
+
+    @PrePersist
+    protected void onCreate() {
+        createdAt = LocalDateTime.now();
+        updatedAt = LocalDateTime.now();
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
+        updatedAt = LocalDateTime.now();
+    }
+}
+```
+
+#### **DTO Pattern**
+```java
+// Request DTO
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+public class EntityRequest {
+    @NotNull(message = "Vietnamese validation message")
+    @Positive(message = "Vietnamese validation message")
+    private BigDecimal amount;
+
+    @NotBlank(message = "Vietnamese validation message")
+    private String description;
+}
+
+// Response DTO
+@Data
+@Builder
+public class EntityResponse {
+    private Long id;
+    private BigDecimal amount;
+    private String description;
+    private CategoryResponse category;
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
+}
+```
+
+### 🎨 **Frontend Patterns**
+
+#### **React Component Pattern**
+```javascript
+import React, { useState, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useEntityContext } from '../../context/EntityContext';
+
+const EntityPage = () => {
+    const navigate = useNavigate();
+    const { entities, loading, error, fetchEntities, clearError } = useEntityContext();
+    const [localState, setLocalState] = useState(initialState);
+
+    // useCallback for expensive operations
+    const handleAction = useCallback(async (data) => {
+        try {
+            await someAsyncOperation(data);
+            // Handle success
+        } catch (err) {
+            console.error('Error:', err);
+        }
+    }, [dependency]);
+
+    // useEffect with proper dependencies
+    useEffect(() => {
+        fetchEntities();
+    }, []); // Empty for mount-only, or specific dependencies
+
+    if (loading) {
+        return (
+            <div className="text-center py-8">
+                <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+                <p className="mt-2 text-gray-600">Đang tải...</p>
+            </div>
+        );
+    }
+
+    return (
+        <div className="min-h-screen bg-gray-50">
+            <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+                {/* Page content */}
+            </div>
+        </div>
+    );
+};
+
+export default EntityPage;
+```
+
+#### **Context Provider Pattern**
+```javascript
+import React, { createContext, useContext, useState, useCallback } from 'react';
+import { entityAPI } from '../services/api';
+import { useAuth } from './AuthContext';
+
+const EntityContext = createContext();
+
+export const useEntity = () => {
+    const context = useContext(EntityContext);
+    if (!context) {
+        throw new Error('useEntity must be used within an EntityProvider');
+    }
+    return context;
+};
+
+export const EntityProvider = ({ children }) => {
+    const { user } = useAuth();
+    const [entities, setEntities] = useState([]);
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState('');
+
+    const fetchEntities = useCallback(async (filters = {}) => {
+        if (!user) return;
+
+        setLoading(true);
+        setError('');
+
+        try {
+            const response = await entityAPI.getEntities(filters);
+            if (response && response.success) {
+                setEntities(response.data || []);
+            } else {
+                setEntities([]);
+                setError(response.message || 'Vietnamese error message');
+            }
+        } catch (err) {
+            setError(err.message || 'Vietnamese error message');
+            setEntities([]);
+        } finally {
+            setLoading(false);
+        }
+    }, [user]);
+
+    const clearError = useCallback(() => {
+        setError('');
+    }, []);
+
+    const value = {
+        entities,
+        loading,
+        error,
+        fetchEntities,
+        clearError
+    };
+
+    return (
+        <EntityContext.Provider value={value}>
+            {children}
+        </EntityContext.Provider>
+    );
+};
+```
+
+#### **API Service Pattern**
+```javascript
+// services/api.js
+class EntityAPI extends ApiService {
+    async createEntity(entityData) {
+        try {
+            const response = await this.post('/api/entities', entityData);
+            return response;
+        } catch (error) {
+            return {
+                success: false,
+                message: 'Vietnamese error message'
+            };
+        }
+    }
+
+    async getEntities(filters = {}) {
+        try {
+            const params = new URLSearchParams();
+            Object.keys(filters).forEach(key => {
+                if (filters[key]) params.append(key, filters[key]);
+            });
+
+            const queryString = params.toString();
+            const url = queryString ? `/api/entities?${queryString}` : '/api/entities';
+            const response = await this.get(url);
+            return response;
+        } catch (error) {
+            return {
+                success: false,
+                message: 'Vietnamese error message',
+                data: []
+            };
+        }
+    }
+}
+
+// Export singleton instance
+const entityAPI = new EntityAPI();
+export { entityAPI };
+```
+
+### 🎨 **UI/UX Patterns**
+
+#### **Tailwind CSS Conventions**
+```javascript
+// Color System
+const colorPatterns = {
+    primary: 'bg-blue-500 hover:bg-blue-600 text-white',
+    success: 'bg-green-100 text-green-700 border-green-300',
+    danger: 'bg-red-100 text-red-700 border-red-300',
+    warning: 'bg-yellow-100 text-yellow-700 border-yellow-300',
+    neutral: 'bg-gray-50 text-gray-600'
+};
+
+// Component Patterns
+const componentStyles = {
+    card: 'bg-white rounded-lg shadow-md p-6',
+    button: 'px-4 py-2 rounded-lg font-medium transition-colors',
+    input: 'w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500',
+    container: 'max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8'
+};
+```
+
+#### **Form Patterns**
+```javascript
+const FormPage = () => {
+    const [formData, setFormData] = useState(initialFormData);
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState('');
+
+    const handleInputChange = (e) => {
+        const { name, value } = e.target;
+        setFormData(prev => ({
+            ...prev,
+            [name]: value
+        }));
+        clearError(); // Clear error on input change
+    };
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        setLoading(true);
+        setError('');
+
+        try {
+            // Process form data
+            await submitForm(formData);
+            // Handle success (navigate, show message, etc.)
+        } catch (err) {
+            setError(err.message || 'Vietnamese error message');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    return (
+        <form onSubmit={handleSubmit} className="space-y-6">
+            {error && (
+                <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+                    {error}
+                </div>
+            )}
+
+            <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Vietnamese Label *
+                </label>
+                <input
+                    type="text"
+                    name="fieldName"
+                    value={formData.fieldName}
+                    onChange={handleInputChange}
+                    required
+                    className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
+                    placeholder="Vietnamese placeholder"
+                />
+            </div>
+
+            <button
+                type="submit"
+                disabled={loading}
+                className="w-full bg-blue-500 hover:bg-blue-600 disabled:bg-blue-300 text-white py-2 px-4 rounded-md font-medium transition-colors"
+            >
+                {loading ? 'Đang xử lý...' : 'Vietnamese Action'}
+            </button>
+        </form>
+    );
+};
+```
+
+### 🔒 **Security Patterns**
+
+#### **User Ownership Validation**
+```java
+// Service Layer - Always validate ownership
+public EntityResponse updateEntity(Long entityId, EntityRequest request, Long userId) {
+    Entity entity = entityRepository.findByIdAndUserId(entityId, userId)
+            .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy dữ liệu"));
+
+    // Update logic...
+    return mapToResponse(savedEntity);
+}
+```
+
+#### **JWT Token Management**
+```javascript
+// Frontend - Check token validity
+isAuthenticated() {
+    const token = this.getAuthToken();
+    if (!token) return false;
+
+    try {
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        const currentTime = Date.now() / 1000;
+        return payload.exp > currentTime;
+    } catch (error) {
+        return false;
+    }
+}
+```
+
+### 📊 **Error Handling Patterns**
+
+#### **Backend Error Handling**
+```java
+@ControllerAdvice
+public class GlobalExceptionHandler {
+    @ExceptionHandler(ResourceNotFoundException.class)
+    public ResponseEntity<ApiResponse<Void>> handleResourceNotFound(ResourceNotFoundException ex) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(ApiResponse.error(ex.getMessage()));
+    }
+}
+```
+
+#### **Frontend Error Handling**
+```javascript
+// API Service Level
+try {
+    const response = await this.post('/api/endpoint', data);
+    return response;
+} catch (error) {
+    return {
+        success: false,
+        message: 'Vietnamese error message specific to operation'
+    };
+}
+
+// Component Level
+{error && (
+    <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+        {error}
+    </div>
+)}
+```
+
+### 🌐 **Internationalization Pattern**
+
+#### **Vietnamese Localization**
+```javascript
+// All user-facing text should be in Vietnamese
+const messages = {
+    loading: 'Đang tải...',
+    saving: 'Đang lưu...',
+    success: 'Thành công!',
+    error: 'Đã xảy ra lỗi',
+    confirm: 'Bạn có chắc chắn?',
+    cancel: 'Hủy',
+    save: 'Lưu',
+    edit: 'Chỉnh sửa',
+    delete: 'Xóa'
+};
+
+// Date formatting
+const formatVietnameseDate = (date) => {
+    return new Date(date).toLocaleDateString('vi-VN');
+};
+
+// Currency formatting
+const formatCurrency = (amount) => {
+    return new Intl.NumberFormat('vi-VN', {
+        style: 'currency',
+        currency: 'VND'
+    }).format(amount);
+};
+```
+
+### 🚀 **Performance Patterns**
+
+#### **React Performance**
+```javascript
+// Use useCallback for expensive operations
+const expensiveOperation = useCallback(async (data) => {
+    // Expensive logic
+}, [dependency]);
+
+// Use useMemo for expensive calculations
+const expensiveValue = useMemo(() => {
+    return complexCalculation(data);
+}, [data]);
+
+// Parallel API calls
+const loadData = useCallback(async () => {
+    const [data1, data2, data3] = await Promise.all([
+        api.getData1(),
+        api.getData2(),
+        api.getData3()
+    ]);
+}, []);
+```
+
+#### **Backend Performance**
+```java
+// Use EAGER fetching for frequently accessed relationships
+@ManyToOne(fetch = FetchType.EAGER)
+@JoinColumn(name = "category_id")
+private Category category;
+
+// Use @Transactional for data consistency
+@Transactional
+public EntityResponse createEntity(EntityRequest request, Long userId) {
+    // Transactional logic
+}
+```
+
+---
 
 This comprehensive documentation serves as the complete reference for the MyFinance project development and should be maintained as the project evolves.
 

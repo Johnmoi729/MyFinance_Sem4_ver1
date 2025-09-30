@@ -11,11 +11,22 @@ export const useTransaction = () => {
     return context;
 };
 
-export const TransactionProvider = ({ children }) => {
+export const TransactionProvider = ({ children, onBudgetRefreshNeeded }) => {
     const [transactions, setTransactions] = useState([]);
     const [categories, setCategories] = useState([]);
     const [loading, setLoading] = useState(false);
     const [recentTransactions, setRecentTransactions] = useState([]);
+
+    // Helper function to trigger budget refresh if callback provided
+    const triggerBudgetRefresh = async () => {
+        if (onBudgetRefreshNeeded && typeof onBudgetRefreshNeeded === 'function') {
+            try {
+                await onBudgetRefreshNeeded();
+            } catch (error) {
+                console.error('Error refreshing budget data:', error);
+            }
+        }
+    };
 
     // Load transactions
     const loadTransactions = async (type = '') => {
@@ -89,13 +100,19 @@ export const TransactionProvider = ({ children }) => {
         try {
             setLoading(true);
             const response = await transactionAPI.addTransaction(transactionData);
-            
+
             if (response && response.success) {
                 // Refresh transactions and recent transactions
                 await Promise.all([
                     loadTransactions(),
                     loadRecentTransactions()
                 ]);
+
+                // Trigger budget refresh for expense transactions
+                if (transactionData.type === 'EXPENSE') {
+                    await triggerBudgetRefresh();
+                }
+
                 return { success: true, data: response.data };
             } else {
                 return { success: false, message: response.message };
@@ -113,13 +130,17 @@ export const TransactionProvider = ({ children }) => {
         try {
             setLoading(true);
             const response = await transactionAPI.updateTransaction(id, transactionData);
-            
+
             if (response && response.success) {
                 // Refresh transactions and recent transactions
                 await Promise.all([
                     loadTransactions(),
                     loadRecentTransactions()
                 ]);
+
+                // Always trigger budget refresh for updates (could affect existing budget calculations)
+                await triggerBudgetRefresh();
+
                 return { success: true, data: response.data };
             } else {
                 return { success: false, message: response.message };
@@ -137,13 +158,17 @@ export const TransactionProvider = ({ children }) => {
         try {
             setLoading(true);
             const response = await transactionAPI.deleteTransaction(id);
-            
+
             if (response && response.success) {
                 // Refresh transactions and recent transactions
                 await Promise.all([
                     loadTransactions(),
                     loadRecentTransactions()
                 ]);
+
+                // Always trigger budget refresh for deletions (affects budget calculations)
+                await triggerBudgetRefresh();
+
                 return { success: true };
             } else {
                 return { success: false, message: response.message };

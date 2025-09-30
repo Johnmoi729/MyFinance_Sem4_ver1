@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState } from 'react';
+import React, { createContext, useContext, useState, useCallback } from 'react';
 import { categoryAPI } from '../services/api';
 
 const CategoryContext = createContext();
@@ -16,11 +16,11 @@ export const CategoryProvider = ({ children }) => {
     const [loading, setLoading] = useState(false);
 
     // Load categories
-    const loadCategories = async (type = '') => {
+    const loadCategories = useCallback(async (type = '') => {
         try {
             setLoading(true);
             const response = await categoryAPI.getUserCategories(type);
-            
+
             if (response && response.success) {
                 setCategories(response.data || []);
             } else {
@@ -32,7 +32,7 @@ export const CategoryProvider = ({ children }) => {
         } finally {
             setLoading(false);
         }
-    };
+    }, []); // No dependencies needed since categoryAPI is stable
 
     // Get single category
     const getCategory = async (id) => {

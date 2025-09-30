@@ -3,19 +3,29 @@ package com.myfinance.service;
 import com.myfinance.dto.request.BudgetRequest;
 import com.myfinance.dto.response.BudgetResponse;
 import com.myfinance.dto.response.CategoryResponse;
+import com.myfinance.dto.response.BudgetUsageResponse;
+import com.myfinance.dto.response.BudgetWarningResponse;
+import com.myfinance.dto.response.BudgetPerformanceResponse;
+import com.myfinance.dto.response.BudgetDashboardResponse;
 import com.myfinance.entity.Budget;
 import com.myfinance.entity.Category;
 import com.myfinance.entity.TransactionType;
+import com.myfinance.entity.BudgetStatus;
+import com.myfinance.entity.Transaction;
 import com.myfinance.exception.BadRequestException;
 import com.myfinance.exception.ResourceNotFoundException;
 import com.myfinance.repository.BudgetRepository;
 import com.myfinance.repository.CategoryRepository;
+import com.myfinance.repository.TransactionRepository;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -27,6 +37,8 @@ public class BudgetService {
 
     private final BudgetRepository budgetRepository;
     private final CategoryRepository categoryRepository;
+    private final TransactionRepository transactionRepository;
+    private final UserBudgetSettingsService userBudgetSettingsService;
 
     @PostConstruct
     public void init() {
@@ -163,6 +175,285 @@ public class BudgetService {
         budgetRepository.save(budget);
         
         log.info("Budget soft deleted successfully with ID: {}", budgetId);
+    }
+
+    // ===== BUDGET ANALYTICS METHODS =====
+
+    public List<BudgetUsageResponse> getBudgetUsageAnalytics(Long userId) {
+        List<Budget> budgets = budgetRepository.findByUserIdAndIsActiveTrueOrderByBudgetYearDescBudgetMonthDesc(userId);
+        return budgets.stream()
+                .map(budget -> calculateBudgetUsage(budget, userId))
+                .collect(Collectors.toList());
+    }
+
+    public List<BudgetUsageResponse> getCurrentMonthBudgetUsage(Long userId) {
+        LocalDateTime now = LocalDateTime.now();
+        List<Budget> budgets = budgetRepository.findByUserIdAndBudgetYearAndBudgetMonthAndIsActiveTrue(
+                userId, now.getYear(), now.getMonthValue());
+
+        return budgets.stream()
+                .map(budget -> calculateBudgetUsage(budget, userId))
+                .collect(Collectors.toList());
+    }
+
+    public BudgetWarningResponse getBudgetWarnings(Long userId) {
+        List<BudgetUsageResponse> usageList = getCurrentMonthBudgetUsage(userId);
+
+        // Get user's configurable threshold
+        double warningThreshold = userBudgetSettingsService.getWarningThreshold(userId);
+
+        List<BudgetWarningResponse.BudgetAlert> alerts = usageList.stream()
+                .filter(usage -> usage.getUsagePercentage() >= warningThreshold)
+                .map(usage -> createBudgetAlert(usage, userId))
+                .collect(Collectors.toList());
+
+        long warningCount = alerts.stream()
+                .filter(alert -> "WARNING".equals(alert.getAlertType()))
+                .count();
+
+        long overBudgetCount = alerts.stream()
+                .filter(alert -> "OVER_BUDGET".equals(alert.getAlertType()))
+                .count();
+
+        return BudgetWarningResponse.builder()
+                .totalBudgets(usageList.size())
+                .warningCount((int) warningCount)
+                .overBudgetCount((int) overBudgetCount)
+                .alerts(alerts)
+                .build();
+    }
+
+    public BudgetPerformanceResponse getBudgetPerformance(Long userId) {
+        List<BudgetUsageResponse> usageList = getCurrentMonthBudgetUsage(userId);
+
+        BigDecimal totalBudget = usageList.stream()
+                .map(BudgetUsageResponse::getBudgetAmount)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        BigDecimal totalSpent = usageList.stream()
+                .map(BudgetUsageResponse::getActualSpent)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        BigDecimal totalRemaining = totalBudget.subtract(totalSpent);
+
+        double overallUsage = totalBudget.compareTo(BigDecimal.ZERO) > 0
+                ? totalSpent.divide(totalBudget, 4, RoundingMode.HALF_UP)
+                    .multiply(BigDecimal.valueOf(100))
+                    .doubleValue()
+                : 0.0;
+
+        int onTrack = (int) usageList.stream().filter(u -> "GREEN".equals(u.getStatus())).count();
+        int atRisk = (int) usageList.stream().filter(u -> "YELLOW".equals(u.getStatus())).count();
+        int overLimit = (int) usageList.stream().filter(u -> "RED".equals(u.getStatus())).count();
+
+        List<BudgetPerformanceResponse.CategoryPerformance> categoryPerformances = usageList.stream()
+                .map(this::createCategoryPerformance)
+                .collect(Collectors.toList());
+
+        return BudgetPerformanceResponse.builder()
+                .totalBudgetAmount(totalBudget)
+                .totalActualSpent(totalSpent)
+                .totalRemainingAmount(totalRemaining)
+                .overallUsagePercentage(overallUsage)
+                .activeBudgets(usageList.size())
+                .budgetsOnTrack(onTrack)
+                .budgetsAtRisk(atRisk)
+                .budgetsOverLimit(overLimit)
+                .categoryPerformances(categoryPerformances)
+                .build();
+    }
+
+    public BudgetDashboardResponse getBudgetDashboard(Long userId) {
+        BudgetPerformanceResponse performance = getBudgetPerformance(userId);
+        List<BudgetUsageResponse> recentBudgets = getCurrentMonthBudgetUsage(userId).stream()
+                .limit(5)
+                .collect(Collectors.toList());
+
+        BudgetWarningResponse warnings = getBudgetWarnings(userId);
+        List<BudgetWarningResponse.BudgetAlert> urgentAlerts = warnings.getAlerts().stream()
+                .filter(alert -> "OVER_BUDGET".equals(alert.getAlertType()))
+                .limit(3)
+                .collect(Collectors.toList());
+
+        List<BudgetDashboardResponse.BudgetSummary> budgetSummaries = recentBudgets.stream()
+                .map(this::createBudgetSummary)
+                .collect(Collectors.toList());
+
+        return BudgetDashboardResponse.builder()
+                .totalBudgetAmount(performance.getTotalBudgetAmount())
+                .totalActualSpent(performance.getTotalActualSpent())
+                .totalRemainingAmount(performance.getTotalRemainingAmount())
+                .overallUsagePercentage(performance.getOverallUsagePercentage())
+                .totalBudgets(performance.getActiveBudgets())
+                .budgetsOnTrack(performance.getBudgetsOnTrack())
+                .budgetsAtRisk(performance.getBudgetsAtRisk())
+                .budgetsOverLimit(performance.getBudgetsOverLimit())
+                .recentBudgets(budgetSummaries)
+                .urgentAlerts(urgentAlerts)
+                .build();
+    }
+
+    // ===== PRIVATE HELPER METHODS =====
+
+    private BudgetUsageResponse calculateBudgetUsage(Budget budget, Long userId) {
+        BigDecimal actualSpent = calculateActualSpending(budget, userId);
+        BigDecimal remaining = budget.getBudgetAmount().subtract(actualSpent);
+
+        double usagePercentage = budget.getBudgetAmount().compareTo(BigDecimal.ZERO) > 0
+                ? actualSpent.divide(budget.getBudgetAmount(), 4, RoundingMode.HALF_UP)
+                    .multiply(BigDecimal.valueOf(100))
+                    .doubleValue()
+                : 0.0;
+
+        BudgetStatus status = getBudgetStatus(usagePercentage, userId);
+
+        String statusMessage = generateStatusMessage(usagePercentage, remaining);
+
+        return BudgetUsageResponse.builder()
+                .budgetId(budget.getId())
+                .categoryName(budget.getCategory().getName())
+                .categoryColor(budget.getCategory().getColor())
+                .categoryIcon(budget.getCategory().getIcon())
+                .budgetAmount(budget.getBudgetAmount())
+                .actualSpent(actualSpent)
+                .remainingAmount(remaining)
+                .usagePercentage(usagePercentage)
+                .status(status.name())
+                .budgetYear(budget.getBudgetYear())
+                .budgetMonth(budget.getBudgetMonth())
+                .budgetPeriod(budget.getBudgetPeriod())
+                .isOverBudget(usagePercentage >= 100.0)
+                .statusMessage(statusMessage)
+                .build();
+    }
+
+    private BigDecimal calculateActualSpending(Budget budget, Long userId) {
+        // Get first and last day of the budget month
+        LocalDate startDate = LocalDate.of(budget.getBudgetYear(), budget.getBudgetMonth(), 1);
+        LocalDate endDate = startDate.withDayOfMonth(startDate.lengthOfMonth());
+
+        // Find all expense transactions for this category in the budget period
+        List<Transaction> transactions = transactionRepository.findTransactionsWithFilters(
+                userId,
+                TransactionType.EXPENSE,
+                budget.getCategory().getId(),
+                startDate,
+                endDate,
+                null
+        );
+
+        return transactions.stream()
+                .map(Transaction::getAmount)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+    }
+
+    private String generateStatusMessage(double usagePercentage, BigDecimal remainingAmount) {
+        if (usagePercentage >= 100.0) {
+            BigDecimal overAmount = remainingAmount.abs();
+            return String.format("Vượt ngân sách %s", formatCurrency(overAmount));
+        } else if (usagePercentage >= 90.0) {
+            return String.format("Còn lại %s - Gần hết ngân sách!", formatCurrency(remainingAmount));
+        } else if (usagePercentage >= 75.0) {
+            return String.format("Còn lại %s - Cần chú ý", formatCurrency(remainingAmount));
+        } else {
+            return String.format("Còn lại %s", formatCurrency(remainingAmount));
+        }
+    }
+
+    private BudgetWarningResponse.BudgetAlert createBudgetAlert(BudgetUsageResponse usage, Long userId) {
+        double warningThreshold = userBudgetSettingsService.getWarningThreshold(userId);
+        double criticalThreshold = userBudgetSettingsService.getCriticalThreshold(userId);
+
+        String alertType;
+        String alertLevel;
+
+        if (usage.getUsagePercentage() >= 100.0) {
+            alertType = "OVER_BUDGET";
+            alertLevel = "RED";
+        } else if (usage.getUsagePercentage() >= criticalThreshold) {
+            alertType = "CRITICAL";
+            alertLevel = "RED";
+        } else if (usage.getUsagePercentage() >= warningThreshold) {
+            alertType = "WARNING";
+            alertLevel = "YELLOW";
+        } else {
+            alertType = "NORMAL";
+            alertLevel = "GREEN";
+        }
+
+        String message = usage.getUsagePercentage() >= 100.0
+                ? String.format("Đã vượt ngân sách %,.0f%%", usage.getUsagePercentage())
+                : usage.getUsagePercentage() >= criticalThreshold
+                    ? String.format("Nguy hiểm - Đã sử dụng %,.0f%% ngân sách", usage.getUsagePercentage())
+                    : String.format("Cảnh báo - Đã sử dụng %,.0f%% ngân sách", usage.getUsagePercentage());
+
+        return BudgetWarningResponse.BudgetAlert.builder()
+                .budgetId(usage.getBudgetId())
+                .categoryName(usage.getCategoryName())
+                .categoryColor(usage.getCategoryColor())
+                .alertType(alertType)
+                .alertLevel(alertLevel)
+                .budgetAmount(usage.getBudgetAmount())
+                .actualSpent(usage.getActualSpent())
+                .usagePercentage(usage.getUsagePercentage())
+                .message(message)
+                .budgetYear(usage.getBudgetYear())
+                .budgetMonth(usage.getBudgetMonth())
+                .build();
+    }
+
+    private BudgetPerformanceResponse.CategoryPerformance createCategoryPerformance(BudgetUsageResponse usage) {
+        String trend = determineTrend(usage.getUsagePercentage()); // For now, default to "STABLE"
+
+        return BudgetPerformanceResponse.CategoryPerformance.builder()
+                .categoryId(usage.getBudgetId())
+                .categoryName(usage.getCategoryName())
+                .categoryColor(usage.getCategoryColor())
+                .categoryIcon(usage.getCategoryIcon())
+                .budgetAmount(usage.getBudgetAmount())
+                .actualSpent(usage.getActualSpent())
+                .usagePercentage(usage.getUsagePercentage())
+                .status(usage.getStatus())
+                .trend(trend)
+                .build();
+    }
+
+    private BudgetDashboardResponse.BudgetSummary createBudgetSummary(BudgetUsageResponse usage) {
+        return BudgetDashboardResponse.BudgetSummary.builder()
+                .budgetId(usage.getBudgetId())
+                .categoryName(usage.getCategoryName())
+                .categoryColor(usage.getCategoryColor())
+                .categoryIcon(usage.getCategoryIcon())
+                .budgetAmount(usage.getBudgetAmount())
+                .actualSpent(usage.getActualSpent())
+                .usagePercentage(usage.getUsagePercentage())
+                .status(usage.getStatus())
+                .isCurrentMonth(true) // Current month budgets
+                .build();
+    }
+
+    private String determineTrend(double usagePercentage) {
+        // For now, return STABLE. In the future, this could compare with previous periods
+        return "STABLE";
+    }
+
+    private String formatCurrency(BigDecimal amount) {
+        return String.format("%,.0f VND", amount);
+    }
+
+    private BudgetStatus getBudgetStatus(double usagePercentage, Long userId) {
+        double warningThreshold = userBudgetSettingsService.getWarningThreshold(userId);
+        double criticalThreshold = userBudgetSettingsService.getCriticalThreshold(userId);
+
+        if (usagePercentage >= 100.0) {
+            return BudgetStatus.RED;
+        } else if (usagePercentage >= criticalThreshold) {
+            return BudgetStatus.RED;
+        } else if (usagePercentage >= warningThreshold) {
+            return BudgetStatus.YELLOW;
+        } else {
+            return BudgetStatus.GREEN;
+        }
     }
 
     private BudgetResponse mapToBudgetResponse(Budget budget) {
