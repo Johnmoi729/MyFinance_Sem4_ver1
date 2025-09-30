@@ -714,8 +714,14 @@ class AdminAPI extends ApiService {
             const queryParams = new URLSearchParams();
             if (params.page !== undefined) queryParams.append('page', params.page);
             if (params.size !== undefined) queryParams.append('size', params.size);
+            if (params.sortBy) queryParams.append('sortBy', params.sortBy);
+            if (params.sortDir) queryParams.append('sortDir', params.sortDir);
             if (params.userId) queryParams.append('userId', params.userId);
+            if (params.adminUserId) queryParams.append('adminUserId', params.adminUserId);
             if (params.action) queryParams.append('action', params.action);
+            if (params.entityType) queryParams.append('entityType', params.entityType);
+            if (params.startDate) queryParams.append('startDate', params.startDate);
+            if (params.endDate) queryParams.append('endDate', params.endDate);
 
             const queryString = queryParams.toString();
             const url = queryString ? `/api/admin/audit?${queryString}` : '/api/admin/audit';
@@ -726,6 +732,90 @@ class AdminAPI extends ApiService {
             return {
                 success: false,
                 message: 'Không thể tải nhật ký audit'
+            };
+        }
+    }
+
+    // System Configuration CRUD
+    async createConfig(configData) {
+        try {
+            const response = await this.post('/api/admin/config', configData);
+            return response;
+        } catch (error) {
+            return {
+                success: false,
+                message: 'Không thể tạo cấu hình mới'
+            };
+        }
+    }
+
+    async updateConfig(configId, configData) {
+        try {
+            const response = await this.put(`/api/admin/config/${configId}`, configData);
+            return response;
+        } catch (error) {
+            return {
+                success: false,
+                message: 'Không thể cập nhật cấu hình'
+            };
+        }
+    }
+
+    async deleteConfig(configId) {
+        try {
+            const response = await this.delete(`/api/admin/config/${configId}`);
+            return response;
+        } catch (error) {
+            return {
+                success: false,
+                message: 'Không thể xóa cấu hình'
+            };
+        }
+    }
+
+    // Financial Analytics
+    async getFinancialAnalytics(params = {}) {
+        try {
+            const queryParams = new URLSearchParams();
+            if (params.timeFrame) queryParams.append('timeFrame', params.timeFrame);
+            if (params.year) queryParams.append('year', params.year);
+            if (params.month) queryParams.append('month', params.month);
+            if (params.quarter) queryParams.append('quarter', params.quarter);
+
+            const queryString = queryParams.toString();
+            const url = queryString ? `/api/admin/analytics?${queryString}` : '/api/admin/analytics';
+
+            const response = await this.get(url);
+            return response;
+        } catch (error) {
+            return {
+                success: false,
+                message: 'Không thể tải dữ liệu phân tích tài chính'
+            };
+        }
+    }
+
+    // Migration methods
+    async migrateSystemConfigEnum() {
+        try {
+            const response = await this.post('/api/admin/migration/system-config-enum', {});
+            return response;
+        } catch (error) {
+            return {
+                success: false,
+                message: 'Không thể thực hiện migration enum values'
+            };
+        }
+    }
+
+    async checkSystemConfigEnumMigration() {
+        try {
+            const response = await this.get('/api/admin/migration/system-config-enum/check');
+            return response;
+        } catch (error) {
+            return {
+                success: false,
+                message: 'Không thể kiểm tra trạng thái migration'
             };
         }
     }

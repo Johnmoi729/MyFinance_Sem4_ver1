@@ -109,14 +109,14 @@ public class SystemConfigService {
      * Set simple string configuration
      */
     public void setStringConfig(String key, String value, Long updatedByUserId, String ipAddress) {
-        setConfig(key, value, null, SystemConfig.ConfigType.STRING, false, updatedByUserId, ipAddress);
+        setConfig(key, value, null, SystemConfig.ConfigType.APPLICATION, false, updatedByUserId, ipAddress);
     }
 
     /**
      * Set boolean configuration
      */
     public void setBooleanConfig(String key, boolean value, Long updatedByUserId, String ipAddress) {
-        setConfig(key, String.valueOf(value), null, SystemConfig.ConfigType.BOOLEAN, false, updatedByUserId, ipAddress);
+        setConfig(key, String.valueOf(value), null, SystemConfig.ConfigType.APPLICATION, false, updatedByUserId, ipAddress);
     }
 
     /**
@@ -183,27 +183,27 @@ public class SystemConfigService {
     public void initializeDefaultConfigs() {
         // System settings
         setDefaultConfig("MAINTENANCE_MODE", "false", "Chế độ bảo trì hệ thống",
-                        SystemConfig.ConfigType.BOOLEAN, false);
+                        SystemConfig.ConfigType.MAINTENANCE, false);
 
         setDefaultConfig("MAX_LOGIN_ATTEMPTS", "5", "Số lần đăng nhập tối đa",
-                        SystemConfig.ConfigType.NUMBER, false);
+                        SystemConfig.ConfigType.SECURITY, false);
 
         setDefaultConfig("SESSION_TIMEOUT_HOURS", "24", "Thời gian hết hạn phiên (giờ)",
-                        SystemConfig.ConfigType.NUMBER, false);
+                        SystemConfig.ConfigType.SECURITY, false);
 
         // Feature flags
         setDefaultConfig("FEATURE_BUDGET_ANALYTICS", "true", "Tính năng phân tích ngân sách",
-                        SystemConfig.ConfigType.BOOLEAN, false);
+                        SystemConfig.ConfigType.FEATURE, false);
 
         setDefaultConfig("FEATURE_EXPORT_DATA", "true", "Tính năng xuất dữ liệu",
-                        SystemConfig.ConfigType.BOOLEAN, false);
+                        SystemConfig.ConfigType.FEATURE, false);
 
         // Public settings
         setDefaultConfig("APP_NAME", "MyFinance", "Tên ứng dụng",
-                        SystemConfig.ConfigType.STRING, true);
+                        SystemConfig.ConfigType.APPLICATION, true);
 
         setDefaultConfig("DEFAULT_CURRENCY", "VND", "Tiền tệ mặc định",
-                        SystemConfig.ConfigType.STRING, true);
+                        SystemConfig.ConfigType.APPLICATION, true);
 
         log.info("Default system configurations initialized");
     }
@@ -294,7 +294,7 @@ public class SystemConfigService {
         config.setConfigKey("MAINTENANCE_MODE");
         config.setConfigValue(enabled.toString());
         config.setDescription("Chế độ bảo trì hệ thống");
-        config.setConfigType(SystemConfig.ConfigType.BOOLEAN);
+        config.setConfigType(SystemConfig.ConfigType.MAINTENANCE);
         config.setIsPublic(false);
 
         systemConfigRepository.save(config);

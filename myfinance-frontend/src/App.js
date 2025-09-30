@@ -30,6 +30,9 @@ import BudgetSettingsPage from './pages/budgets/BudgetSettingsPage';
 // Admin Pages
 import AdminDashboard from './pages/admin/AdminDashboard';
 import UserManagement from './pages/admin/UserManagement';
+import AuditLogs from './pages/admin/AuditLogs';
+import SystemConfig from './pages/admin/SystemConfig';
+import FinancialAnalytics from './pages/admin/FinancialAnalytics';
 
 import './App.css';
 
@@ -131,6 +134,21 @@ function App() {
                 <Route path="/admin/users" element={
                   <AdminRoute>
                     <UserManagement />
+                  </AdminRoute>
+                } />
+                <Route path="/admin/audit" element={
+                  <AdminRoute>
+                    <AuditLogs />
+                  </AdminRoute>
+                } />
+                <Route path="/admin/config" element={
+                  <AdminRoute>
+                    <SystemConfig />
+                  </AdminRoute>
+                } />
+                <Route path="/admin/analytics" element={
+                  <AdminRoute>
+                    <FinancialAnalytics />
                   </AdminRoute>
                 } />
 

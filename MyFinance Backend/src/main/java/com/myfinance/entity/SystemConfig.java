@@ -56,9 +56,15 @@ public class SystemConfig {
     }
 
     public enum ConfigType {
-        BOOLEAN,
-        STRING,
-        NUMBER,
-        JSON
+        APPLICATION,
+        SECURITY,
+        FEATURE,
+        UI,
+        DATABASE,
+        INTEGRATION,
+        NOTIFICATION,
+        PERFORMANCE,
+        LOGGING,
+        MAINTENANCE
     }
 }

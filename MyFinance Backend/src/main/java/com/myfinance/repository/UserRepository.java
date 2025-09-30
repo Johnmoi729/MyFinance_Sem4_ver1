@@ -48,4 +48,11 @@ public interface UserRepository extends JpaRepository<User, Long>, JpaSpecificat
     Long countByLastLoginIsNotNull();
 
     Long countByLastLoginBetween(LocalDateTime startDate, LocalDateTime endDate);
+
+    // Analytics methods
+    @Query("SELECT COUNT(u) FROM User u WHERE u.isActive = true")
+    long countActiveUsers();
+
+    @Query("SELECT COUNT(u) FROM User u WHERE u.isActive = true AND u.createdAt < :beforeDate")
+    long countActiveUsersBefore(@Param("beforeDate") LocalDateTime beforeDate);
 }
