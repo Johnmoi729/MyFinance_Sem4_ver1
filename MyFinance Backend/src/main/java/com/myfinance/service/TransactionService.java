@@ -168,4 +168,9 @@ public class TransactionService {
                 .isDefault(category.getIsDefault())
                 .build();
     }
+
+    // Admin functionality methods
+    public Long countByUserId(Long userId) {
+        return transactionRepository.countByUserId(userId);
+    }
 }

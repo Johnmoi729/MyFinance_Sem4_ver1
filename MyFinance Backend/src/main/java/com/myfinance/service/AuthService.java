@@ -19,6 +19,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -30,6 +31,7 @@ public class AuthService {
     private final JwtUtil jwtUtil;
     private final AuthenticationManager authenticationManager;
     private final CategoryService categoryService;
+    private final RoleService roleService;
 
     @Transactional
     public UserResponse register(RegisterRequest request) {
@@ -56,6 +58,14 @@ public class AuthService {
 
         User savedUser = userRepository.save(user);
         log.info("User registered successfully with ID: {}", savedUser.getId());
+
+        // Assign default USER role
+        try {
+            roleService.assignDefaultUserRole(savedUser.getId());
+        } catch (Exception e) {
+            log.error("Failed to assign default role to user: {}", savedUser.getId(), e);
+            // Don't fail registration if role assignment fails
+        }
 
         // Create default categories for the new user
         try {
@@ -87,8 +97,11 @@ public class AuthService {
             // Update last login time
             updateLastLogin(user.getId());
 
-            // Generate JWT token
-            String token = jwtUtil.generateToken(user.getId(), user.getEmail());
+            // Get user roles
+            List<String> userRoles = roleService.getUserRoleNames(user.getId());
+
+            // Generate JWT token with roles
+            String token = jwtUtil.generateTokenWithRoles(user.getId(), user.getEmail(), userRoles);
 
             log.info("User logged in successfully: {}", user.getEmail());
 
@@ -101,6 +114,7 @@ public class AuthService {
                     .phoneNumber(user.getPhoneNumber())
                     .lastLogin(LocalDateTime.now())
                     .expiresIn(jwtUtil.getTokenRemainingTime(token))
+                    .roles(userRoles)
                     .build();
 
         } catch (BadCredentialsException e) {
@@ -206,7 +220,64 @@ public class AuthService {
         }
     }
 
+    /**
+     * Create default admin user for system initialization
+     */
+    @Transactional
+    public void createDefaultAdminUser() {
+        String defaultEmail = "admin@myfinance.com";
+        String defaultPassword = "admin123";
+        String defaultFullName = "System Administrator";
+
+        try {
+            // Check if admin user already exists
+            if (userRepository.existsByEmail(defaultEmail)) {
+                log.info("Default admin user already exists: {}", defaultEmail);
+                return;
+            }
+
+            log.info("Creating default admin user: {}", defaultEmail);
+
+            // Create admin user
+            User adminUser = new User();
+            adminUser.setEmail(defaultEmail);
+            adminUser.setPassword(passwordEncoder.encode(defaultPassword));
+            adminUser.setFullName(defaultFullName);
+            adminUser.setIsActive(true);
+            adminUser.setIsEmailVerified(true); // Admin user is pre-verified
+            adminUser.setCreatedAt(LocalDateTime.now());
+            adminUser.setUpdatedAt(LocalDateTime.now());
+
+            User savedUser = userRepository.save(adminUser);
+            log.info("Default admin user created with ID: {}", savedUser.getId());
+
+            // Assign ADMIN role
+            try {
+                roleService.assignRole(savedUser.getId(), com.myfinance.entity.RoleName.ADMIN, null);
+                log.info("ADMIN role assigned to default admin user");
+            } catch (Exception e) {
+                log.error("Failed to assign ADMIN role to default admin user", e);
+            }
+
+            // Create default categories for admin user
+            try {
+                categoryService.createDefaultCategoriesForUser(savedUser.getId());
+                log.info("Default categories created for admin user");
+            } catch (Exception e) {
+                log.error("Failed to create default categories for admin user", e);
+            }
+
+            log.info("Default admin user setup completed successfully");
+
+        } catch (Exception e) {
+            log.error("Failed to create default admin user", e);
+            // Don't fail application startup if admin creation fails
+        }
+    }
+
     private UserResponse mapToUserResponse(User user) {
+        List<String> userRoles = roleService.getUserRoleNames(user.getId());
+
         return UserResponse.builder()
                 .id(user.getId())
                 .email(user.getEmail())
@@ -217,6 +288,7 @@ public class AuthService {
                 .lastLogin(user.getLastLogin())
                 .createdAt(user.getCreatedAt())
                 .updatedAt(user.getUpdatedAt())
+                .roles(userRoles)
                 .build();
     }
 }

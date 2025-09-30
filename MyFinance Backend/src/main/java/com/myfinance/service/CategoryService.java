@@ -184,6 +184,11 @@ public class CategoryService {
                 .build();
     }
 
+    // Admin functionality methods
+    public Long countByUserId(Long userId) {
+        return categoryRepository.countByUserId(userId);
+    }
+
     // Helper class for category data
     private static class CategoryData {
         final String name;

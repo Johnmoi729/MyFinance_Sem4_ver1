@@ -15,6 +15,7 @@ export const AuthProvider = ({ children }) => {
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
     const [isAuthenticated, setIsAuthenticated] = useState(false);
+    const [userRoles, setUserRoles] = useState([]);
 
     // Check if user is logged in on app start
     useEffect(() => {
@@ -36,6 +37,7 @@ export const AuthProvider = ({ children }) => {
                 const profileResponse = await userAPI.getProfile();
                 if (profileResponse && profileResponse.success) {
                     setUser(profileResponse.data);
+                    setUserRoles(profileResponse.data.roles || []);
                     setIsAuthenticated(true);
                 } else {
                     logout();
@@ -57,13 +59,14 @@ export const AuthProvider = ({ children }) => {
             const response = await userAPI.login(credentials);
 
             if (response && response.success) {
-                const { token, ...userData } = response.data;
+                const { token, roles, ...userData } = response.data;
 
                 // Store token
                 localStorage.setItem('authToken', token);
 
-                // Set user data
+                // Set user data and roles
                 setUser(userData);
+                setUserRoles(roles || []);
                 setIsAuthenticated(true);
 
                 return { success: true, data: response.data };
@@ -99,7 +102,21 @@ export const AuthProvider = ({ children }) => {
     const logout = () => {
         localStorage.removeItem('authToken');
         setUser(null);
+        setUserRoles([]);
         setIsAuthenticated(false);
+    };
+
+    // Helper functions for role checking
+    const hasRole = (role) => {
+        return userRoles.includes(role);
+    };
+
+    const isAdmin = () => {
+        return hasRole('ADMIN') || hasRole('SUPER_ADMIN');
+    };
+
+    const isSuperAdmin = () => {
+        return hasRole('SUPER_ADMIN');
     };
 
     const updateProfile = async (profileData) => {
@@ -135,6 +152,7 @@ export const AuthProvider = ({ children }) => {
 
     const value = {
         user,
+        userRoles,
         isAuthenticated,
         loading,
         login,
@@ -142,7 +160,10 @@ export const AuthProvider = ({ children }) => {
         logout,
         updateProfile,
         changePassword,
-        checkAuthStatus
+        checkAuthStatus,
+        hasRole,
+        isAdmin,
+        isSuperAdmin
     };
 
     return (

@@ -6,6 +6,7 @@ import IntegratedProviders from './components/providers/IntegratedProviders';
 // Components
 import ProtectedRoute from './components/common/ProtectedRoute';
 import PublicRoute from './components/common/PublicRoute';
+import AdminRoute from './components/common/AdminRoute';
 import Header from './components/common/Header';
 import Footer from './components/common/Footer';
 
@@ -25,6 +26,10 @@ import BudgetsPage from './pages/budgets/BudgetsPage';
 import AddBudgetPage from './pages/budgets/AddBudgetPage';
 import EditBudgetPage from './pages/budgets/EditBudgetPage';
 import BudgetSettingsPage from './pages/budgets/BudgetSettingsPage';
+
+// Admin Pages
+import AdminDashboard from './pages/admin/AdminDashboard';
+import UserManagement from './pages/admin/UserManagement';
 
 import './App.css';
 
@@ -115,6 +120,18 @@ function App() {
                   <ProtectedRoute>
                     <BudgetSettingsPage />
                   </ProtectedRoute>
+                } />
+
+                {/* Admin routes */}
+                <Route path="/admin/dashboard" element={
+                  <AdminRoute>
+                    <AdminDashboard />
+                  </AdminRoute>
+                } />
+                <Route path="/admin/users" element={
+                  <AdminRoute>
+                    <UserManagement />
+                  </AdminRoute>
                 } />
 
                 {/* Fallback route */}

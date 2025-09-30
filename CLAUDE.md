@@ -167,7 +167,7 @@ MyFinance is a full-stack personal finance management application with:
   - Line charts for spending patterns
   - Budget vs actual spending visualizations
   - Interactive charts with drill-down capabilities
-  
+
 - **Financial Insights**:
   - Spending pattern analysis
   - Category performance insights
@@ -182,6 +182,73 @@ MyFinance is a full-stack personal finance management application with:
   - Flexible filtering options
   - Scheduled report generation
   - Report sharing capabilities
+
+---
+
+### 🟡 **FLOW 5: Admin System & Management** [IN PROGRESS]
+
+**✅ Phase 5A: Foundation & Security** [COMPLETED]
+- **Role-Based Access Control (RBAC)**:
+  - ✅ Role entities (USER, ADMIN, SUPER_ADMIN)
+  - ✅ Permission-based authorization system
+  - ✅ Enhanced JWT with roles and permissions
+  - ✅ User role assignment functionality
+
+- **Database Schema Extensions**:
+  - ✅ roles, user_roles, system_config, audit_logs tables
+  - ✅ Migration scripts for existing users
+  - ✅ Role-based database indexes
+  - ✅ Audit trail infrastructure
+
+- **Security Infrastructure**:
+  - ✅ Admin authentication middleware (@RequiresAdmin annotation)
+  - ✅ Permission validation (AdminAuthorizationAspect)
+  - ✅ Audit logging aspect for sensitive operations
+  - ⚠️ IP-based access restrictions (logging only, no restrictions)
+
+**✅ Phase 5B: Core Admin Features** [COMPLETED]
+- **User Management Dashboard**:
+  - ✅ User overview and statistics (backend & frontend)
+  - ✅ Search, filter, and pagination (frontend implemented)
+  - ✅ User account actions (activate/deactivate frontend)
+  - ✅ User activity monitoring and details (backend APIs)
+
+- **System Analytics & Insights**:
+  - ✅ Financial metrics dashboard (backend APIs)
+  - ✅ User behavior analytics (backend APIs)
+  - ✅ System health monitoring (backend APIs)
+  - ✅ Admin dashboard with key metrics (frontend implemented)
+
+- **Basic Configuration Panel**:
+  - ✅ Feature flag management (backend APIs)
+  - ✅ System-wide settings (backend APIs)
+  - ✅ Default category management (existing from Flow 2)
+  - ✅ Maintenance mode controls (backend APIs)
+
+**🔲 Phase 5C: Advanced Admin Features** [NOT STARTED]
+- **Security & Audit Management**:
+  - Comprehensive audit log viewer
+  - Security event monitoring
+  - Permission management interface
+  - Data privacy and GDPR compliance tools
+
+- **Financial Overview & Business Intelligence**:
+  - Advanced transaction analytics
+  - Budget effectiveness analysis
+  - User financial health insights
+  - Custom report generation and export
+
+- **System Configuration & Integration**:
+  - Advanced system settings
+  - Third-party integration management
+  - API key and external service configuration
+  - Performance monitoring and optimization tools
+
+**Phase 5D: Optional Extensions** [FUTURE]
+- **Multi-Tenant Management**: Organization support, white-label options
+- **Advanced Analytics**: ML insights, prediction models, anomaly detection
+- **Communication Tools**: In-app messaging, email campaigns, notifications
+- **Advanced Security**: 2FA, penetration testing, advanced session management
 
 ---
 
@@ -350,6 +417,44 @@ PUT    /api/budget-settings - Update user budget threshold settings
 POST   /api/budget-settings/reset - Reset settings to defaults
 ```
 
+### Admin Endpoints (Phase 5A & 5B - Completed)
+```
+// Admin Setup & Authentication
+POST   /api/admin/setup/create-admin - Create admin user
+POST   /api/admin/setup/promote-user/{userId} - Promote user to admin
+GET    /api/admin/setup/check-admin-exists - Check if admin exists
+
+// User Management Dashboard
+GET    /api/admin/users - Get users with pagination, search, filtering
+GET    /api/admin/users/{userId} - Get user details
+PUT    /api/admin/users/{userId}/status - Update user status (activate/deactivate)
+GET    /api/admin/users/statistics - Get user statistics
+
+// Admin Dashboard & Analytics
+GET    /api/admin/dashboard - Admin dashboard summary
+GET    /api/admin/dashboard/user-activity - User activity trends
+GET    /api/admin/dashboard/transaction-trends - Transaction analytics
+GET    /api/admin/dashboard/system-health - System health status
+GET    /api/admin/dashboard/audit-summary - Audit log summary
+
+// System Configuration Management
+GET    /api/admin/config - List system configurations
+POST   /api/admin/config - Create configuration
+PUT    /api/admin/config/{configKey} - Update configuration
+DELETE /api/admin/config/{configKey} - Delete configuration
+GET    /api/admin/config/maintenance-mode - Get maintenance status
+PUT    /api/admin/config/maintenance-mode - Set maintenance mode
+GET    /api/admin/config/feature-flags - Get feature flags
+
+// Audit Management
+GET    /api/admin/audit - List audit logs with advanced filtering
+GET    /api/admin/audit/{auditId} - Get audit log details
+GET    /api/admin/audit/statistics - Audit statistics
+GET    /api/admin/audit/admin-activity/{adminUserId} - Admin activity logs
+GET    /api/admin/audit/recent - Recent audit activities
+GET    /api/admin/audit/export - Export audit logs (placeholder)
+```
+
 ### Reports Endpoints (Phase 4 - Future)
 ```
 GET    /api/reports/summary/{period} - Get financial summary
@@ -385,6 +490,38 @@ npm run build                # Build for production
 - **Development**: MySQL database `myfinance` on localhost:3306
 - **Connection**: Username `root`, empty password (development setup)
 - **Schema**: Auto-generated via Hibernate DDL with `spring.jpa.hibernate.ddl-auto=update`
+
+## Admin Access
+
+### Default Admin Credentials
+- **Email**: `admin@myfinance.com`
+- **Password**: `admin123`
+- **Role**: `ADMIN`
+
+### Creating Admin User
+```bash
+# Create admin user via API
+POST http://localhost:8080/api/admin/setup/create-admin
+Content-Type: application/x-www-form-urlencoded
+
+email=admin@myfinance.com
+password=admin123
+fullName=System Administrator
+roleType=ADMIN
+
+# Login as admin
+POST http://localhost:8080/api/auth/login
+Content-Type: application/json
+
+{
+    "email": "admin@myfinance.com",
+    "password": "admin123"
+}
+
+# Access admin endpoints (use JWT token from login)
+GET http://localhost:8080/api/admin/dashboard
+Authorization: Bearer your_jwt_token
+```
 
 ## Key Technologies
 
@@ -454,29 +591,32 @@ npm run build                # Build for production
 
 ### Current Status
 - **Flow 1**: ✅ Authentication & Dashboard - **100% Complete**
-- **Flow 2**: ✅ Transactions & Categories - **100% Complete**  
-- **Flow 3**: 🟡 Budget Planning - **50% Complete** (Phase 3A done, Phase 3B pending)
+- **Flow 2**: ✅ Transactions & Categories - **100% Complete**
+- **Flow 3**: ✅ Budget Planning - **100% Complete** (All phases completed)
 - **Flow 4**: ❌ Reports & Analytics - **0% Complete**
+- **Flow 5**: ❌ Admin System & Management - **0% Complete** (NEW ADDITION)
 
-### Next Priority: Phase 3B - Budget Tracking & Warnings
+### Next Priority: Flow 5A - Admin System Foundation
 **Immediate Tasks**:
-1. Implement budget vs actual spending calculations
-2. Create budget warning threshold system  
-3. Add budget progress visualization components
-4. Integrate budget status into dashboard
-5. Develop budget analytics endpoints
+1. Implement RBAC (Role-Based Access Control) system
+2. Create admin database schema (roles, user_roles, audit_logs)
+3. Enhance JWT with roles and permissions
+4. Build admin authentication and authorization
+5. Create admin API endpoints structure
 
 **Technical Requirements**:
-- New service methods for budget calculations
-- Real-time budget status updates when transactions are added
-- Enhanced frontend components for budget visualization  
-- Database queries for budget performance analytics
+- Database schema extensions with proper migrations
+- Security enhancements with permission-based access control
+- Admin-specific API controllers with proper authorization
+- Audit logging infrastructure for admin actions
+- Admin frontend routing and layout structure
 
 ### Long-term Roadmap
-- Complete Flow 3B (Budget Tracking & Warnings)
-- Begin Flow 4A (Basic Reporting)
-- Implement Flow 4B (Advanced Analytics) 
-- Add Flow 4C (Custom Reports)
+- Complete Flow 5A (Admin Foundation & Security)
+- Begin Flow 5B (Core Admin Features)
+- Implement Flow 5C (Advanced Admin Features)
+- Optional: Flow 4A (Basic Reporting) integration with admin
+- Optional: Flow 5D (Advanced Admin Extensions)
 - Performance optimization and testing
 - Production deployment preparation
 

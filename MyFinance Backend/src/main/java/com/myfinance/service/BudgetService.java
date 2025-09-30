@@ -480,4 +480,9 @@ public class BudgetService {
                 .updatedAt(budget.getUpdatedAt())
                 .build();
     }
+
+    // Admin functionality methods
+    public Long countByUserId(Long userId) {
+        return budgetRepository.countByUserId(userId);
+    }
 }

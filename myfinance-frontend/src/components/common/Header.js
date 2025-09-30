@@ -3,7 +3,7 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 
 const Header = () => {
-    const { user, isAuthenticated, logout } = useAuth();
+    const { user, isAuthenticated, isAdmin, logout } = useAuth();
     const navigate = useNavigate();
     const location = useLocation();
 
@@ -83,6 +83,14 @@ const Header = () => {
                                 >
                                     Hồ sơ
                                 </Link>
+                                {isAdmin() && (
+                                    <Link
+                                        to="/admin/dashboard"
+                                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                                    >
+                                        Admin Panel
+                                    </Link>
+                                )}
                                 <button
                                     onClick={handleLogout}
                                     className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"

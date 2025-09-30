@@ -4,7 +4,7 @@ import { useAuth } from '../../context/AuthContext';
 
 const LoginPage = () => {
     const navigate = useNavigate();
-    const { login, loading } = useAuth();
+    const { login, loading, isAdmin } = useAuth();
     const [formData, setFormData] = useState({
         email: '',
         password: ''
@@ -31,7 +31,15 @@ const LoginPage = () => {
         const result = await login(formData);
 
         if (result.success) {
-            navigate('/dashboard');
+            // Check if user is admin using the login response data directly
+            const userRoles = result.data.roles || [];
+            const isUserAdmin = userRoles.includes('ADMIN') || userRoles.includes('SUPER_ADMIN');
+
+            if (isUserAdmin) {
+                navigate('/admin/dashboard');
+            } else {
+                navigate('/dashboard');
+            }
         } else {
             setMessage({ text: result.message, type: 'error' });
         }

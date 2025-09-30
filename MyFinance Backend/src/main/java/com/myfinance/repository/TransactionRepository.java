@@ -65,4 +65,11 @@ public interface TransactionRepository extends JpaRepository<Transaction, Long> 
                                                  @Param("startDate") LocalDate startDate,
                                                  @Param("endDate") LocalDate endDate,
                                                  @Param("searchTerm") String searchTerm);
+
+    // Admin functionality methods
+    Long countByUserId(Long userId);
+
+    List<Transaction> findByTransactionDate(LocalDate date);
+
+    List<Transaction> findByTransactionDateBetween(LocalDate startDate, LocalDate endDate);
 }

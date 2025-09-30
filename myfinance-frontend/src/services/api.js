@@ -635,6 +635,102 @@ class BudgetAPI extends ApiService {
     }
 }
 
+// Admin API methods
+class AdminAPI extends ApiService {
+    // Admin Dashboard
+    async getDashboard() {
+        try {
+            const response = await this.get('/api/admin/dashboard');
+            return response;
+        } catch (error) {
+            return {
+                success: false,
+                message: 'Không thể tải dashboard admin'
+            };
+        }
+    }
+
+    // User Management
+    async getUsers(params = {}) {
+        try {
+            const queryParams = new URLSearchParams();
+            if (params.page !== undefined) queryParams.append('page', params.page);
+            if (params.size !== undefined) queryParams.append('size', params.size);
+            if (params.sortBy) queryParams.append('sortBy', params.sortBy);
+            if (params.sortDir) queryParams.append('sortDir', params.sortDir);
+            if (params.search) queryParams.append('search', params.search);
+            if (params.isActive !== undefined) queryParams.append('isActive', params.isActive);
+
+            const queryString = queryParams.toString();
+            const url = queryString ? `/api/admin/users?${queryString}` : '/api/admin/users';
+
+            const response = await this.get(url);
+            return response;
+        } catch (error) {
+            return {
+                success: false,
+                message: 'Không thể tải danh sách người dùng'
+            };
+        }
+    }
+
+    async updateUserStatus(userId, statusData) {
+        try {
+            const response = await this.put(`/api/admin/users/${userId}/status`, statusData);
+            return response;
+        } catch (error) {
+            return {
+                success: false,
+                message: 'Không thể cập nhật trạng thái người dùng'
+            };
+        }
+    }
+
+    // System Configuration
+    async getConfigs(params = {}) {
+        try {
+            const queryParams = new URLSearchParams();
+            if (params.page !== undefined) queryParams.append('page', params.page);
+            if (params.size !== undefined) queryParams.append('size', params.size);
+            if (params.type) queryParams.append('type', params.type);
+            if (params.isPublic !== undefined) queryParams.append('isPublic', params.isPublic);
+
+            const queryString = queryParams.toString();
+            const url = queryString ? `/api/admin/config?${queryString}` : '/api/admin/config';
+
+            const response = await this.get(url);
+            return response;
+        } catch (error) {
+            return {
+                success: false,
+                message: 'Không thể tải cấu hình hệ thống'
+            };
+        }
+    }
+
+    // Audit Logs
+    async getAuditLogs(params = {}) {
+        try {
+            const queryParams = new URLSearchParams();
+            if (params.page !== undefined) queryParams.append('page', params.page);
+            if (params.size !== undefined) queryParams.append('size', params.size);
+            if (params.userId) queryParams.append('userId', params.userId);
+            if (params.action) queryParams.append('action', params.action);
+
+            const queryString = queryParams.toString();
+            const url = queryString ? `/api/admin/audit?${queryString}` : '/api/admin/audit';
+
+            const response = await this.get(url);
+            return response;
+        } catch (error) {
+            return {
+                success: false,
+                message: 'Không thể tải nhật ký audit'
+            };
+        }
+    }
+}
+
 // Budget Settings API methods
 class BudgetSettingsAPI extends ApiService {
     // Get budget settings
@@ -682,10 +778,11 @@ const userAPI = new UserAPI();
 const transactionAPI = new TransactionAPI();
 const categoryAPI = new CategoryAPI();
 const budgetAPI = new BudgetAPI();
+const adminAPI = new AdminAPI();
 const budgetSettingsAPI = new BudgetSettingsAPI();
 
 // Export APIs
-export { userAPI, transactionAPI, categoryAPI, budgetAPI, budgetSettingsAPI };
+export { userAPI, transactionAPI, categoryAPI, budgetAPI, adminAPI, budgetSettingsAPI };
 
 // Utility functions
 export const formatCurrency = (amount) => {

@@ -7,9 +7,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Function;
 
 @Component
@@ -35,6 +33,52 @@ public class JwtUtil {
     // Extract user ID from token
     public Long extractUserId(String token) {
         return extractClaim(token, claims -> claims.get("userId", Long.class));
+    }
+
+    // Extract roles from token
+    @SuppressWarnings("unchecked")
+    public List<String> extractRoles(String token) {
+        return extractClaim(token, claims -> {
+            Object roles = claims.get("roles");
+            if (roles instanceof List) {
+                return (List<String>) roles;
+            }
+            return new ArrayList<>();
+        });
+    }
+
+    // Extract permissions from token
+    @SuppressWarnings("unchecked")
+    public List<String> extractPermissions(String token) {
+        return extractClaim(token, claims -> {
+            Object permissions = claims.get("permissions");
+            if (permissions instanceof List) {
+                return (List<String>) permissions;
+            }
+            return new ArrayList<>();
+        });
+    }
+
+    // Check if token has specific role
+    public Boolean hasRole(String token, String role) {
+        try {
+            List<String> roles = extractRoles(token);
+            return roles.contains(role);
+        } catch (JwtException e) {
+            log.error("Error checking role: {}", e.getMessage());
+            return false;
+        }
+    }
+
+    // Check if token has specific permission
+    public Boolean hasPermission(String token, String permission) {
+        try {
+            List<String> permissions = extractPermissions(token);
+            return permissions.contains(permission);
+        } catch (JwtException e) {
+            log.error("Error checking permission: {}", e.getMessage());
+            return false;
+        }
     }
 
     // Extract expiration date from token
@@ -85,6 +129,20 @@ public class JwtUtil {
         Map<String, Object> claims = new HashMap<>();
         claims.put("userId", userId);
         return createToken(claims, username);
+    }
+
+    // Generate token with roles and permissions
+    public String generateToken(Long userId, String username, List<String> roles, List<String> permissions) {
+        Map<String, Object> claims = new HashMap<>();
+        claims.put("userId", userId);
+        claims.put("roles", roles != null ? roles : new ArrayList<>());
+        claims.put("permissions", permissions != null ? permissions : new ArrayList<>());
+        return createToken(claims, username);
+    }
+
+    // Generate token with roles only
+    public String generateTokenWithRoles(Long userId, String username, List<String> roles) {
+        return generateToken(userId, username, roles, new ArrayList<>());
     }
 
     // Create token with claims

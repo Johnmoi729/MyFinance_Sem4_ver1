@@ -25,4 +25,7 @@ public interface CategoryRepository extends JpaRepository<Category, Long> {
 
     // Check if category name exists for user
     boolean existsByUserIdAndNameAndType(Long userId, String name, TransactionType type);
+
+    // Admin functionality methods
+    Long countByUserId(Long userId);
 }

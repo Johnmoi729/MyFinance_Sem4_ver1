@@ -58,7 +58,10 @@ public interface BudgetRepository extends JpaRepository<Budget, Long> {
            "COALESCE(SUM(b.budgetAmount), 0) as totalBudgetAmount, " +
            "COALESCE(AVG(b.budgetAmount), 0) as avgBudgetAmount) " +
            "FROM Budget b WHERE b.userId = :userId AND b.budgetYear = :year AND b.budgetMonth = :month AND b.isActive = true")
-    List<Object> getBudgetStatistics(@Param("userId") Long userId, 
-                                   @Param("year") Integer year, 
+    List<Object> getBudgetStatistics(@Param("userId") Long userId,
+                                   @Param("year") Integer year,
                                    @Param("month") Integer month);
+
+    // Admin functionality methods
+    Long countByUserId(Long userId);
 }

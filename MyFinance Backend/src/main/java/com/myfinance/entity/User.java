@@ -51,6 +51,9 @@ public class User implements UserDetails {
     @Column(name = "last_login")
     private LocalDateTime lastLogin;
 
+    @Column(name = "login_count")
+    private Long loginCount = 0L;
+
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
 
