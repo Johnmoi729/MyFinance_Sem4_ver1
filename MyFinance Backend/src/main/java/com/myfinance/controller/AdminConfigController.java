@@ -49,16 +49,6 @@ public class AdminConfigController {
             Pageable pageable = PageRequest.of(page, size, sort);
             Page<SystemConfig> configs = systemConfigService.getAllConfigs(pageable, type, isPublic);
 
-            auditService.logAdminAction(
-                authentication.getName(),
-                "CONFIG_LIST_VIEW",
-                "SystemConfig",
-                null,
-                "Xem danh sách cấu hình hệ thống",
-                request.getRemoteAddr(),
-                request.getHeader("User-Agent")
-            );
-
             return ResponseEntity.ok(ApiResponse.success("Lấy danh sách cấu hình thành công", configs));
         } catch (Exception e) {
             log.error("Lỗi khi lấy danh sách cấu hình", e);
@@ -75,16 +65,6 @@ public class AdminConfigController {
 
         try {
             SystemConfig config = systemConfigService.getConfigByKey(configKey);
-
-            auditService.logAdminAction(
-                authentication.getName(),
-                "CONFIG_DETAIL_VIEW",
-                "SystemConfig",
-                null,
-                "Xem chi tiết cấu hình: " + configKey,
-                request.getRemoteAddr(),
-                request.getHeader("User-Agent")
-            );
 
             return ResponseEntity.ok(ApiResponse.success("Lấy cấu hình thành công", config));
         } catch (RuntimeException e) {
@@ -220,16 +200,6 @@ public class AdminConfigController {
         try {
             Boolean maintenanceMode = systemConfigService.isMaintenanceMode();
 
-            auditService.logAdminAction(
-                authentication.getName(),
-                "MAINTENANCE_MODE_VIEW",
-                "SystemConfig",
-                null,
-                "Xem trạng thái bảo trì hệ thống",
-                request.getRemoteAddr(),
-                request.getHeader("User-Agent")
-            );
-
             return ResponseEntity.ok(ApiResponse.success("Lấy trạng thái bảo trì thành công", maintenanceMode));
         } catch (Exception e) {
             log.error("Lỗi khi lấy trạng thái bảo trì", e);
@@ -279,16 +249,6 @@ public class AdminConfigController {
 
         try {
             List<SystemConfig> flags = systemConfigService.getAllFeatureFlags();
-
-            auditService.logAdminAction(
-                authentication.getName(),
-                "FEATURE_FLAGS_VIEW",
-                "SystemConfig",
-                null,
-                "Xem danh sách feature flags",
-                request.getRemoteAddr(),
-                request.getHeader("User-Agent")
-            );
 
             return ResponseEntity.ok(ApiResponse.success("Lấy feature flags thành công", flags));
         } catch (Exception e) {

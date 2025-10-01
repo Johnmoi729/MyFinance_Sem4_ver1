@@ -47,16 +47,6 @@ public class AdminUserController {
             Pageable pageable = PageRequest.of(page, size, sort);
             Page<AdminUserResponse> users = userService.getAllUsersForAdmin(pageable, search, isActive);
 
-            auditService.logAdminAction(
-                authentication.getName(),
-                "USER_LIST_VIEW",
-                "User",
-                null,
-                "Xem danh sách người dùng",
-                request.getRemoteAddr(),
-                request.getHeader("User-Agent")
-            );
-
             return ResponseEntity.ok(ApiResponse.success("Lấy danh sách người dùng thành công", users));
         } catch (Exception e) {
             log.error("Lỗi khi lấy danh sách người dùng", e);
@@ -73,16 +63,6 @@ public class AdminUserController {
 
         try {
             AdminUserResponse user = userService.getUserByIdForAdmin(userId);
-
-            auditService.logAdminAction(
-                authentication.getName(),
-                "USER_DETAIL_VIEW",
-                "User",
-                userId,
-                "Xem chi tiết người dùng",
-                request.getRemoteAddr(),
-                request.getHeader("User-Agent")
-            );
 
             return ResponseEntity.ok(ApiResponse.success("Lấy thông tin người dùng thành công", user));
         } catch (RuntimeException e) {
@@ -147,16 +127,6 @@ public class AdminUserController {
 
         try {
             Object statistics = userService.getUserStatistics();
-
-            auditService.logAdminAction(
-                authentication.getName(),
-                "USER_STATISTICS_VIEW",
-                "User",
-                null,
-                "Xem thống kê người dùng",
-                request.getRemoteAddr(),
-                request.getHeader("User-Agent")
-            );
 
             return ResponseEntity.ok(ApiResponse.success("Lấy thống kê người dùng thành công", statistics));
         } catch (Exception e) {

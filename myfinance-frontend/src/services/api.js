@@ -736,6 +736,45 @@ class AdminAPI extends ApiService {
         }
     }
 
+    async exportAuditLogs(params = {}) {
+        try {
+            const queryParams = new URLSearchParams();
+            if (params.startDate) queryParams.append('startDate', params.startDate);
+            if (params.endDate) queryParams.append('endDate', params.endDate);
+            if (params.format) queryParams.append('format', params.format);
+
+            const queryString = queryParams.toString();
+            const url = queryString ? `/api/admin/audit/export?${queryString}` : '/api/admin/audit/export';
+
+            const response = await this.get(url);
+            return response;
+        } catch (error) {
+            return {
+                success: false,
+                message: 'Không thể xuất nhật ký audit'
+            };
+        }
+    }
+
+    async cleanupAuditLogs(params = {}) {
+        try {
+            const queryParams = new URLSearchParams();
+            if (params.before) queryParams.append('before', params.before);
+            if (params.daysOld !== undefined) queryParams.append('daysOld', params.daysOld);
+
+            const queryString = queryParams.toString();
+            const url = queryString ? `/api/admin/audit/cleanup?${queryString}` : '/api/admin/audit/cleanup';
+
+            const response = await this.delete(url);
+            return response;
+        } catch (error) {
+            return {
+                success: false,
+                message: 'Không thể xóa nhật ký audit'
+            };
+        }
+    }
+
     // System Configuration CRUD
     async createConfig(configData) {
         try {

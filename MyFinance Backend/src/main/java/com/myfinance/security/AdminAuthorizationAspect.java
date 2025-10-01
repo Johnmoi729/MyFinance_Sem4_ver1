@@ -63,9 +63,8 @@ public class AdminAuthorizationAspect {
                 throw new SecurityException("Không có quyền truy cập");
             }
 
-            // Log successful admin access
-            auditService.logSimpleAction("ADMIN_ACCESS", "ADMIN_ENDPOINT",
-                                        joinPoint.getSignature().getName(), userId, null, ipAddress);
+            // No logging for successful admin access - actions themselves are logged by controllers
+            // This prevents log clutter (every admin page view would create a log entry)
 
             // Proceed with the method execution
             return joinPoint.proceed();

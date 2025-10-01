@@ -2,8 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { reportAPI, formatCurrency } from '../../services/api';
 import { exportMonthlyReportToCSV } from '../../utils/exportUtils';
+import { exportMonthlyReportToPDF } from '../../utils/pdfExportUtils';
 import CategoryPieChart from '../../components/charts/CategoryPieChart';
 import FinancialHealthScore from '../../components/reports/FinancialHealthScore';
+import BudgetVsActual from '../../components/reports/BudgetVsActual';
 
 const MonthlyReport = () => {
     const navigate = useNavigate();
@@ -172,14 +174,21 @@ const MonthlyReport = () => {
                 {/* Report Content */}
                 {report && (
                     <div className="space-y-6">
-                        {/* Export Button */}
-                        <div className="flex justify-end">
+                        {/* Export Buttons */}
+                        <div className="flex justify-end gap-3">
                             <button
                                 onClick={() => exportMonthlyReportToCSV(report)}
                                 className="px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-md font-medium transition-colors flex items-center gap-2"
                             >
                                 <span>📥</span>
                                 Xuất CSV
+                            </button>
+                            <button
+                                onClick={() => exportMonthlyReportToPDF(report)}
+                                className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-md font-medium transition-colors flex items-center gap-2"
+                            >
+                                <span>📄</span>
+                                Xuất PDF
                             </button>
                         </div>
                         {/* Summary Cards */}
@@ -271,6 +280,20 @@ const MonthlyReport = () => {
                                 savingsRate: report.savingsRate
                             }}
                         />
+
+                        {/* Budget vs Actual Comparison */}
+                        {report.expenseByCategory && report.expenseByCategory.length > 0 && (
+                            <BudgetVsActual
+                                categoryData={report.expenseByCategory.map(cat => ({
+                                    categoryId: cat.categoryId,
+                                    categoryName: cat.categoryName,
+                                    categoryIcon: cat.categoryIcon,
+                                    actual: cat.amount,
+                                    budget: cat.budgetAmount
+                                }))}
+                                type="expense"
+                            />
+                        )}
 
                         {/* Visual Charts */}
                         {(report.expenseByCategory?.length > 0 || report.incomeByCategory?.length > 0) && (

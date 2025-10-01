@@ -55,5 +55,10 @@ public class MonthlyReportResponse {
         private BigDecimal amount;
         private Long transactionCount;
         private Double percentage; // Percentage of total
+
+        // Budget comparison fields
+        private BigDecimal budgetAmount;
+        private BigDecimal budgetDifference; // amount - budget
+        private Double budgetUsagePercent; // (amount / budget) * 100
     }
 }

@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { reportAPI, formatCurrency } from '../../services/api';
 import { useCategory } from '../../context/CategoryContext';
 import { exportCategoryReportToCSV } from '../../utils/exportUtils';
+import { exportCategoryReportToPDF } from '../../utils/pdfExportUtils';
 import SpendingLineChart from '../../components/charts/SpendingLineChart';
 
 const CategoryReport = () => {
@@ -215,14 +216,21 @@ const CategoryReport = () => {
                 {/* Report Content */}
                 {report && (
                     <div className="space-y-6">
-                        {/* Export Button */}
-                        <div className="flex justify-end">
+                        {/* Export Buttons */}
+                        <div className="flex justify-end gap-3">
                             <button
                                 onClick={() => exportCategoryReportToCSV(report)}
                                 className="px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-md font-medium transition-colors flex items-center gap-2"
                             >
                                 <span>📥</span>
                                 Xuất CSV
+                            </button>
+                            <button
+                                onClick={() => exportCategoryReportToPDF(report)}
+                                className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-md font-medium transition-colors flex items-center gap-2"
+                            >
+                                <span>📄</span>
+                                Xuất PDF
                             </button>
                         </div>
                         {/* Category Info Header */}

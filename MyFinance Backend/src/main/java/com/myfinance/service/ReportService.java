@@ -6,6 +6,8 @@ import com.myfinance.dto.response.YearlyReportResponse;
 import com.myfinance.entity.Category;
 import com.myfinance.entity.Transaction;
 import com.myfinance.entity.TransactionType;
+import com.myfinance.entity.Budget;
+import com.myfinance.repository.BudgetRepository;
 import com.myfinance.repository.CategoryRepository;
 import com.myfinance.repository.TransactionRepository;
 import lombok.RequiredArgsConstructor;
@@ -27,6 +29,7 @@ public class ReportService {
 
     private final TransactionRepository transactionRepository;
     private final CategoryRepository categoryRepository;
+    private final BudgetRepository budgetRepository;
 
     /**
      * Generate monthly financial summary report
@@ -56,11 +59,11 @@ public class ReportService {
         // Calculate savings rate
         Double savingsRate = calculateSavingsRate(totalIncome, netSavings);
 
-        // Category breakdowns
+        // Category breakdowns with budget comparison
         List<MonthlyReportResponse.CategorySummary> incomeByCategory =
-            generateCategorySummaries(transactions, TransactionType.INCOME, totalIncome);
+            generateCategorySummaries(transactions, TransactionType.INCOME, totalIncome, userId, year, month);
         List<MonthlyReportResponse.CategorySummary> expenseByCategory =
-            generateCategorySummaries(transactions, TransactionType.EXPENSE, totalExpense);
+            generateCategorySummaries(transactions, TransactionType.EXPENSE, totalExpense, userId, year, month);
 
         // Top categories (limit to 5)
         List<MonthlyReportResponse.CategorySummary> topExpenses = expenseByCategory.stream()
@@ -188,11 +191,11 @@ public class ReportService {
             }
         }
 
-        // Category totals for the year
+        // Category totals for the year (use current month for budget comparison as yearly budgets aren't standard)
         List<MonthlyReportResponse.CategorySummary> yearlyIncomeByCategory =
-            generateCategorySummaries(transactions, TransactionType.INCOME, totalIncome);
+            generateCategorySummaries(transactions, TransactionType.INCOME, totalIncome, userId, year, 12);
         List<MonthlyReportResponse.CategorySummary> yearlyExpenseByCategory =
-            generateCategorySummaries(transactions, TransactionType.EXPENSE, totalExpense);
+            generateCategorySummaries(transactions, TransactionType.EXPENSE, totalExpense, userId, year, 12);
 
         // Calculate averages
         BigDecimal avgMonthlyIncome = totalIncome.divide(BigDecimal.valueOf(12), 2, RoundingMode.HALF_UP);
@@ -335,11 +338,18 @@ public class ReportService {
     }
 
     private List<MonthlyReportResponse.CategorySummary> generateCategorySummaries(
-            List<Transaction> transactions, TransactionType type, BigDecimal total) {
+            List<Transaction> transactions, TransactionType type, BigDecimal total,
+            Long userId, Integer year, Integer month) {
 
         Map<Category, List<Transaction>> groupedByCategory = transactions.stream()
             .filter(t -> t.getType() == type)
             .collect(Collectors.groupingBy(Transaction::getCategory));
+
+        // Get budgets for this period
+        Map<Long, Budget> budgetMap = budgetRepository
+            .findByUserIdAndBudgetYearAndBudgetMonthAndIsActiveTrue(userId, year, month)
+            .stream()
+            .collect(Collectors.toMap(budget -> budget.getCategory().getId(), budget -> budget));
 
         return groupedByCategory.entrySet().stream()
             .map(entry -> {
@@ -355,6 +365,19 @@ public class ReportService {
                         .multiply(BigDecimal.valueOf(100))
                         .doubleValue();
 
+                // Budget comparison data
+                Budget budget = budgetMap.get(category.getId());
+                BigDecimal budgetAmount = budget != null ? budget.getBudgetAmount() : null;
+                BigDecimal budgetDifference = null;
+                Double budgetUsagePercent = null;
+
+                if (budgetAmount != null && budgetAmount.compareTo(BigDecimal.ZERO) > 0) {
+                    budgetDifference = amount.subtract(budgetAmount);
+                    budgetUsagePercent = amount.divide(budgetAmount, 4, RoundingMode.HALF_UP)
+                        .multiply(BigDecimal.valueOf(100))
+                        .doubleValue();
+                }
+
                 return MonthlyReportResponse.CategorySummary.builder()
                     .categoryId(category.getId())
                     .categoryName(category.getName())
@@ -363,6 +386,9 @@ public class ReportService {
                     .amount(amount)
                     .transactionCount((long) categoryTransactions.size())
                     .percentage(percentage)
+                    .budgetAmount(budgetAmount)
+                    .budgetDifference(budgetDifference)
+                    .budgetUsagePercent(budgetUsagePercent)
                     .build();
             })
             .sorted(Comparator.comparing(MonthlyReportResponse.CategorySummary::getAmount).reversed())

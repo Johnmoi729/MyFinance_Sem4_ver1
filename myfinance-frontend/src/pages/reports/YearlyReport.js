@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { reportAPI, formatCurrency } from '../../services/api';
 import { exportYearlyReportToCSV } from '../../utils/exportUtils';
+import { exportYearlyReportToPDF } from '../../utils/pdfExportUtils';
 import CategoryPieChart from '../../components/charts/CategoryPieChart';
 import MonthlyTrendChart from '../../components/charts/MonthlyTrendChart';
 import FinancialHealthScore from '../../components/reports/FinancialHealthScore';
@@ -140,14 +141,21 @@ const YearlyReport = () => {
                 {/* Report Content */}
                 {report && (
                     <div className="space-y-6">
-                        {/* Export Button */}
-                        <div className="flex justify-end">
+                        {/* Export Buttons */}
+                        <div className="flex justify-end gap-3">
                             <button
                                 onClick={() => exportYearlyReportToCSV(report)}
                                 className="px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-md font-medium transition-colors flex items-center gap-2"
                             >
                                 <span>📥</span>
                                 Xuất CSV
+                            </button>
+                            <button
+                                onClick={() => exportYearlyReportToPDF(report)}
+                                className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-md font-medium transition-colors flex items-center gap-2"
+                            >
+                                <span>📄</span>
+                                Xuất PDF
                             </button>
                         </div>
                         {/* Summary Cards */}

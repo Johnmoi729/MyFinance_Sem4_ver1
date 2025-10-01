@@ -292,4 +292,30 @@ public class AuditService {
         return auditLogRepository.findById(auditId)
             .orElseThrow(() -> new RuntimeException("Không tìm thấy nhật ký audit với ID: " + auditId));
     }
+
+    /**
+     * Get all audit logs (be careful with large datasets)
+     */
+    public List<AuditLog> getAllAuditLogs() {
+        return auditLogRepository.findAll();
+    }
+
+    /**
+     * Get audit logs by date range
+     */
+    public List<AuditLog> getAuditLogsByDateRange(LocalDateTime startDate, LocalDateTime endDate) {
+        return auditLogRepository.findByTimestampBetweenOrderByTimestampDesc(startDate, endDate);
+    }
+
+    /**
+     * Delete audit logs before specified date
+     */
+    @Transactional
+    public int deleteAuditLogsBefore(LocalDateTime cutoffDate) {
+        List<AuditLog> logsToDelete = auditLogRepository.findByTimestampBefore(cutoffDate);
+        int count = logsToDelete.size();
+        auditLogRepository.deleteAll(logsToDelete);
+        log.info("Deleted {} audit logs older than {}", count, cutoffDate);
+        return count;
+    }
 }

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import AdminLayout from '../../components/admin/AdminLayout';
 import { adminAPI } from '../../services/api';
 
@@ -9,36 +9,34 @@ const AuditLogs = () => {
     const [currentPage, setCurrentPage] = useState(0);
     const [totalPages, setTotalPages] = useState(0);
     const [totalElements, setTotalElements] = useState(0);
+    const [showCleanupModal, setShowCleanupModal] = useState(false);
+    const [daysOld, setDaysOld] = useState(90);
 
     // Filters
     const [filters, setFilters] = useState({
-        userId: '',
-        adminUserId: '',
         action: '',
         entityType: '',
         startDate: '',
         endDate: ''
     });
 
-    // Available filter options
+    // Only show important admin actions (state-changing operations)
     const actionTypes = [
-        'USER_LOGIN', 'USER_REGISTER', 'USER_ACTIVATE', 'USER_DEACTIVATE',
-        'TRANSACTION_CREATE', 'TRANSACTION_UPDATE', 'TRANSACTION_DELETE',
-        'BUDGET_CREATE', 'BUDGET_UPDATE', 'BUDGET_DELETE',
-        'CATEGORY_CREATE', 'CATEGORY_UPDATE', 'CATEGORY_DELETE',
-        'CONFIG_CREATE', 'CONFIG_UPDATE', 'CONFIG_DELETE',
-        'ADMIN_ACCESS', 'ADMIN_USER_CREATE', 'UNAUTHORIZED_ACCESS'
+        'USER_ACTIVATE',
+        'USER_DEACTIVATE',
+        'CONFIG_CREATE',
+        'CONFIG_UPDATE',
+        'CONFIG_DELETE',
+        'MAINTENANCE_MODE_ENABLE',
+        'MAINTENANCE_MODE_DISABLE',
+        'AUDIT_LOG_CLEANUP',
+        'AUDIT_LOG_EXPORT',
+        'SYSTEM_CONFIG_ENUM_MIGRATION'  // Only actual migration, not checks
     ];
 
-    const entityTypes = [
-        'User', 'Transaction', 'Budget', 'Category', 'SystemConfig', 'AuditLog', 'Admin'
-    ];
+    const entityTypes = ['User', 'SystemConfig', 'AuditLog'];
 
-    useEffect(() => {
-        fetchAuditLogs();
-    }, [currentPage, filters]);
-
-    const fetchAuditLogs = async () => {
+    const fetchAuditLogs = useCallback(async () => {
         try {
             setLoading(true);
             setError(null);
@@ -72,20 +70,22 @@ const AuditLogs = () => {
         } finally {
             setLoading(false);
         }
-    };
+    }, [currentPage, filters]);
+
+    useEffect(() => {
+        fetchAuditLogs();
+    }, [fetchAuditLogs]);
 
     const handleFilterChange = (key, value) => {
         setFilters(prev => ({
             ...prev,
             [key]: value
         }));
-        setCurrentPage(0); // Reset to first page when filtering
+        setCurrentPage(0);
     };
 
     const clearFilters = () => {
         setFilters({
-            userId: '',
-            adminUserId: '',
             action: '',
             entityType: '',
             startDate: '',
@@ -100,27 +100,118 @@ const AuditLogs = () => {
             month: '2-digit',
             day: '2-digit',
             hour: '2-digit',
-            minute: '2-digit',
-            second: '2-digit'
+            minute: '2-digit'
         });
     };
 
     const getActionBadgeColor = (action) => {
         if (action?.includes('CREATE')) return 'bg-green-100 text-green-800';
         if (action?.includes('UPDATE')) return 'bg-blue-100 text-blue-800';
-        if (action?.includes('DELETE')) return 'bg-red-100 text-red-800';
-        if (action?.includes('LOGIN')) return 'bg-purple-100 text-purple-800';
-        if (action?.includes('UNAUTHORIZED')) return 'bg-red-100 text-red-800';
-        if (action?.includes('ADMIN')) return 'bg-yellow-100 text-yellow-800';
+        if (action?.includes('DELETE') || action?.includes('CLEANUP')) return 'bg-red-100 text-red-800';
+        if (action?.includes('ACTIVATE')) return 'bg-green-100 text-green-800';
+        if (action?.includes('DEACTIVATE')) return 'bg-orange-100 text-orange-800';
+        if (action?.includes('ENABLE')) return 'bg-green-100 text-green-800';
+        if (action?.includes('DISABLE')) return 'bg-orange-100 text-orange-800';
+        if (action?.includes('EXPORT')) return 'bg-purple-100 text-purple-800';
         return 'bg-gray-100 text-gray-800';
+    };
+
+    const crystallizeLogMessage = (log) => {
+        // Parse details to extract meaningful information
+        let details = {};
+        try {
+            details = JSON.parse(log.details || '{}');
+        } catch (e) {
+            details = { description: log.details };
+        }
+
+        const description = details.description || '';
+        const username = details.username || 'System';
+
+        // Crystallize the message based on action type
+        switch (log.action) {
+            case 'USER_ACTIVATE':
+                return `${username} đã kích hoạt tài khoản người dùng`;
+            case 'USER_DEACTIVATE':
+                return `${username} đã vô hiệu hóa tài khoản người dùng`;
+            case 'CONFIG_CREATE':
+                return `${username} đã tạo cấu hình hệ thống mới`;
+            case 'CONFIG_UPDATE':
+                return `${username} đã cập nhật cấu hình hệ thống`;
+            case 'CONFIG_DELETE':
+                return `${username} đã xóa cấu hình hệ thống`;
+            case 'MAINTENANCE_MODE_ENABLE':
+                return `${username} đã bật chế độ bảo trì`;
+            case 'MAINTENANCE_MODE_DISABLE':
+                return `${username} đã tắt chế độ bảo trì`;
+            case 'AUDIT_LOG_CLEANUP':
+                return `${username} đã xóa nhật ký audit cũ`;
+            case 'AUDIT_LOG_EXPORT':
+                return `${username} đã xuất nhật ký audit`;
+            case 'SYSTEM_CONFIG_ENUM_MIGRATION':
+                return `${username} đã thực hiện migration cấu hình hệ thống`;
+            default:
+                return description || log.action;
+        }
     };
 
     const exportAuditLogs = async () => {
         try {
-            // This would typically trigger a file download
-            alert('Export functionality will be implemented in the next phase');
+            setLoading(true);
+            const params = {
+                startDate: filters.startDate,
+                endDate: filters.endDate,
+                format: 'JSON'
+            };
+
+            const response = await adminAPI.exportAuditLogs(params);
+
+            if (response && response.success) {
+                // Create a downloadable JSON file
+                const dataStr = JSON.stringify(response.data, null, 2);
+                const dataBlob = new Blob([dataStr], { type: 'application/json' });
+                const url = URL.createObjectURL(dataBlob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = `audit_logs_backup_${new Date().toISOString().split('T')[0]}.json`;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                URL.revokeObjectURL(url);
+
+                alert('Đã xuất và tải xuống nhật ký audit thành công!');
+            } else {
+                alert(response?.message || 'Không thể xuất nhật ký audit');
+            }
         } catch (err) {
-            alert('Export failed');
+            console.error('Export error:', err);
+            alert('Lỗi khi xuất nhật ký audit');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleCleanupLogs = async () => {
+        if (!window.confirm(`Bạn có chắc chắn muốn xóa các nhật ký audit cũ hơn ${daysOld} ngày không? Hành động này không thể hoàn tác.`)) {
+            return;
+        }
+
+        try {
+            setLoading(true);
+            const response = await adminAPI.cleanupAuditLogs({ daysOld });
+
+            if (response && response.success) {
+                alert(`Đã xóa ${response.data.deletedCount} nhật ký audit cũ`);
+                setShowCleanupModal(false);
+                fetchAuditLogs(); // Refresh the list
+            } else {
+                alert(response?.message || 'Không thể xóa nhật ký audit');
+            }
+        } catch (err) {
+            console.error('Cleanup error:', err);
+            alert('Lỗi khi xóa nhật ký audit');
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -140,54 +231,50 @@ const AuditLogs = () => {
                 {/* Header */}
                 <div className="flex justify-between items-center">
                     <div>
-                        <h1 className="text-2xl font-bold text-gray-900">Audit Logs</h1>
+                        <h1 className="text-2xl font-bold text-gray-900">Nhật Ký Quản Trị</h1>
                         <p className="text-gray-600">
-                            System activity monitoring and security audit trail ({totalElements} total entries)
+                            Theo dõi các hành động quản trị quan trọng ({totalElements} hành động)
                         </p>
                     </div>
-                    <button
-                        onClick={exportAuditLogs}
-                        className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
-                    >
-                        Export Logs
-                    </button>
+                    <div className="flex space-x-2">
+                        <button
+                            onClick={exportAuditLogs}
+                            disabled={loading}
+                            className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors disabled:bg-gray-400"
+                        >
+                            Sao Lưu & Tải Xuống
+                        </button>
+                        <button
+                            onClick={() => setShowCleanupModal(true)}
+                            className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors"
+                        >
+                            Xóa Nhật Ký Cũ
+                        </button>
+                    </div>
                 </div>
 
-                {/* Advanced Filters */}
+                {/* Info Box */}
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                    <p className="text-sm text-blue-800">
+                        <strong>Lưu ý:</strong> Hệ thống chỉ ghi lại các hành động quản trị quan trọng như kích hoạt/vô hiệu hóa người dùng,
+                        thay đổi cấu hình hệ thống. Các hành động xem thông tin thông thường không được ghi lại để bảo vệ quyền riêng tư
+                        và giảm thiểu dữ liệu không cần thiết.
+                    </p>
+                </div>
+
+                {/* Filters */}
                 <div className="bg-white p-6 rounded-lg shadow">
-                    <h3 className="text-lg font-medium text-gray-900 mb-4">Advanced Filters</h3>
+                    <h3 className="text-lg font-medium text-gray-900 mb-4">Lọc Nhật Ký</h3>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">User ID</label>
-                            <input
-                                type="number"
-                                value={filters.userId}
-                                onChange={(e) => handleFilterChange('userId', e.target.value)}
-                                placeholder="Filter by user ID..."
-                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                            />
-                        </div>
-
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">Admin User ID</label>
-                            <input
-                                type="number"
-                                value={filters.adminUserId}
-                                onChange={(e) => handleFilterChange('adminUserId', e.target.value)}
-                                placeholder="Filter by admin user ID..."
-                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                            />
-                        </div>
-
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">Action Type</label>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">Loại Hành Động</label>
                             <select
                                 value={filters.action}
                                 onChange={(e) => handleFilterChange('action', e.target.value)}
                                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                             >
-                                <option value="">All Actions</option>
+                                <option value="">Tất cả</option>
                                 {actionTypes.map(action => (
                                     <option key={action} value={action}>{action}</option>
                                 ))}
@@ -195,13 +282,13 @@ const AuditLogs = () => {
                         </div>
 
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">Entity Type</label>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">Loại Thực Thể</label>
                             <select
                                 value={filters.entityType}
                                 onChange={(e) => handleFilterChange('entityType', e.target.value)}
                                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                             >
-                                <option value="">All Entities</option>
+                                <option value="">Tất cả</option>
                                 {entityTypes.map(entity => (
                                     <option key={entity} value={entity}>{entity}</option>
                                 ))}
@@ -209,7 +296,7 @@ const AuditLogs = () => {
                         </div>
 
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">Start Date</label>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">Từ Ngày</label>
                             <input
                                 type="datetime-local"
                                 value={filters.startDate}
@@ -219,7 +306,7 @@ const AuditLogs = () => {
                         </div>
 
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">End Date</label>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">Đến Ngày</label>
                             <input
                                 type="datetime-local"
                                 value={filters.endDate}
@@ -234,109 +321,63 @@ const AuditLogs = () => {
                             onClick={() => fetchAuditLogs()}
                             className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
                         >
-                            Apply Filters
+                            Áp Dụng
                         </button>
                         <button
                             onClick={clearFilters}
                             className="px-4 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600 transition-colors"
                         >
-                            Clear All
+                            Xóa Bộ Lọc
                         </button>
                     </div>
                 </div>
 
                 {error && (
                     <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
-                        <strong className="font-bold">Error: </strong>
+                        <strong className="font-bold">Lỗi: </strong>
                         <span>{error}</span>
                     </div>
                 )}
 
-                {/* Audit Logs Table */}
+                {/* Audit Logs List - Crystallized View */}
                 <div className="bg-white rounded-lg shadow overflow-hidden">
-                    <div className="overflow-x-auto">
-                        <table className="min-w-full divide-y divide-gray-200">
-                            <thead className="bg-gray-50">
-                                <tr>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Timestamp
-                                    </th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Action
-                                    </th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Entity
-                                    </th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        User
-                                    </th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Details
-                                    </th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        IP Address
-                                    </th>
-                                </tr>
-                            </thead>
-                            <tbody className="bg-white divide-y divide-gray-200">
-                                {auditLogs.map((log) => (
-                                    <tr key={log.id} className="hover:bg-gray-50">
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                            {formatTimestamp(log.timestamp)}
-                                        </td>
-                                        <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="divide-y divide-gray-200">
+                        {auditLogs.map((log) => (
+                            <div key={log.id} className="p-4 hover:bg-gray-50 transition-colors">
+                                <div className="flex items-start justify-between">
+                                    <div className="flex-1">
+                                        <div className="flex items-center space-x-3 mb-2">
                                             <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getActionBadgeColor(log.action)}`}>
                                                 {log.action}
                                             </span>
-                                        </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                            <div>
-                                                <div className="font-medium">{log.entityType}</div>
-                                                {log.entityId && (
-                                                    <div className="text-gray-500">ID: {log.entityId}</div>
-                                                )}
+                                            <span className="text-sm text-gray-500">
+                                                {formatTimestamp(log.timestamp)}
+                                            </span>
+                                        </div>
+                                        <p className="text-gray-900 font-medium">
+                                            {crystallizeLogMessage(log)}
+                                        </p>
+                                        {log.oldValue && log.newValue && (
+                                            <div className="mt-2 text-sm text-gray-600">
+                                                <span className="text-red-600 line-through">{log.oldValue}</span>
+                                                {' → '}
+                                                <span className="text-green-600 font-medium">{log.newValue}</span>
                                             </div>
-                                        </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                            <div>
-                                                {log.userId && (
-                                                    <div className="font-medium">User: {log.userId}</div>
-                                                )}
-                                                {log.adminUserId && (
-                                                    <div className="text-blue-600">Admin: {log.adminUserId}</div>
-                                                )}
-                                            </div>
-                                        </td>
-                                        <td className="px-6 py-4 text-sm text-gray-900 max-w-xs">
-                                            <div className="truncate" title={log.details}>
-                                                {log.details || 'No details'}
-                                            </div>
-                                            {log.oldValue && log.newValue && (
-                                                <div className="text-xs text-gray-500 mt-1">
-                                                    <span className="text-red-600">{log.oldValue}</span> →
-                                                    <span className="text-green-600"> {log.newValue}</span>
-                                                </div>
-                                            )}
-                                        </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                            <div>
-                                                {log.ipAddress}
-                                                {log.userAgent && (
-                                                    <div className="text-xs truncate max-w-xs" title={log.userAgent}>
-                                                        {log.userAgent}
-                                                    </div>
-                                                )}
-                                            </div>
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
+                                        )}
+                                    </div>
+                                    <div className="text-right text-sm text-gray-500">
+                                        {log.ipAddress && (
+                                            <div>IP: {log.ipAddress}</div>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+                        ))}
                     </div>
 
                     {auditLogs.length === 0 && !loading && (
                         <div className="text-center py-8">
-                            <p className="text-gray-500">No audit logs found</p>
+                            <p className="text-gray-500">Không có nhật ký nào</p>
                         </div>
                     )}
                 </div>
@@ -350,22 +391,22 @@ const AuditLogs = () => {
                                 disabled={currentPage === 0}
                                 className="relative inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50"
                             >
-                                Previous
+                                Trước
                             </button>
                             <button
                                 onClick={() => setCurrentPage(Math.min(totalPages - 1, currentPage + 1))}
                                 disabled={currentPage >= totalPages - 1}
                                 className="relative ml-3 inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50"
                             >
-                                Next
+                                Sau
                             </button>
                         </div>
                         <div className="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
                             <div>
                                 <p className="text-sm text-gray-700">
-                                    Showing page <span className="font-medium">{currentPage + 1}</span> of{' '}
+                                    Trang <span className="font-medium">{currentPage + 1}</span> / {' '}
                                     <span className="font-medium">{totalPages}</span>
-                                    {' '}({totalElements} total entries)
+                                    {' '}({totalElements} hành động)
                                 </p>
                             </div>
                             <div>
@@ -375,10 +416,9 @@ const AuditLogs = () => {
                                         disabled={currentPage === 0}
                                         className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50"
                                     >
-                                        Previous
+                                        Trước
                                     </button>
 
-                                    {/* Page Numbers */}
                                     {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
                                         const pageNumber = Math.max(0, Math.min(totalPages - 5, currentPage - 2)) + i;
                                         return (
@@ -401,9 +441,49 @@ const AuditLogs = () => {
                                         disabled={currentPage >= totalPages - 1}
                                         className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50"
                                     >
-                                        Next
+                                        Sau
                                     </button>
                                 </nav>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                {/* Cleanup Modal */}
+                {showCleanupModal && (
+                    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                        <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+                            <h3 className="text-lg font-bold text-gray-900 mb-4">Xóa Nhật Ký Audit Cũ</h3>
+                            <p className="text-gray-600 mb-4">
+                                Nhập số ngày để xóa các nhật ký cũ hơn thời gian đó.
+                                Hành động này không thể hoàn tác.
+                            </p>
+                            <div className="mb-4">
+                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                    Xóa nhật ký cũ hơn (ngày)
+                                </label>
+                                <input
+                                    type="number"
+                                    min="1"
+                                    value={daysOld}
+                                    onChange={(e) => setDaysOld(parseInt(e.target.value))}
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                />
+                            </div>
+                            <div className="flex space-x-3">
+                                <button
+                                    onClick={handleCleanupLogs}
+                                    disabled={loading}
+                                    className="flex-1 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors disabled:bg-gray-400"
+                                >
+                                    Xác Nhận Xóa
+                                </button>
+                                <button
+                                    onClick={() => setShowCleanupModal(false)}
+                                    className="flex-1 px-4 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600 transition-colors"
+                                >
+                                    Hủy
+                                </button>
                             </div>
                         </div>
                     </div>

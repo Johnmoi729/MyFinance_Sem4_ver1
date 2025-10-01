@@ -17,6 +17,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -53,16 +54,6 @@ public class AdminAuditController {
             Page<AuditLog> auditLogs = auditService.getAuditLogsWithFilters(
                 userId, adminUserId, action, entityType, startDate, endDate, pageable);
 
-            auditService.logAdminAction(
-                authentication.getName(),
-                "AUDIT_LOG_VIEW",
-                "AuditLog",
-                null,
-                "Xem nhật ký audit với bộ lọc",
-                request.getRemoteAddr(),
-                request.getHeader("User-Agent")
-            );
-
             return ResponseEntity.ok(ApiResponse.success("Lấy nhật ký audit thành công", auditLogs));
         } catch (Exception e) {
             log.error("Lỗi khi lấy nhật ký audit", e);
@@ -79,16 +70,6 @@ public class AdminAuditController {
 
         try {
             AuditLog auditLog = auditService.getAuditLogById(auditId);
-
-            auditService.logAdminAction(
-                authentication.getName(),
-                "AUDIT_LOG_DETAIL_VIEW",
-                "AuditLog",
-                auditId,
-                "Xem chi tiết nhật ký audit",
-                request.getRemoteAddr(),
-                request.getHeader("User-Agent")
-            );
 
             return ResponseEntity.ok(ApiResponse.success("Lấy chi tiết nhật ký audit thành công", auditLog));
         } catch (RuntimeException e) {
@@ -112,16 +93,6 @@ public class AdminAuditController {
             LocalDateTime since = LocalDateTime.now().minusDays(days);
             List<Object[]> statistics = auditService.getActionStatistics(since);
 
-            auditService.logAdminAction(
-                authentication.getName(),
-                "AUDIT_STATISTICS_VIEW",
-                "AuditLog",
-                null,
-                "Xem thống kê audit trong " + days + " ngày",
-                request.getRemoteAddr(),
-                request.getHeader("User-Agent")
-            );
-
             return ResponseEntity.ok(ApiResponse.success("Lấy thống kê audit thành công", statistics));
         } catch (Exception e) {
             log.error("Lỗi khi lấy thống kê audit", e);
@@ -142,16 +113,6 @@ public class AdminAuditController {
             Pageable pageable = PageRequest.of(page, size, Sort.by("timestamp").descending());
             Page<AuditLog> activities = auditService.getAuditLogsByAdmin(adminUserId, pageable);
 
-            auditService.logAdminAction(
-                authentication.getName(),
-                "ADMIN_ACTIVITY_VIEW",
-                "AuditLog",
-                adminUserId,
-                "Xem hoạt động của admin",
-                request.getRemoteAddr(),
-                request.getHeader("User-Agent")
-            );
-
             return ResponseEntity.ok(ApiResponse.success("Lấy hoạt động admin thành công", activities));
         } catch (Exception e) {
             log.error("Lỗi khi lấy hoạt động admin", e);
@@ -169,16 +130,6 @@ public class AdminAuditController {
         try {
             List<Map<String, Object>> recentLogs = auditService.getRecentActivities(limit);
 
-            auditService.logAdminAction(
-                authentication.getName(),
-                "RECENT_AUDIT_VIEW",
-                "AuditLog",
-                null,
-                "Xem " + limit + " nhật ký audit gần đây",
-                request.getRemoteAddr(),
-                request.getHeader("User-Agent")
-            );
-
             return ResponseEntity.ok(ApiResponse.success("Lấy nhật ký audit gần đây thành công", recentLogs));
         } catch (Exception e) {
             log.error("Lỗi khi lấy nhật ký audit gần đây", e);
@@ -188,35 +139,76 @@ public class AdminAuditController {
     }
 
     @GetMapping("/export")
-    public ResponseEntity<ApiResponse<String>> exportAuditLogs(
+    public ResponseEntity<ApiResponse<List<AuditLog>>> exportAuditLogs(
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startDate,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endDate,
-            @RequestParam(defaultValue = "CSV") String format,
+            @RequestParam(defaultValue = "JSON") String format,
             Authentication authentication,
             HttpServletRequest request) {
 
         try {
-            // This would typically generate a file download
-            // For now, just log the action and return a placeholder
+            List<AuditLog> logs;
+            if (startDate != null && endDate != null) {
+                logs = auditService.getAuditLogsByDateRange(startDate, endDate);
+            } else {
+                // Get all logs (be careful with large datasets)
+                logs = auditService.getAllAuditLogs();
+            }
 
             auditService.logAdminAction(
                 authentication.getName(),
                 "AUDIT_LOG_EXPORT",
                 "AuditLog",
                 null,
-                "Xuất nhật ký audit từ " + startDate + " đến " + endDate + " định dạng " + format,
+                "Xuất " + logs.size() + " nhật ký audit từ " + startDate + " đến " + endDate,
                 request.getRemoteAddr(),
                 request.getHeader("User-Agent")
             );
 
             return ResponseEntity.ok(ApiResponse.success(
                 "Xuất nhật ký audit thành công",
-                "audit_logs_export_" + System.currentTimeMillis() + "." + format.toLowerCase()
+                logs
             ));
         } catch (Exception e) {
             log.error("Lỗi khi xuất nhật ký audit", e);
             return ResponseEntity.internalServerError()
                 .body(ApiResponse.error("Lỗi hệ thống khi xuất nhật ký audit"));
+        }
+    }
+
+    @DeleteMapping("/cleanup")
+    public ResponseEntity<ApiResponse<Map<String, Object>>> cleanupAuditLogs(
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime before,
+            @RequestParam(defaultValue = "90") int daysOld,
+            Authentication authentication,
+            HttpServletRequest request) {
+
+        try {
+            LocalDateTime cutoffDate = before != null ? before : LocalDateTime.now().minusDays(daysOld);
+            int deletedCount = auditService.deleteAuditLogsBefore(cutoffDate);
+
+            auditService.logAdminAction(
+                authentication.getName(),
+                "AUDIT_LOG_CLEANUP",
+                "AuditLog",
+                null,
+                "Xóa " + deletedCount + " nhật ký audit cũ hơn " + cutoffDate,
+                request.getRemoteAddr(),
+                request.getHeader("User-Agent")
+            );
+
+            Map<String, Object> result = new HashMap<>();
+            result.put("deletedCount", deletedCount);
+            result.put("cutoffDate", cutoffDate);
+
+            return ResponseEntity.ok(ApiResponse.success(
+                "Đã xóa " + deletedCount + " nhật ký audit cũ",
+                result
+            ));
+        } catch (Exception e) {
+            log.error("Lỗi khi xóa nhật ký audit", e);
+            return ResponseEntity.internalServerError()
+                .body(ApiResponse.error("Lỗi hệ thống khi xóa nhật ký audit"));
         }
     }
 }

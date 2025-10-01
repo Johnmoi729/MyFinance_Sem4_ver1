@@ -34,15 +34,7 @@ public class AdminDashboardController {
         try {
             AdminDashboardResponse dashboard = dashboardService.getAdminDashboard();
 
-            auditService.logAdminAction(
-                authentication.getName(),
-                "ADMIN_DASHBOARD_VIEW",
-                "Dashboard",
-                null,
-                "Xem dashboard quản trị",
-                request.getRemoteAddr(),
-                request.getHeader("User-Agent")
-            );
+            // No audit log for dashboard views - non-actionable data
 
             return ResponseEntity.ok(ApiResponse.success("Lấy thông tin dashboard thành công", dashboard));
         } catch (Exception e) {
@@ -61,15 +53,7 @@ public class AdminDashboardController {
         try {
             List<Object> activities = dashboardService.getUserActivityForDays(days);
 
-            auditService.logAdminAction(
-                authentication.getName(),
-                "USER_ACTIVITY_VIEW",
-                "Activity",
-                null,
-                "Xem hoạt động người dùng trong " + days + " ngày",
-                request.getRemoteAddr(),
-                request.getHeader("User-Agent")
-            );
+            // No audit log for aggregate activity views - no specific user data
 
             return ResponseEntity.ok(ApiResponse.success("Lấy hoạt động người dùng thành công", activities));
         } catch (Exception e) {
@@ -96,15 +80,7 @@ public class AdminDashboardController {
 
             Map<String, Object> trends = dashboardService.getTransactionTrends(startDate, endDate);
 
-            auditService.logAdminAction(
-                authentication.getName(),
-                "TRANSACTION_TRENDS_VIEW",
-                "Transaction",
-                null,
-                "Xem xu hướng giao dịch từ " + startDate + " đến " + endDate,
-                request.getRemoteAddr(),
-                request.getHeader("User-Agent")
-            );
+            // No audit log for aggregate trend views - no specific user data
 
             return ResponseEntity.ok(ApiResponse.success("Lấy xu hướng giao dịch thành công", trends));
         } catch (Exception e) {
@@ -122,15 +98,7 @@ public class AdminDashboardController {
         try {
             Object health = dashboardService.getSystemHealth();
 
-            auditService.logAdminAction(
-                authentication.getName(),
-                "SYSTEM_HEALTH_VIEW",
-                "System",
-                null,
-                "Xem tình trạng hệ thống",
-                request.getRemoteAddr(),
-                request.getHeader("User-Agent")
-            );
+            // No audit log for system health views - routine monitoring
 
             return ResponseEntity.ok(ApiResponse.success("Lấy tình trạng hệ thống thành công", health));
         } catch (Exception e) {
@@ -149,15 +117,7 @@ public class AdminDashboardController {
         try {
             Map<String, Object> summary = auditService.getAuditSummary(days);
 
-            auditService.logAdminAction(
-                authentication.getName(),
-                "AUDIT_SUMMARY_VIEW",
-                "Audit",
-                null,
-                "Xem tóm tắt audit trong " + days + " ngày",
-                request.getRemoteAddr(),
-                request.getHeader("User-Agent")
-            );
+            // No audit log for audit summary views - creates circular logging
 
             return ResponseEntity.ok(ApiResponse.success("Lấy tóm tắt audit thành công", summary));
         } catch (Exception e) {

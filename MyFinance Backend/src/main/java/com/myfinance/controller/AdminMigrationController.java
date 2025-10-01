@@ -62,15 +62,8 @@ public class AdminMigrationController {
         try {
             boolean needsMigration = migrationService.needsEnumMigration();
 
-            auditService.logAdminAction(
-                authentication.getName(),
-                "SYSTEM_CONFIG_ENUM_MIGRATION_CHECK",
-                "SystemConfig",
-                null,
-                "Kiểm tra trạng thái migration enum values",
-                request.getRemoteAddr(),
-                request.getHeader("User-Agent")
-            );
+            // No audit log for check operations - this is a read-only developer/maintenance action
+            // Only log actual migration execution (SYSTEM_CONFIG_ENUM_MIGRATION)
 
             String message = needsMigration
                 ? "Cần thực hiện migration để cập nhật enum values"

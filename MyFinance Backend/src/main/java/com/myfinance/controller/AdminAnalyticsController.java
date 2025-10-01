@@ -50,16 +50,6 @@ public class AdminAnalyticsController {
 
             Map<String, Object> analyticsData = analyticsService.getFinancialAnalytics(timeFrame, year, month, quarter);
 
-            auditService.logAdminAction(
-                authentication.getName(),
-                "ANALYTICS_VIEW",
-                "Analytics",
-                null,
-                "Xem báo cáo phân tích tài chính: " + timeFrame,
-                request.getRemoteAddr(),
-                request.getHeader("User-Agent")
-            );
-
             return ResponseEntity.ok(ApiResponse.success("Lấy dữ liệu phân tích thành công", analyticsData));
         } catch (Exception e) {
             log.error("Lỗi khi lấy dữ liệu phân tích tài chính", e);
@@ -75,16 +65,6 @@ public class AdminAnalyticsController {
 
         try {
             Map<String, Object> summary = analyticsService.getAnalyticsSummary();
-
-            auditService.logAdminAction(
-                authentication.getName(),
-                "ANALYTICS_SUMMARY_VIEW",
-                "Analytics",
-                null,
-                "Xem tổng quan phân tích tài chính",
-                request.getRemoteAddr(),
-                request.getHeader("User-Agent")
-            );
 
             return ResponseEntity.ok(ApiResponse.success("Lấy tổng quan phân tích thành công", summary));
         } catch (Exception e) {

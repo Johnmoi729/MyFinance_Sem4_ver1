@@ -55,4 +55,9 @@ public interface AuditLogRepository extends JpaRepository<AuditLog, Long> {
     List<AuditLog> findTop50ByOrderByTimestampDesc();
 
     Long countByTimestampGreaterThanEqual(LocalDateTime timestamp);
+
+    // For export and cleanup
+    List<AuditLog> findByTimestampBetweenOrderByTimestampDesc(LocalDateTime startDate, LocalDateTime endDate);
+
+    List<AuditLog> findByTimestampBefore(LocalDateTime cutoffDate);
 }

@@ -31,6 +31,7 @@ import BudgetSettingsPage from './pages/budgets/BudgetSettingsPage';
 import MonthlyReport from './pages/reports/MonthlyReport';
 import YearlyReport from './pages/reports/YearlyReport';
 import CategoryReport from './pages/reports/CategoryReport';
+import ScheduledReports from './pages/reports/ScheduledReports';
 
 // Admin Pages
 import AdminDashboard from './pages/admin/AdminDashboard';
@@ -144,6 +145,11 @@ function App() {
                 <Route path="/reports/category" element={
                   <ProtectedRoute>
                     <CategoryReport />
+                  </ProtectedRoute>
+                } />
+                <Route path="/reports/scheduled" element={
+                  <ProtectedRoute>
+                    <ScheduledReports />
                   </ProtectedRoute>
                 } />
 
