@@ -32,7 +32,7 @@ const Header = () => {
                     </div>
 
                     {/* Navigation */}
-                    <nav className="hidden md:flex space-x-8">
+                    <nav className="hidden md:flex space-x-4">
                         <Link
                             to="/dashboard"
                             className={`px-3 py-2 rounded-md text-sm font-medium hover:bg-blue-700 transition-colors ${isActive('/dashboard')}`}
@@ -46,12 +46,6 @@ const Header = () => {
                             Giao dịch
                         </Link>
                         <Link
-                            to="/transactions/add"
-                            className={`px-3 py-2 rounded-md text-sm font-medium hover:bg-blue-700 transition-colors ${isActive('/transactions/add')}`}
-                        >
-                            Thêm giao dịch
-                        </Link>
-                        <Link
                             to="/categories"
                             className={`px-3 py-2 rounded-md text-sm font-medium hover:bg-blue-700 transition-colors ${isActive('/categories')}`}
                         >
@@ -63,6 +57,33 @@ const Header = () => {
                         >
                             Ngân sách
                         </Link>
+
+                        {/* Reports Dropdown */}
+                        <div className="relative group">
+                            <button className="px-3 py-2 rounded-md text-sm font-medium hover:bg-blue-700 transition-colors">
+                                Báo cáo ▾
+                            </button>
+                            <div className="absolute left-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-10 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all">
+                                <Link
+                                    to="/reports/monthly"
+                                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                                >
+                                    Báo cáo tháng
+                                </Link>
+                                <Link
+                                    to="/reports/yearly"
+                                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                                >
+                                    Báo cáo năm
+                                </Link>
+                                <Link
+                                    to="/reports/category"
+                                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                                >
+                                    Báo cáo danh mục
+                                </Link>
+                            </div>
+                        </div>
                     </nav>
 
                     {/* User menu */}

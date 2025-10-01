@@ -27,6 +27,11 @@ import AddBudgetPage from './pages/budgets/AddBudgetPage';
 import EditBudgetPage from './pages/budgets/EditBudgetPage';
 import BudgetSettingsPage from './pages/budgets/BudgetSettingsPage';
 
+// Report Pages
+import MonthlyReport from './pages/reports/MonthlyReport';
+import YearlyReport from './pages/reports/YearlyReport';
+import CategoryReport from './pages/reports/CategoryReport';
+
 // Admin Pages
 import AdminDashboard from './pages/admin/AdminDashboard';
 import UserManagement from './pages/admin/UserManagement';
@@ -122,6 +127,23 @@ function App() {
                 <Route path="/budgets/settings" element={
                   <ProtectedRoute>
                     <BudgetSettingsPage />
+                  </ProtectedRoute>
+                } />
+
+                {/* Report routes */}
+                <Route path="/reports/monthly" element={
+                  <ProtectedRoute>
+                    <MonthlyReport />
+                  </ProtectedRoute>
+                } />
+                <Route path="/reports/yearly" element={
+                  <ProtectedRoute>
+                    <YearlyReport />
+                  </ProtectedRoute>
+                } />
+                <Route path="/reports/category" element={
+                  <ProtectedRoute>
+                    <CategoryReport />
                   </ProtectedRoute>
                 } />
 

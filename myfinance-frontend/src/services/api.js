@@ -863,6 +863,87 @@ class BudgetSettingsAPI extends ApiService {
     }
 }
 
+// Report API methods
+class ReportAPI extends ApiService {
+    // Get monthly report
+    async getMonthlyReport(year, month) {
+        try {
+            const response = await this.get(`/api/reports/monthly?year=${year}&month=${month}`);
+            return response;
+        } catch (error) {
+            return {
+                success: false,
+                message: 'Không thể tải báo cáo tháng'
+            };
+        }
+    }
+
+    // Get yearly report
+    async getYearlyReport(year) {
+        try {
+            const response = await this.get(`/api/reports/yearly?year=${year}`);
+            return response;
+        } catch (error) {
+            return {
+                success: false,
+                message: 'Không thể tải báo cáo năm'
+            };
+        }
+    }
+
+    // Get category report
+    async getCategoryReport(categoryId, startDate, endDate) {
+        try {
+            const response = await this.get(`/api/reports/category/${categoryId}?startDate=${startDate}&endDate=${endDate}`);
+            return response;
+        } catch (error) {
+            return {
+                success: false,
+                message: 'Không thể tải báo cáo danh mục'
+            };
+        }
+    }
+
+    // Get current month report
+    async getCurrentMonthReport() {
+        try {
+            const response = await this.get('/api/reports/current-month');
+            return response;
+        } catch (error) {
+            return {
+                success: false,
+                message: 'Không thể tải báo cáo tháng hiện tại'
+            };
+        }
+    }
+
+    // Get current year report
+    async getCurrentYearReport() {
+        try {
+            const response = await this.get('/api/reports/current-year');
+            return response;
+        } catch (error) {
+            return {
+                success: false,
+                message: 'Không thể tải báo cáo năm hiện tại'
+            };
+        }
+    }
+
+    // Get summary report by period
+    async getSummaryReport(period) {
+        try {
+            const response = await this.get(`/api/reports/summary/${period}`);
+            return response;
+        } catch (error) {
+            return {
+                success: false,
+                message: 'Không thể tải báo cáo tóm tắt'
+            };
+        }
+    }
+}
+
 // Create instances
 const userAPI = new UserAPI();
 const transactionAPI = new TransactionAPI();
@@ -870,9 +951,10 @@ const categoryAPI = new CategoryAPI();
 const budgetAPI = new BudgetAPI();
 const adminAPI = new AdminAPI();
 const budgetSettingsAPI = new BudgetSettingsAPI();
+const reportAPI = new ReportAPI();
 
 // Export APIs
-export { userAPI, transactionAPI, categoryAPI, budgetAPI, adminAPI, budgetSettingsAPI };
+export { userAPI, transactionAPI, categoryAPI, budgetAPI, adminAPI, budgetSettingsAPI, reportAPI };
 
 // Utility functions
 export const formatCurrency = (amount) => {
