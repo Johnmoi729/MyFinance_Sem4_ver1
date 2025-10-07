@@ -106,13 +106,20 @@ const LoginPage = () => {
                             {loading ? 'Đang xử lý...' : 'Đăng nhập'}
                         </button>
 
-                        <div className="text-center">
+                        <div className="text-center space-y-2">
                             <button
                                 type="button"
                                 onClick={() => navigate('/register')}
-                                className="text-blue-600 hover:text-blue-500 text-sm"
+                                className="text-blue-600 hover:text-blue-500 text-sm block w-full"
                             >
                                 Chưa có tài khoản? Đăng ký ngay
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => navigate('/forgot-password')}
+                                className="text-gray-600 hover:text-gray-500 text-sm block w-full"
+                            >
+                                Quên mật khẩu?
                             </button>
                         </div>
                     </form>

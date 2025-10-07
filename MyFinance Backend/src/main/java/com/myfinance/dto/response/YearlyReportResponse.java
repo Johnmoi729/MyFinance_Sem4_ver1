@@ -40,6 +40,10 @@ public class YearlyReportResponse {
     private List<MonthlyReportResponse.CategorySummary> yearlyIncomeByCategory;
     private List<MonthlyReportResponse.CategorySummary> yearlyExpenseByCategory;
 
+    // Top categories
+    private List<MonthlyReportResponse.CategorySummary> topExpenseCategories;
+    private List<MonthlyReportResponse.CategorySummary> topIncomeCategories;
+
     // Statistics
     private Long totalTransactions;
     private BigDecimal averageMonthlyIncome;

@@ -28,6 +28,7 @@ import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -39,6 +40,8 @@ public class BudgetService {
     private final CategoryRepository categoryRepository;
     private final TransactionRepository transactionRepository;
     private final UserBudgetSettingsService userBudgetSettingsService;
+    private final EmailService emailService;
+    private final com.myfinance.repository.UserRepository userRepository;
 
     @PostConstruct
     public void init() {
@@ -325,6 +328,58 @@ public class BudgetService {
                 .isOverBudget(usagePercentage >= 100.0)
                 .statusMessage(statusMessage)
                 .build();
+    }
+
+    /**
+     * Check budget threshold and send email alert if needed
+     * Called after transaction creation/update
+     */
+    public void checkAndSendBudgetAlert(Long userId, Long categoryId) {
+        try {
+            // Get user info
+            com.myfinance.entity.User user = userRepository.findById(userId).orElse(null);
+            if (user == null) {
+                log.warn("User not found for budget alert: {}", userId);
+                return;
+            }
+
+            // Get user's threshold settings
+            double warningThreshold = userBudgetSettingsService.getWarningThreshold(userId);
+            double criticalThreshold = userBudgetSettingsService.getCriticalThreshold(userId);
+
+            // Get current month's budget for this category
+            LocalDateTime now = LocalDateTime.now();
+            Optional<Budget> budgetOpt = budgetRepository.findByUserIdAndCategoryIdAndBudgetYearAndBudgetMonthAndIsActiveTrue(
+                    userId, categoryId, now.getYear(), now.getMonthValue());
+
+            if (budgetOpt.isEmpty()) {
+                log.debug("No active budget found for user {} category {} period {}/{}",
+                          userId, categoryId, now.getYear(), now.getMonthValue());
+                return; // No budget set for this category/period
+            }
+
+            Budget budget = budgetOpt.get();
+            BudgetUsageResponse usage = calculateBudgetUsage(budget, userId);
+
+            // Check if usage percentage exceeds threshold
+            if (usage.getUsagePercentage() >= warningThreshold) {
+                // Send budget alert email
+                emailService.sendBudgetAlertEmail(
+                        user.getEmail(),
+                        user.getFullName(),
+                        budget.getCategory().getName(),
+                        budget.getBudgetAmount(),
+                        usage.getActualSpent(),
+                        usage.getUsagePercentage()
+                );
+
+                log.info("Budget alert email sent to user: {} for category: {} ({}%)",
+                        user.getEmail(), budget.getCategory().getName(), usage.getUsagePercentage());
+            }
+        } catch (Exception e) {
+            log.error("Failed to check/send budget alert for user: {}, category: {}", userId, categoryId, e);
+            // Don't fail the transaction if email fails
+        }
     }
 
     private BigDecimal calculateActualSpending(Budget budget, Long userId) {

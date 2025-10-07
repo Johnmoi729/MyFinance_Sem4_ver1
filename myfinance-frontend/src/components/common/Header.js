@@ -57,6 +57,12 @@ const Header = () => {
                         >
                             Ngân sách
                         </Link>
+                        <Link
+                            to="/analytics"
+                            className={`px-3 py-2 rounded-md text-sm font-medium hover:bg-blue-700 transition-colors ${isActive('/analytics')}`}
+                        >
+                            Phân tích
+                        </Link>
 
                         {/* Reports Dropdown */}
                         <div className="relative group">
@@ -103,6 +109,12 @@ const Header = () => {
                                     className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                                 >
                                     Hồ sơ
+                                </Link>
+                                <Link
+                                    to="/reset-password"
+                                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                                >
+                                    Đổi mật khẩu
                                 </Link>
                                 {isAdmin() && (
                                     <Link

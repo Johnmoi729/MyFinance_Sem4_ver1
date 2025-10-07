@@ -14,6 +14,7 @@ import Footer from './components/common/Footer';
 import LoginPage from './pages/auth/LoginPage';
 import RegisterPage from './pages/auth/RegisterPage';
 import ForgotPasswordPage from './pages/auth/ForgotPasswordPage';
+import ResetPasswordPage from './pages/auth/ResetPasswordPage';
 import DashboardPage from './pages/dashboard/DashboardPage';
 import ProfilePage from './pages/dashboard/ProfilePage';
 import TransactionsPage from './pages/transactions/TransactionsPage';
@@ -33,12 +34,15 @@ import YearlyReport from './pages/reports/YearlyReport';
 import CategoryReport from './pages/reports/CategoryReport';
 import ScheduledReports from './pages/reports/ScheduledReports';
 
+// User Analytics
+import UserFinancialAnalytics from './pages/analytics/FinancialAnalytics';
+
 // Admin Pages
 import AdminDashboard from './pages/admin/AdminDashboard';
 import UserManagement from './pages/admin/UserManagement';
 import AuditLogs from './pages/admin/AuditLogs';
 import SystemConfig from './pages/admin/SystemConfig';
-import FinancialAnalytics from './pages/admin/FinancialAnalytics';
+import AdminFinancialAnalytics from './pages/admin/FinancialAnalytics';
 
 import './App.css';
 
@@ -66,6 +70,11 @@ function App() {
                 <Route path="/forgot-password" element={
                   <PublicRoute>
                     <ForgotPasswordPage />
+                  </PublicRoute>
+                } />
+                <Route path="/reset-password" element={
+                  <PublicRoute>
+                    <ResetPasswordPage />
                   </PublicRoute>
                 } />
 
@@ -153,6 +162,13 @@ function App() {
                   </ProtectedRoute>
                 } />
 
+                {/* User Analytics */}
+                <Route path="/analytics" element={
+                  <ProtectedRoute>
+                    <UserFinancialAnalytics />
+                  </ProtectedRoute>
+                } />
+
                 {/* Admin routes */}
                 <Route path="/admin/dashboard" element={
                   <AdminRoute>
@@ -176,7 +192,7 @@ function App() {
                 } />
                 <Route path="/admin/analytics" element={
                   <AdminRoute>
-                    <FinancialAnalytics />
+                    <AdminFinancialAnalytics />
                   </AdminRoute>
                 } />
 

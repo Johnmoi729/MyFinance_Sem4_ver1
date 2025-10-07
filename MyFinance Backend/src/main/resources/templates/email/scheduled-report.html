@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Báo cáo định kỳ</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background-color: #ffffff;
+            border-radius: 8px;
+            padding: 30px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .header {
+            text-align: center;
+            padding-bottom: 20px;
+            border-bottom: 3px solid #8B5CF6;
+        }
+        .header h1 {
+            color: #8B5CF6;
+            margin: 0;
+            font-size: 28px;
+        }
+        .content {
+            padding: 20px 0;
+        }
+        .attachment-box {
+            background-color: #F9FAFB;
+            border: 2px solid #E5E7EB;
+            padding: 20px;
+            border-radius: 6px;
+            margin: 20px 0;
+            text-align: center;
+        }
+        .file-icon {
+            font-size: 48px;
+            margin-bottom: 10px;
+        }
+        .file-name {
+            font-weight: bold;
+            color: #1F2937;
+            margin: 10px 0;
+        }
+        .cta-button {
+            display: inline-block;
+            background-color: #8B5CF6;
+            color: #ffffff !important;
+            padding: 12px 30px;
+            text-decoration: none;
+            border-radius: 6px;
+            margin: 20px 0;
+            font-weight: bold;
+        }
+        .footer {
+            text-align: center;
+            padding-top: 20px;
+            border-top: 1px solid #E5E7EB;
+            color: #6B7280;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📅 Báo cáo Định kỳ</h1>
+        </div>
+
+        <div class="content">
+            <h2>Xin chào <span th:text="${fullName}">User</span>!</h2>
+
+            <p>Báo cáo tài chính định kỳ của bạn đã sẵn sàng!</p>
+
+            <div class="attachment-box">
+                <div class="file-icon">📄</div>
+                <div class="file-name" th:text="${fileName}">monthly_report_2025_10.pdf</div>
+                <p style="color: #6B7280; margin: 5px 0;">
+                    Loại báo cáo: <strong th:text="${reportType}">Báo cáo tháng</strong>
+                </p>
+                <p style="color: #6B7280; margin: 5px 0; font-size: 12px;">
+                    📎 File đính kèm trong email này
+                </p>
+            </div>
+
+            <p><strong>Bạn có thể:</strong></p>
+            <ul>
+                <li>Tải file đính kèm để xem báo cáo chi tiết</li>
+                <li>Truy cập ứng dụng để xem báo cáo trực tuyến</li>
+                <li>Lưu trữ báo cáo cho mục đích cá nhân</li>
+            </ul>
+
+            <div style="text-align: center;">
+                <a href="http://localhost:3000/reports/monthly" class="cta-button">Xem online</a>
+            </div>
+
+            <p style="margin-top: 20px; font-size: 12px; color: #6B7280;">
+                Báo cáo được tạo tự động vào <span th:text="${currentDate}"></span>
+            </p>
+        </div>
+
+        <div class="footer">
+            <p>Email từ <strong>MyFinance</strong></p>
+            <p style="font-size: 12px; color: #9CA3AF;">
+                Đây là email tự động từ hệ thống báo cáo định kỳ.<br/>
+                Vui lòng không trả lời email này.
+            </p>
+        </div>
+    </div>
+</body>
+</html>

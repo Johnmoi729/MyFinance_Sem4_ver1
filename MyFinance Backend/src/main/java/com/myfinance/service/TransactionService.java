@@ -26,6 +26,7 @@ public class TransactionService {
 
     private final TransactionRepository transactionRepository;
     private final CategoryRepository categoryRepository;
+    private final BudgetService budgetService;
 
     @Transactional
     public TransactionResponse createTransaction(TransactionRequest request, Long userId) {
@@ -51,6 +52,11 @@ public class TransactionService {
 
         Transaction savedTransaction = transactionRepository.save(transaction);
         log.info("Transaction created successfully with ID: {}", savedTransaction.getId());
+
+        // Check budget alert for EXPENSE transactions
+        if (savedTransaction.getType() == TransactionType.EXPENSE) {
+            budgetService.checkAndSendBudgetAlert(userId, savedTransaction.getCategory().getId());
+        }
 
         return mapToTransactionResponse(savedTransaction);
     }
@@ -99,6 +105,11 @@ public class TransactionService {
 
         Transaction updatedTransaction = transactionRepository.save(transaction);
         log.info("Transaction updated successfully with ID: {}", updatedTransaction.getId());
+
+        // Check budget alert for EXPENSE transactions
+        if (updatedTransaction.getType() == TransactionType.EXPENSE) {
+            budgetService.checkAndSendBudgetAlert(userId, updatedTransaction.getCategory().getId());
+        }
 
         return mapToTransactionResponse(updatedTransaction);
     }

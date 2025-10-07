@@ -32,6 +32,7 @@ public class AuthService {
     private final AuthenticationManager authenticationManager;
     private final CategoryService categoryService;
     private final RoleService roleService;
+    private final EmailService emailService;
 
     @Transactional
     public UserResponse register(RegisterRequest request) {
@@ -73,6 +74,15 @@ public class AuthService {
         } catch (Exception e) {
             log.error("Failed to create default categories for user: {}", savedUser.getId(), e);
             // Don't fail registration if category creation fails
+        }
+
+        // Send welcome email
+        try {
+            emailService.sendWelcomeEmail(savedUser.getEmail(), savedUser.getFullName());
+            log.info("Welcome email triggered for user: {}", savedUser.getEmail());
+        } catch (Exception e) {
+            log.error("Failed to send welcome email to user: {}", savedUser.getEmail(), e);
+            // Don't fail registration if email sending fails
         }
 
         return mapToUserResponse(savedUser);
@@ -181,12 +191,18 @@ public class AuthService {
         User user = userRepository.findByEmail(request.getEmail().toLowerCase().trim())
                 .orElseThrow(() -> new ResourceNotFoundException("Email không tồn tại trong hệ thống"));
 
-        // TODO: Implement email sending logic
-        // For now, just log the reset token
+        // Generate reset token
         String resetToken = jwtUtil.generateToken(user.getId(), user.getEmail());
-        log.info("Password reset token generated for user {}: {}", user.getEmail(), resetToken);
+        log.info("Password reset token generated for user: {}", user.getEmail());
 
-        // In production, you would send this token via email
+        // Send password reset email
+        try {
+            emailService.sendPasswordResetEmail(user.getEmail(), user.getFullName(), resetToken);
+            log.info("Password reset email sent to: {}", user.getEmail());
+        } catch (Exception e) {
+            log.error("Failed to send password reset email to: {}", user.getEmail(), e);
+            // Continue even if email fails - user can try again
+        }
     }
 
     @Transactional

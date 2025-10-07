@@ -10,6 +10,7 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -17,6 +18,9 @@ public interface UserRepository extends JpaRepository<User, Long>, JpaSpecificat
 
     // Find user by email
     Optional<User> findByEmail(String email);
+
+    // Find all users by active status
+    List<User> findByIsActive(Boolean isActive);
 
     // Check if email exists
     boolean existsByEmail(String email);

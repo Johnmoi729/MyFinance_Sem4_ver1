@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cảnh báo ngân sách</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background-color: #ffffff;
+            border-radius: 8px;
+            padding: 30px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .header {
+            text-align: center;
+            padding-bottom: 20px;
+            border-bottom: 3px solid #F59E0B;
+        }
+        .header h1 {
+            color: #F59E0B;
+            margin: 0;
+            font-size: 28px;
+        }
+        .content {
+            padding: 20px 0;
+        }
+        .alert-critical {
+            background-color: #FEE2E2;
+            border-left: 4px solid #DC2626;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+        .alert-warning {
+            background-color: #FEF3C7;
+            border-left: 4px solid #F59E0B;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+        .budget-summary {
+            background-color: #F9FAFB;
+            padding: 20px;
+            border-radius: 6px;
+            margin: 20px 0;
+        }
+        .budget-item {
+            display: flex;
+            justify-content: space-between;
+            margin: 10px 0;
+            padding: 10px 0;
+            border-bottom: 1px solid #E5E7EB;
+        }
+        .budget-item:last-child {
+            border-bottom: none;
+        }
+        .progress-bar {
+            width: 100%;
+            height: 30px;
+            background-color: #E5E7EB;
+            border-radius: 15px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+        .progress-fill {
+            height: 100%;
+            background-color: #EF4444;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            transition: width 0.3s ease;
+        }
+        .cta-button {
+            display: inline-block;
+            background-color: #3B82F6;
+            color: #ffffff !important;
+            padding: 12px 30px;
+            text-decoration: none;
+            border-radius: 6px;
+            margin: 20px 0;
+            font-weight: bold;
+        }
+        .footer {
+            text-align: center;
+            padding-top: 20px;
+            border-top: 1px solid #E5E7EB;
+            color: #6B7280;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>⚠️ Cảnh báo Ngân sách</h1>
+        </div>
+
+        <div class="content">
+            <h2>Xin chào <span th:text="${fullName}">User</span>!</h2>
+
+            <div th:class="${alertLevel == 'critical' ? 'alert-critical' : 'alert-warning'}">
+                <strong th:if="${alertLevel == 'critical'}">🚨 Cảnh báo nghiêm trọng!</strong>
+                <strong th:if="${alertLevel == 'warning'}">⚠️ Cảnh báo!</strong>
+                <p th:if="${alertLevel == 'critical'}">
+                    Bạn đã vượt quá ngân sách cho danh mục <strong th:text="${categoryName}"></strong>!
+                </p>
+                <p th:if="${alertLevel == 'warning'}">
+                    Bạn sắp vượt ngân sách cho danh mục <strong th:text="${categoryName}"></strong>!
+                </p>
+            </div>
+
+            <div class="budget-summary">
+                <h3>Thông tin chi tiết:</h3>
+                <div class="budget-item">
+                    <span><strong>Danh mục:</strong></span>
+                    <span th:text="${categoryName}">Ăn uống</span>
+                </div>
+                <div class="budget-item">
+                    <span><strong>Ngân sách:</strong></span>
+                    <span th:text="${budgetAmount}">10,000,000 ₫</span>
+                </div>
+                <div class="budget-item">
+                    <span><strong>Đã chi tiêu:</strong></span>
+                    <span style="color: #DC2626; font-weight: bold;" th:text="${actualAmount}">9,500,000 ₫</span>
+                </div>
+                <div class="budget-item">
+                    <span><strong>Tỷ lệ sử dụng:</strong></span>
+                    <span style="color: #DC2626; font-weight: bold;" th:text="${usagePercent + '%'}">95%</span>
+                </div>
+
+                <div class="progress-bar">
+                    <div class="progress-fill" th:style="'width: ' + ${usagePercent} + '%;'">
+                        <span th:text="${usagePercent + '%'}">95%</span>
+                    </div>
+                </div>
+            </div>
+
+            <p><strong>Gợi ý:</strong></p>
+            <ul>
+                <li>Xem lại các giao dịch trong danh mục này</li>
+                <li>Cân nhắc điều chỉnh chi tiêu cho những ngày còn lại</li>
+                <li>Xem xét tăng ngân sách nếu cần thiết</li>
+                <li>Tìm kiếm các giải pháp tiết kiệm</li>
+            </ul>
+
+            <div style="text-align: center;">
+                <a href="http://localhost:3000/budgets" class="cta-button">Xem ngân sách</a>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>Email từ <strong>MyFinance</strong></p>
+            <p style="font-size: 12px; color: #9CA3AF;">
+                Bạn nhận được email này vì đã bật cảnh báo ngân sách.<br/>
+                Vui lòng không trả lời email này.
+            </p>
+        </div>
+    </div>
+</body>
+</html>

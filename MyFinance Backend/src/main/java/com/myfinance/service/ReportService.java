@@ -197,6 +197,17 @@ public class ReportService {
         List<MonthlyReportResponse.CategorySummary> yearlyExpenseByCategory =
             generateCategorySummaries(transactions, TransactionType.EXPENSE, totalExpense, userId, year, 12);
 
+        // Top categories (limit to 5)
+        List<MonthlyReportResponse.CategorySummary> topExpenses = yearlyExpenseByCategory.stream()
+            .sorted(Comparator.comparing(MonthlyReportResponse.CategorySummary::getAmount).reversed())
+            .limit(5)
+            .collect(Collectors.toList());
+
+        List<MonthlyReportResponse.CategorySummary> topIncome = yearlyIncomeByCategory.stream()
+            .sorted(Comparator.comparing(MonthlyReportResponse.CategorySummary::getAmount).reversed())
+            .limit(5)
+            .collect(Collectors.toList());
+
         // Calculate averages
         BigDecimal avgMonthlyIncome = totalIncome.divide(BigDecimal.valueOf(12), 2, RoundingMode.HALF_UP);
         BigDecimal avgMonthlyExpense = totalExpense.divide(BigDecimal.valueOf(12), 2, RoundingMode.HALF_UP);
@@ -218,6 +229,8 @@ public class ReportService {
             .highestExpenseMonth(highestExpense)
             .yearlyIncomeByCategory(yearlyIncomeByCategory)
             .yearlyExpenseByCategory(yearlyExpenseByCategory)
+            .topExpenseCategories(topExpenses)
+            .topIncomeCategories(topIncome)
             .totalTransactions((long) transactions.size())
             .averageMonthlyIncome(avgMonthlyIncome)
             .averageMonthlyExpense(avgMonthlyExpense)
