@@ -1,6 +1,7 @@
 -- MyFinance Complete Database Initialization Script
 -- This script creates the complete database schema for MyFinance application
--- Includes all tables from Flows 1-5: Auth, Transactions, Categories, Budgets, Admin
+-- Includes all tables from Flows 1-6: Auth, Transactions, Categories, Budgets, Reports, Admin, UX Enhancements
+-- Last Updated: October 28, 2025 (includes Flow 6A features)
 
 -- Create database
 CREATE DATABASE IF NOT EXISTS myfinance CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
@@ -18,6 +19,9 @@ CREATE TABLE IF NOT EXISTS users (
     password VARCHAR(255) NOT NULL,
     full_name VARCHAR(255) NOT NULL,
     phone_number VARCHAR(20),
+    address VARCHAR(255),
+    date_of_birth DATE,
+    avatar MEDIUMTEXT COMMENT 'Base64 encoded avatar image (max 16MB)',
     is_active BOOLEAN DEFAULT TRUE,
     is_email_verified BOOLEAN DEFAULT FALSE,
     last_login DATETIME,
@@ -112,6 +116,30 @@ CREATE TABLE IF NOT EXISTS user_budget_settings (
 );
 
 -- ============================================================================
+-- FLOW 4: REPORTS & ANALYTICS
+-- ============================================================================
+
+-- Create scheduled_reports table
+CREATE TABLE IF NOT EXISTS scheduled_reports (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    user_id BIGINT NOT NULL,
+    report_type ENUM('MONTHLY', 'YEARLY', 'CATEGORY') NOT NULL,
+    frequency ENUM('DAILY', 'WEEKLY', 'MONTHLY', 'QUARTERLY', 'YEARLY') NOT NULL,
+    format ENUM('PDF', 'CSV', 'BOTH') NOT NULL,
+    email_delivery BOOLEAN NOT NULL DEFAULT TRUE,
+    is_active BOOLEAN NOT NULL DEFAULT TRUE,
+    last_run TIMESTAMP NULL,
+    next_run TIMESTAMP NULL,
+    run_count INT DEFAULT 0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    INDEX idx_scheduled_reports_user_id (user_id),
+    INDEX idx_scheduled_reports_is_active (is_active),
+    INDEX idx_scheduled_reports_next_run (next_run)
+);
+
+-- ============================================================================
 -- FLOW 5: ADMIN SYSTEM & MANAGEMENT
 -- ============================================================================
 
@@ -197,6 +225,70 @@ CREATE TABLE IF NOT EXISTS system_config (
 );
 
 -- ============================================================================
+-- FLOW 6: UX ENHANCEMENT & POLISHING (FLOW 6A)
+-- ============================================================================
+
+-- Create user_preferences table
+CREATE TABLE IF NOT EXISTS user_preferences (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    user_id BIGINT UNIQUE NOT NULL,
+
+    -- Display Preferences
+    language VARCHAR(10) DEFAULT 'vi',
+    currency VARCHAR(10) DEFAULT 'VND',
+    date_format VARCHAR(20) DEFAULT 'dd/MM/yyyy',
+    timezone VARCHAR(50) DEFAULT 'Asia/Ho_Chi_Minh',
+    theme VARCHAR(20) DEFAULT 'light',
+    items_per_page INT DEFAULT 10,
+    view_mode VARCHAR(20) DEFAULT 'detailed',
+
+    -- Notification Preferences
+    email_notifications BOOLEAN DEFAULT TRUE,
+    budget_alerts BOOLEAN DEFAULT TRUE,
+    transaction_reminders BOOLEAN DEFAULT FALSE,
+    weekly_summary BOOLEAN DEFAULT FALSE,
+    monthly_summary BOOLEAN DEFAULT TRUE,
+    goal_reminders BOOLEAN DEFAULT TRUE,
+
+    -- Privacy Settings
+    profile_visibility VARCHAR(20) DEFAULT 'private',
+    data_sharing BOOLEAN DEFAULT FALSE,
+    analytics_tracking BOOLEAN DEFAULT TRUE,
+
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    INDEX idx_user_preferences_user_id (user_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Create onboarding_progress table
+CREATE TABLE IF NOT EXISTS onboarding_progress (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    user_id BIGINT UNIQUE NOT NULL,
+
+    current_step INT DEFAULT 1,
+    steps_completed INT DEFAULT 0,
+    is_completed BOOLEAN DEFAULT FALSE,
+    is_skipped BOOLEAN DEFAULT FALSE,
+
+    -- Individual step completion tracking
+    step1_completed BOOLEAN DEFAULT FALSE,
+    step2_completed BOOLEAN DEFAULT FALSE,
+    step3_completed BOOLEAN DEFAULT FALSE,
+    step4_completed BOOLEAN DEFAULT FALSE,
+
+    completed_at TIMESTAMP NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    INDEX idx_onboarding_progress_user_id (user_id),
+    INDEX idx_onboarding_progress_status (is_completed, is_skipped),
+    INDEX idx_onboarding_progress_steps (steps_completed)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ============================================================================
 -- DEFAULT DATA INSERTION
 -- ============================================================================
 
@@ -243,9 +335,13 @@ SELECT
     (SELECT COUNT(*) FROM categories) as categories_count,
     (SELECT COUNT(*) FROM transactions) as transactions_count,
     (SELECT COUNT(*) FROM budgets) as budgets_count,
+    (SELECT COUNT(*) FROM user_budget_settings) as budget_settings_count,
+    (SELECT COUNT(*) FROM scheduled_reports) as scheduled_reports_count,
     (SELECT COUNT(*) FROM roles) as roles_count,
     (SELECT COUNT(*) FROM user_roles) as user_roles_count,
     (SELECT COUNT(*) FROM system_config) as system_config_count,
-    (SELECT COUNT(*) FROM audit_logs) as audit_logs_count;
+    (SELECT COUNT(*) FROM audit_logs) as audit_logs_count,
+    (SELECT COUNT(*) FROM user_preferences) as user_preferences_count,
+    (SELECT COUNT(*) FROM onboarding_progress) as onboarding_progress_count;
 
 COMMIT;

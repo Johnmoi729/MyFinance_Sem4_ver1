@@ -13,6 +13,8 @@ import java.time.LocalDateTime;
 public class TransactionResponse {
     private Long id;
     private BigDecimal amount;
+    private String currencyCode;
+    private BigDecimal amountInBaseCurrency;
     private TransactionType type;
     private String description;
     private LocalDate transactionDate;

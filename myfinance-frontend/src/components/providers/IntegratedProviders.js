@@ -2,6 +2,7 @@ import React from 'react';
 import { TransactionProvider } from '../../context/TransactionContext';
 import { CategoryProvider } from '../../context/CategoryContext';
 import { BudgetProvider, useBudget } from '../../context/BudgetContext';
+import { PreferencesProvider } from '../../context/PreferencesContext';
 
 // Wrapper that provides TransactionProvider with budget refresh callback
 const TransactionProviderWithBudgetIntegration = ({ children }) => {
@@ -17,13 +18,15 @@ const TransactionProviderWithBudgetIntegration = ({ children }) => {
 // Combined providers component that properly integrates budget and transaction contexts
 const IntegratedProviders = ({ children }) => {
     return (
-        <CategoryProvider>
-            <BudgetProvider>
-                <TransactionProviderWithBudgetIntegration>
-                    {children}
-                </TransactionProviderWithBudgetIntegration>
-            </BudgetProvider>
-        </CategoryProvider>
+        <PreferencesProvider>
+            <CategoryProvider>
+                <BudgetProvider>
+                    <TransactionProviderWithBudgetIntegration>
+                        {children}
+                    </TransactionProviderWithBudgetIntegration>
+                </BudgetProvider>
+            </CategoryProvider>
+        </PreferencesProvider>
     );
 };
 

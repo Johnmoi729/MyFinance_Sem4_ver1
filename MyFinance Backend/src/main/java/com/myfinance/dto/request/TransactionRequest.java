@@ -15,6 +15,8 @@ public class TransactionRequest {
     @Positive(message = "Số tiền phải lớn hơn 0")
     private BigDecimal amount;
 
+    private String currencyCode; // Optional, defaults to VND
+
     @NotNull(message = "Loại giao dịch không được để trống")
     private TransactionType type;
 

@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { reportAPI, formatCurrency } from '../../services/api';
+import { reportAPI } from '../../services/api';
+import { useCurrencyFormatter } from '../../utils/currencyFormatter';
 import { useCategory } from '../../context/CategoryContext';
 import { exportCategoryReportToCSV } from '../../utils/exportUtils';
 import { exportCategoryReportToPDF } from '../../utils/pdfExportUtils';
+import { exportCategoryReportToExcel } from '../../utils/excelExportUtils';
 import SpendingLineChart from '../../components/charts/SpendingLineChart';
 
 const CategoryReport = () => {
-    const navigate = useNavigate();
+    const { formatCurrency } = useCurrencyFormatter();
     const { categories, loadCategories } = useCategory();
 
     const [selectedCategoryId, setSelectedCategoryId] = useState('');
@@ -20,6 +21,7 @@ const CategoryReport = () => {
     // Load categories on mount
     useEffect(() => {
         loadCategories();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     // Set default dates (current month)
@@ -112,8 +114,6 @@ const CategoryReport = () => {
         setReport(null);
     };
 
-    const selectedCategory = categories.find(cat => cat.id === parseInt(selectedCategoryId));
-
     return (
         <div className="min-h-screen bg-gray-50">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -124,19 +124,16 @@ const CategoryReport = () => {
                 </div>
 
                 {/* Filter Section */}
-                <div className="bg-white rounded-lg shadow-md p-6 mb-6">
-                    <h2 className="text-lg font-semibold text-gray-900 mb-4">Tùy chọn báo cáo</h2>
-
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-                        {/* Category Selector */}
+                <div className="bg-white rounded-lg shadow-md p-4 mb-6">
+                    <div className="flex flex-wrap gap-3 items-end">
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">
-                                Danh mục *
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                Danh mục:
                             </label>
                             <select
                                 value={selectedCategoryId}
                                 onChange={handleCategoryChange}
-                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
+                                className="px-3 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500"
                             >
                                 <option value="">-- Chọn danh mục --</option>
                                 {categories.map(category => (
@@ -147,63 +144,59 @@ const CategoryReport = () => {
                             </select>
                         </div>
 
-                        {/* Start Date */}
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">
-                                Từ ngày *
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                Từ ngày:
                             </label>
                             <input
                                 type="date"
                                 value={startDate}
                                 onChange={handleStartDateChange}
-                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
+                                className="px-3 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500"
                             />
                         </div>
 
-                        {/* End Date */}
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">
-                                Đến ngày *
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                Đến ngày:
                             </label>
                             <input
                                 type="date"
                                 value={endDate}
                                 onChange={handleEndDateChange}
-                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
+                                className="px-3 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500"
                             />
                         </div>
-                    </div>
 
-                    {/* Quick Date Buttons */}
-                    <div className="flex flex-wrap gap-2 mb-4">
                         <button
                             onClick={handleSetCurrentMonth}
-                            className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-md text-sm transition-colors"
+                            className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl font-medium transition-colors"
                         >
                             Tháng này
                         </button>
+
                         <button
                             onClick={handleSetLastMonth}
-                            className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-md text-sm transition-colors"
+                            className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl font-medium transition-colors"
                         >
                             Tháng trước
                         </button>
+
                         <button
                             onClick={handleSetCurrentYear}
-                            className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-md text-sm transition-colors"
+                            className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl font-medium transition-colors"
                         >
                             Năm nay
                         </button>
-                    </div>
 
-                    {/* Generate Button */}
-                    <button
-                        onClick={loadReport}
-                        disabled={loading || !selectedCategoryId}
-                        className="w-full md:w-auto px-6 py-2 bg-blue-500 hover:bg-blue-600 disabled:bg-blue-300 text-white rounded-md font-medium transition-colors"
-                    >
-                        {loading ? 'Đang tải...' : 'Tạo báo cáo'}
-                    </button>
+                        <button
+                            onClick={loadReport}
+                            disabled={loading || !selectedCategoryId}
+                            className="px-6 py-2 bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-300 text-white rounded-xl font-medium transition-colors"
+                        >
+                            {loading ? 'Đang tải...' : 'Tạo báo cáo'}
+                        </button>
+                    </div>
                 </div>
 
                 {/* Error Message */}
@@ -218,6 +211,13 @@ const CategoryReport = () => {
                     <div className="space-y-6">
                         {/* Export Buttons */}
                         <div className="flex justify-end gap-3">
+                            <button
+                                onClick={() => exportCategoryReportToExcel(report)}
+                                className="px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-md font-medium transition-colors flex items-center gap-2"
+                            >
+                                <span>📊</span>
+                                Xuất Excel
+                            </button>
                             <button
                                 onClick={() => exportCategoryReportToCSV(report)}
                                 className="px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-md font-medium transition-colors flex items-center gap-2"
@@ -269,7 +269,7 @@ const CategoryReport = () => {
 
                             <div className="bg-white rounded-lg shadow-md p-6">
                                 <p className="text-sm font-medium text-gray-600">Trung bình/giao dịch</p>
-                                <p className="text-2xl font-bold text-blue-600 mt-2">
+                                <p className="text-2xl font-bold text-indigo-600 mt-2">
                                     {formatCurrency(report.averageTransaction)}
                                 </p>
                             </div>

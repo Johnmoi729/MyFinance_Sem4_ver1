@@ -36,6 +36,12 @@ public class Budget {
     @Positive
     private BigDecimal budgetAmount;
 
+    @Column(name = "currency_code", length = 3)
+    private String currencyCode = "VND"; // Default currency
+
+    @Column(name = "budget_amount_in_base_currency", precision = 12, scale = 2)
+    private BigDecimal budgetAmountInBaseCurrency;
+
     @Column(name = "budget_year", nullable = false)
     @NotNull
     private Integer budgetYear;

@@ -27,6 +27,7 @@ public class TransactionService {
     private final TransactionRepository transactionRepository;
     private final CategoryRepository categoryRepository;
     private final BudgetService budgetService;
+    private final CurrencyService currencyService;
 
     @Transactional
     public TransactionResponse createTransaction(TransactionRequest request, Long userId) {
@@ -49,6 +50,13 @@ public class TransactionService {
         transaction.setType(request.getType());
         transaction.setDescription(request.getDescription());
         transaction.setTransactionDate(request.getTransactionDate());
+
+        // Set currency and convert to base currency
+        String currencyCode = request.getCurrencyCode() != null ? request.getCurrencyCode() : "VND";
+        transaction.setCurrencyCode(currencyCode);
+        transaction.setAmountInBaseCurrency(
+            currencyService.convertToBaseCurrency(request.getAmount(), currencyCode)
+        );
 
         Transaction savedTransaction = transactionRepository.save(transaction);
         log.info("Transaction created successfully with ID: {}", savedTransaction.getId());
@@ -102,6 +110,13 @@ public class TransactionService {
         transaction.setType(request.getType());
         transaction.setDescription(request.getDescription());
         transaction.setTransactionDate(request.getTransactionDate());
+
+        // Update currency and convert to base currency
+        String currencyCode = request.getCurrencyCode() != null ? request.getCurrencyCode() : "VND";
+        transaction.setCurrencyCode(currencyCode);
+        transaction.setAmountInBaseCurrency(
+            currencyService.convertToBaseCurrency(request.getAmount(), currencyCode)
+        );
 
         Transaction updatedTransaction = transactionRepository.save(transaction);
         log.info("Transaction updated successfully with ID: {}", updatedTransaction.getId());
@@ -160,6 +175,8 @@ public class TransactionService {
         return TransactionResponse.builder()
                 .id(transaction.getId())
                 .amount(transaction.getAmount())
+                .currencyCode(transaction.getCurrencyCode())
+                .amountInBaseCurrency(transaction.getAmountInBaseCurrency())
                 .type(transaction.getType())
                 .description(transaction.getDescription())
                 .transactionDate(transaction.getTransactionDate())

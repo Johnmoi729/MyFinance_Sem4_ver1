@@ -1,0 +1,17 @@
+# Windows reserved device names that cannot be committed
+nul
+**/nul
+
+# IDE and OS files
+.DS_Store
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Logs and temp files
+*.log
+logs/
+temp/
+tmp/

@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { userAPI } from '../../services/api';
+import { Logo } from '../../components/common/Logo';
+import { CheckCircle, XCircle, RefreshCw } from '../../components/icons';
 
 const ForgotPasswordPage = () => {
     const [email, setEmail] = useState('');
@@ -30,28 +32,29 @@ const ForgotPasswordPage = () => {
 
     if (success) {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+            <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-50 via-white to-violet-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 py-12 px-4 sm:px-6 lg:px-8">
                 <div className="max-w-md w-full space-y-8">
                     <div className="text-center">
-                        <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-green-100">
-                            <svg className="h-10 w-10 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                            </svg>
+                        <div className="flex justify-center mb-6">
+                            <Logo size="large" showText={false} linkEnabled={false} />
                         </div>
-                        <h2 className="mt-6 text-3xl font-extrabold text-gray-900">
+                        <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-green-100 dark:bg-green-900/30">
+                            <CheckCircle className="h-10 w-10 text-green-600 dark:text-green-400" />
+                        </div>
+                        <h2 className="mt-6 text-3xl font-bold text-gray-900 dark:text-gray-50">
                             Email đã được gửi!
                         </h2>
-                        <p className="mt-2 text-sm text-gray-600">
+                        <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
                             Chúng tôi đã gửi hướng dẫn đặt lại mật khẩu đến email của bạn.
                         </p>
-                        <p className="mt-4 text-sm text-gray-500">
+                        <p className="mt-4 text-sm text-gray-500 dark:text-gray-400">
                             Vui lòng kiểm tra hộp thư đến và làm theo hướng dẫn để đặt lại mật khẩu.
                             Email có thể mất vài phút để đến.
                         </p>
                         <div className="mt-6">
                             <Link
                                 to="/login"
-                                className="text-blue-600 hover:text-blue-500 font-medium"
+                                className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 font-medium"
                             >
                                 ← Quay lại đăng nhập
                             </Link>
@@ -63,64 +66,72 @@ const ForgotPasswordPage = () => {
     }
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-50 via-white to-violet-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 py-12 px-4 sm:px-6 lg:px-8">
             <div className="max-w-md w-full space-y-8">
-                <div>
-                    <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
+                {/* Logo and Title */}
+                <div className="text-center">
+                    <div className="flex justify-center mb-6">
+                        <Logo size="large" showText={false} linkEnabled={false} />
+                    </div>
+                    <h2 className="text-3xl font-bold text-gray-900 dark:text-gray-50">
                         Quên mật khẩu?
                     </h2>
-                    <p className="mt-2 text-center text-sm text-gray-600">
+                    <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
                         Nhập email của bạn và chúng tôi sẽ gửi hướng dẫn đặt lại mật khẩu
                     </p>
                 </div>
 
-                <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-                    {error && (
-                        <div className="rounded-md bg-red-50 p-4">
-                            <div className="flex">
-                                <div className="ml-3">
-                                    <h3 className="text-sm font-medium text-red-800">{error}</h3>
+                <div className="card">
+                    <div className="card-body">
+                        <form onSubmit={handleSubmit} className="space-y-5">
+                            {error && (
+                                <div className="bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400 border border-red-200 dark:border-red-800 p-4 rounded-xl">
+                                    <div className="flex items-center">
+                                        <XCircle className="w-5 h-5 mr-2" />
+                                        {error}
+                                    </div>
                                 </div>
+                            )}
+
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                    Địa chỉ email
+                                </label>
+                                <input
+                                    type="email"
+                                    name="email"
+                                    value={email}
+                                    onChange={(e) => setEmail(e.target.value)}
+                                    className="input-field"
+                                    placeholder="your@email.com"
+                                    required
+                                />
                             </div>
-                        </div>
-                    )}
 
-                    <div>
-                        <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-                            Địa chỉ email
-                        </label>
-                        <input
-                            id="email"
-                            name="email"
-                            type="email"
-                            autoComplete="email"
-                            required
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
-                            className="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
-                            placeholder="email@example.com"
-                        />
-                    </div>
+                            <button
+                                type="submit"
+                                disabled={loading}
+                                className="btn-primary w-full mt-6"
+                            >
+                                {loading ? (
+                                    <span className="flex items-center justify-center">
+                                        <RefreshCw className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" />
+                                        Đang gửi...
+                                    </span>
+                                ) : 'Gửi hướng dẫn đặt lại mật khẩu'}
+                            </button>
 
-                    <div>
-                        <button
-                            type="submit"
-                            disabled={loading}
-                            className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:bg-blue-300 disabled:cursor-not-allowed"
-                        >
-                            {loading ? 'Đang gửi...' : 'Gửi hướng dẫn đặt lại mật khẩu'}
-                        </button>
+                            <div className="text-center mt-4">
+                                <Link
+                                    to="/login"
+                                    className="text-sm text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 font-medium"
+                                >
+                                    ← Quay lại đăng nhập
+                                </Link>
+                            </div>
+                        </form>
                     </div>
-
-                    <div className="text-center">
-                        <Link
-                            to="/login"
-                            className="text-sm text-blue-600 hover:text-blue-500 font-medium"
-                        >
-                            ← Quay lại đăng nhập
-                        </Link>
-                    </div>
-                </form>
+                </div>
             </div>
         </div>
     );

@@ -1,7 +1,8 @@
 import React from 'react';
-import { formatCurrency } from '../../services/api';
+import { useCurrencyFormatter } from '../../utils/currencyFormatter';
 
 const BudgetVsActual = ({ categoryData, type = 'expense' }) => {
+    const { formatCurrency } = useCurrencyFormatter();
     if (!categoryData || categoryData.length === 0) {
         return (
             <div className="bg-white rounded-lg shadow-md p-6">

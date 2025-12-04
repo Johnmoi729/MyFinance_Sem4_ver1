@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip, Sector } from 'recharts';
-import { formatCurrency } from '../../services/api';
+import { useCurrencyFormatter } from '../../utils/currencyFormatter';
 
 const COLORS = [
     '#3B82F6', // Blue
@@ -16,6 +16,7 @@ const COLORS = [
 ];
 
 const EnhancedCategoryPieChart = ({ data, title, onCategoryClick }) => {
+    const { formatCurrency } = useCurrencyFormatter();
     const [activeIndex, setActiveIndex] = useState(null);
 
     if (!data || data.length === 0) {

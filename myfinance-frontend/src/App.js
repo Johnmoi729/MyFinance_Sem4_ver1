@@ -1,6 +1,7 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { AuthProvider } from './context/AuthContext';
+import { AuthProvider, useAuth } from './context/AuthContext';
+import { PreferencesProvider } from './context/PreferencesContext';
 import IntegratedProviders from './components/providers/IntegratedProviders';
 
 // Components
@@ -27,6 +28,7 @@ import BudgetsPage from './pages/budgets/BudgetsPage';
 import AddBudgetPage from './pages/budgets/AddBudgetPage';
 import EditBudgetPage from './pages/budgets/EditBudgetPage';
 import BudgetSettingsPage from './pages/budgets/BudgetSettingsPage';
+import UserPreferencesPage from './pages/preferences/UserPreferencesPage';
 
 // Report Pages
 import MonthlyReport from './pages/reports/MonthlyReport';
@@ -37,6 +39,11 @@ import ScheduledReports from './pages/reports/ScheduledReports';
 // User Analytics
 import UserFinancialAnalytics from './pages/analytics/FinancialAnalytics';
 
+// New UX Pages
+import AboutPage from './pages/about/AboutPage';
+import GettingStartedPage from './pages/getting-started/GettingStartedPage';
+import FAQPage from './pages/faq/FAQPage';
+
 // Admin Pages
 import AdminDashboard from './pages/admin/AdminDashboard';
 import UserManagement from './pages/admin/UserManagement';
@@ -46,17 +53,37 @@ import AdminFinancialAnalytics from './pages/admin/FinancialAnalytics';
 
 import './App.css';
 
+// Smart Home Redirect Component
+const HomeRedirect = () => {
+    const { isAdmin, loading } = useAuth();
+
+    if (loading) {
+        return (
+            <div className="min-h-screen flex items-center justify-center bg-gray-50">
+                <div className="text-center">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+                    <p className="text-gray-600">Đang tải...</p>
+                </div>
+            </div>
+        );
+    }
+
+    // Redirect admins to admin dashboard, regular users to user dashboard
+    return <Navigate to={isAdmin() ? "/admin/dashboard" : "/dashboard"} replace />;
+};
+
 function App() {
   return (
       <AuthProvider>
-        <IntegratedProviders>
+        <PreferencesProvider>
+          <IntegratedProviders>
             <Router>
             <div className="min-h-screen bg-gray-50 flex flex-col">
               <Header />
               <main className="flex-1">
               <Routes>
-                {/* Public routes */}
-                <Route path="/" element={<Navigate to="/dashboard" replace />} />
+                {/* Smart home route - redirects based on user role */}
+                <Route path="/" element={<HomeRedirect />} />
                 <Route path="/login" element={
                   <PublicRoute>
                     <LoginPage />
@@ -139,6 +166,11 @@ function App() {
                     <BudgetSettingsPage />
                   </ProtectedRoute>
                 } />
+                <Route path="/preferences" element={
+                  <ProtectedRoute>
+                    <UserPreferencesPage />
+                  </ProtectedRoute>
+                } />
 
                 {/* Report routes */}
                 <Route path="/reports/monthly" element={
@@ -169,6 +201,11 @@ function App() {
                   </ProtectedRoute>
                 } />
 
+                {/* Public Info Pages */}
+                <Route path="/about" element={<AboutPage />} />
+                <Route path="/getting-started" element={<GettingStartedPage />} />
+                <Route path="/faq" element={<FAQPage />} />
+
                 {/* Admin routes */}
                 <Route path="/admin/dashboard" element={
                   <AdminRoute>
@@ -196,14 +233,15 @@ function App() {
                   </AdminRoute>
                 } />
 
-                {/* Fallback route */}
-                <Route path="*" element={<Navigate to="/dashboard" replace />} />
+                {/* Fallback route - also uses smart redirect */}
+                <Route path="*" element={<HomeRedirect />} />
               </Routes>
               </main>
               <Footer />
             </div>
             </Router>
-        </IntegratedProviders>
+          </IntegratedProviders>
+        </PreferencesProvider>
       </AuthProvider>
   );
 }

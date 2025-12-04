@@ -135,6 +135,22 @@ export const AuthProvider = ({ children }) => {
         }
     };
 
+    const updateExtendedProfile = async (extendedData) => {
+        try {
+            const response = await userAPI.updateExtendedProfile(extendedData);
+
+            if (response && response.success) {
+                setUser(response.data);
+                return { success: true, data: response.data };
+            } else {
+                return { success: false, message: response.message };
+            }
+        } catch (error) {
+            console.error('Extended profile update failed:', error);
+            return { success: false, message: 'Đã xảy ra lỗi khi cập nhật thông tin mở rộng' };
+        }
+    };
+
     const changePassword = async (passwordData) => {
         try {
             const response = await userAPI.changePassword(passwordData);
@@ -159,6 +175,7 @@ export const AuthProvider = ({ children }) => {
         register,
         logout,
         updateProfile,
+        updateExtendedProfile,
         changePassword,
         checkAuthStatus,
         hasRole,

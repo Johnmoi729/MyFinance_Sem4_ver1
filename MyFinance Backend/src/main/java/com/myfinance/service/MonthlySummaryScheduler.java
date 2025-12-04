@@ -68,6 +68,7 @@ public class MonthlySummaryScheduler {
 
             // Send email
             emailService.sendMonthlySummaryEmail(
+                    user.getId(),
                     user.getEmail(),
                     user.getFullName(),
                     year,

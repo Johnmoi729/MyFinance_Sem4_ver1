@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useCategory } from '../../context/CategoryContext';
+import IconPicker from '../../components/category/IconPicker';
 
 const AddCategoryPage = () => {
     const navigate = useNavigate();
@@ -10,7 +11,7 @@ const AddCategoryPage = () => {
         name: '',
         type: 'EXPENSE',
         color: '#EF4444',
-        icon: 'default'
+        icon: 'Tag'
     });
     const [message, setMessage] = useState({ text: '', type: '' });
 
@@ -136,10 +137,22 @@ const AddCategoryPage = () => {
                                 name="name"
                                 value={formData.name}
                                 onChange={handleInputChange}
-                                className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                                 placeholder="Nhập tên danh mục"
                                 required
                                 maxLength="100"
+                            />
+                        </div>
+
+                        {/* Icon Selection */}
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                                Biểu tượng *
+                            </label>
+                            <IconPicker
+                                selectedIcon={formData.icon}
+                                onSelectIcon={(icon) => setFormData(prev => ({ ...prev, icon }))}
+                                color={formData.color}
                             />
                         </div>
 
@@ -181,7 +194,7 @@ const AddCategoryPage = () => {
                                 className={`flex-1 py-3 px-4 rounded-md font-medium transition-colors duration-200 ${
                                     loading
                                         ? 'bg-gray-400 cursor-not-allowed text-gray-600'
-                                        : 'bg-blue-600 hover:bg-blue-700 text-white'
+                                        : 'bg-indigo-600 hover:bg-indigo-700 text-white'
                                 }`}
                             >
                                 {loading ? 'Đang xử lý...' : 'Thêm danh mục'}

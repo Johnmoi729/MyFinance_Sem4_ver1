@@ -1,6 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import AdminLayout from '../../components/admin/AdminLayout';
 import { adminAPI } from '../../services/api';
+import SearchFilter from '../../components/common/SearchFilter';
+import { Users, UserCheck, UserX } from '../../components/icons';
 
 const UserManagement = () => {
     const [users, setUsers] = useState([]);
@@ -11,11 +13,7 @@ const UserManagement = () => {
     const [currentPage, setCurrentPage] = useState(0);
     const [totalPages, setTotalPages] = useState(0);
 
-    useEffect(() => {
-        fetchUsers();
-    }, [currentPage, searchTerm, filterActive]);
-
-    const fetchUsers = async () => {
+    const fetchUsers = useCallback(async () => {
         try {
             setLoading(true);
             setError(null);
@@ -44,7 +42,11 @@ const UserManagement = () => {
         } finally {
             setLoading(false);
         }
-    };
+    }, [currentPage, searchTerm, filterActive]);
+
+    useEffect(() => {
+        fetchUsers();
+    }, [fetchUsers]);
 
     const handleUserStatusChange = async (userId, isActive) => {
         try {
@@ -74,7 +76,7 @@ const UserManagement = () => {
         return (
             <AdminLayout>
                 <div className="flex items-center justify-center h-64">
-                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
                 </div>
             </AdminLayout>
         );
@@ -90,44 +92,19 @@ const UserManagement = () => {
                 </div>
 
                 {/* Filters */}
-                <div className="bg-white p-4 rounded-lg shadow">
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">Search Users</label>
-                            <input
-                                type="text"
-                                value={searchTerm}
-                                onChange={(e) => setSearchTerm(e.target.value)}
-                                placeholder="Search by name or email..."
-                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                            />
-                        </div>
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">Status Filter</label>
-                            <select
-                                value={filterActive}
-                                onChange={(e) => setFilterActive(e.target.value)}
-                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                            >
-                                <option value="">All Users</option>
-                                <option value="true">Active Users</option>
-                                <option value="false">Inactive Users</option>
-                            </select>
-                        </div>
-                        <div className="flex items-end">
-                            <button
-                                onClick={() => {
-                                    setSearchTerm('');
-                                    setFilterActive('');
-                                    setCurrentPage(0);
-                                }}
-                                className="px-4 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600 transition-colors"
-                            >
-                                Clear Filters
-                            </button>
-                        </div>
-                    </div>
-                </div>
+                <SearchFilter
+                    searchValue={searchTerm}
+                    onSearchChange={setSearchTerm}
+                    onSearchClear={() => setSearchTerm('')}
+                    searchPlaceholder="Tìm kiếm theo tên hoặc email..."
+                    filterOptions={[
+                        { value: '', label: 'All Users', icon: Users },
+                        { value: 'true', label: 'Active', icon: UserCheck, activeClass: 'bg-green-600 text-white shadow-md' },
+                        { value: 'false', label: 'Inactive', icon: UserX, activeClass: 'bg-red-600 text-white shadow-md' }
+                    ]}
+                    activeFilter={filterActive}
+                    onFilterChange={setFilterActive}
+                />
 
                 {error && (
                     <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
@@ -163,7 +140,7 @@ const UserManagement = () => {
                                 <tr key={user.id} className="hover:bg-gray-50">
                                     <td className="px-6 py-4 whitespace-nowrap">
                                         <div className="flex items-center">
-                                            <div className="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center text-white font-medium">
+                                            <div className="w-10 h-10 bg-indigo-500 rounded-full flex items-center justify-center text-white font-medium">
                                                 {user.fullName?.charAt(0).toUpperCase() || 'U'}
                                             </div>
                                             <div className="ml-4">
@@ -207,7 +184,7 @@ const UserManagement = () => {
                                         >
                                             {user.isActive ? 'Deactivate' : 'Activate'}
                                         </button>
-                                        <button className="px-3 py-1 bg-blue-100 text-blue-700 hover:bg-blue-200 rounded text-xs transition-colors">
+                                        <button className="px-3 py-1 bg-indigo-100 text-indigo-700 hover:bg-indigo-200 rounded text-xs transition-colors">
                                             View Details
                                         </button>
                                     </td>

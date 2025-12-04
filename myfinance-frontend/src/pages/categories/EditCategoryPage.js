@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useCategory } from '../../context/CategoryContext';
+import IconPicker from '../../components/category/IconPicker';
 
 const EditCategoryPage = () => {
     const navigate = useNavigate();
@@ -42,7 +43,7 @@ const EditCategoryPage = () => {
                         name: category.name,
                         type: category.type,
                         color: category.color || '#EF4444',
-                        icon: category.icon || 'default'
+                        icon: category.icon || 'Tag'
                     });
                     setIsDefault(category.isDefault);
                 } else {
@@ -108,7 +109,7 @@ const EditCategoryPage = () => {
         return (
             <div className="min-h-screen bg-gray-50 flex items-center justify-center">
                 <div className="text-center">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600 mx-auto mb-4"></div>
                     <p className="text-gray-500">Đang tải...</p>
                 </div>
             </div>
@@ -189,10 +190,22 @@ const EditCategoryPage = () => {
                                 name="name"
                                 value={formData.name}
                                 onChange={handleInputChange}
-                                className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                                 placeholder="Nhập tên danh mục"
                                 required
                                 maxLength="100"
+                            />
+                        </div>
+
+                        {/* Icon Selection */}
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                                Biểu tượng *
+                            </label>
+                            <IconPicker
+                                selectedIcon={formData.icon}
+                                onSelectIcon={(icon) => setFormData(prev => ({ ...prev, icon }))}
+                                color={formData.color}
                             />
                         </div>
 
@@ -234,7 +247,7 @@ const EditCategoryPage = () => {
                                 className={`flex-1 py-3 px-4 rounded-md font-medium transition-colors duration-200 ${
                                     loading
                                         ? 'bg-gray-400 cursor-not-allowed text-gray-600'
-                                        : 'bg-blue-600 hover:bg-blue-700 text-white'
+                                        : 'bg-indigo-600 hover:bg-indigo-700 text-white'
                                 }`}
                             >
                                 {loading ? 'Đang xử lý...' : 'Cập nhật danh mục'}

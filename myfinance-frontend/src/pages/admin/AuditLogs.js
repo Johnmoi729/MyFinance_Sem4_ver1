@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import AdminLayout from '../../components/admin/AdminLayout';
 import { adminAPI } from '../../services/api';
+import SearchFilter from '../../components/common/SearchFilter';
 
 const AuditLogs = () => {
     const [auditLogs, setAuditLogs] = useState([]);
@@ -34,8 +35,6 @@ const AuditLogs = () => {
         'SYSTEM_CONFIG_ENUM_MIGRATION'  // Only actual migration, not checks
     ];
 
-    const entityTypes = ['User', 'SystemConfig', 'AuditLog'];
-
     const fetchAuditLogs = useCallback(async () => {
         try {
             setLoading(true);
@@ -51,7 +50,14 @@ const AuditLogs = () => {
             // Add filters to params
             Object.keys(filters).forEach(key => {
                 if (filters[key]) {
-                    params[key] = filters[key];
+                    // Convert date to datetime format for backend (ISO 8601)
+                    if (key === 'startDate' && filters[key]) {
+                        params[key] = filters[key] + 'T00:00:00';
+                    } else if (key === 'endDate' && filters[key]) {
+                        params[key] = filters[key] + 'T23:59:59';
+                    } else {
+                        params[key] = filters[key];
+                    }
                 }
             });
 
@@ -106,7 +112,7 @@ const AuditLogs = () => {
 
     const getActionBadgeColor = (action) => {
         if (action?.includes('CREATE')) return 'bg-green-100 text-green-800';
-        if (action?.includes('UPDATE')) return 'bg-blue-100 text-blue-800';
+        if (action?.includes('UPDATE')) return 'bg-indigo-100 text-indigo-800';
         if (action?.includes('DELETE') || action?.includes('CLEANUP')) return 'bg-red-100 text-red-800';
         if (action?.includes('ACTIVATE')) return 'bg-green-100 text-green-800';
         if (action?.includes('DEACTIVATE')) return 'bg-orange-100 text-orange-800';
@@ -159,8 +165,8 @@ const AuditLogs = () => {
         try {
             setLoading(true);
             const params = {
-                startDate: filters.startDate,
-                endDate: filters.endDate,
+                startDate: filters.startDate ? filters.startDate + 'T00:00:00' : undefined,
+                endDate: filters.endDate ? filters.endDate + 'T23:59:59' : undefined,
                 format: 'JSON'
             };
 
@@ -219,7 +225,7 @@ const AuditLogs = () => {
         return (
             <AdminLayout>
                 <div className="flex items-center justify-center h-64">
-                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
                 </div>
             </AdminLayout>
         );
@@ -254,8 +260,8 @@ const AuditLogs = () => {
                 </div>
 
                 {/* Info Box */}
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                    <p className="text-sm text-blue-800">
+                <div className="bg-indigo-50 border border-indigo-200 rounded-lg p-4">
+                    <p className="text-sm text-indigo-800">
                         <strong>Lưu ý:</strong> Hệ thống chỉ ghi lại các hành động quản trị quan trọng như kích hoạt/vô hiệu hóa người dùng,
                         thay đổi cấu hình hệ thống. Các hành động xem thông tin thông thường không được ghi lại để bảo vệ quyền riêng tư
                         và giảm thiểu dữ liệu không cần thiết.
@@ -263,74 +269,34 @@ const AuditLogs = () => {
                 </div>
 
                 {/* Filters */}
-                <div className="bg-white p-6 rounded-lg shadow">
-                    <h3 className="text-lg font-medium text-gray-900 mb-4">Lọc Nhật Ký</h3>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">Loại Hành Động</label>
-                            <select
-                                value={filters.action}
-                                onChange={(e) => handleFilterChange('action', e.target.value)}
-                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                            >
-                                <option value="">Tất cả</option>
-                                {actionTypes.map(action => (
-                                    <option key={action} value={action}>{action}</option>
-                                ))}
-                            </select>
-                        </div>
-
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">Loại Thực Thể</label>
-                            <select
-                                value={filters.entityType}
-                                onChange={(e) => handleFilterChange('entityType', e.target.value)}
-                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                            >
-                                <option value="">Tất cả</option>
-                                {entityTypes.map(entity => (
-                                    <option key={entity} value={entity}>{entity}</option>
-                                ))}
-                            </select>
-                        </div>
-
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">Từ Ngày</label>
-                            <input
-                                type="datetime-local"
-                                value={filters.startDate}
-                                onChange={(e) => handleFilterChange('startDate', e.target.value)}
-                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                            />
-                        </div>
-
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">Đến Ngày</label>
-                            <input
-                                type="datetime-local"
-                                value={filters.endDate}
-                                onChange={(e) => handleFilterChange('endDate', e.target.value)}
-                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                            />
-                        </div>
-                    </div>
-
-                    <div className="mt-4 flex space-x-4">
+                <SearchFilter
+                    useDropdown={true}
+                    filterOptions={[
+                        { value: '', label: 'Tất cả hành động' },
+                        ...actionTypes.map(action => ({ value: action, label: action }))
+                    ]}
+                    activeFilter={filters.action}
+                    onFilterChange={(value) => handleFilterChange('action', value)}
+                    showDateFilter={true}
+                    dateRange={{ startDate: filters.startDate, endDate: filters.endDate }}
+                    onDateChange={(dateRange) => {
+                        if (dateRange.startDate !== filters.startDate) {
+                            handleFilterChange('startDate', dateRange.startDate);
+                        }
+                        if (dateRange.endDate !== filters.endDate) {
+                            handleFilterChange('endDate', dateRange.endDate);
+                        }
+                    }}
+                    customFilters={[
                         <button
-                            onClick={() => fetchAuditLogs()}
-                            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
-                        >
-                            Áp Dụng
-                        </button>
-                        <button
+                            key="clear"
                             onClick={clearFilters}
-                            className="px-4 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600 transition-colors"
+                            className="px-4 py-2 bg-gray-500 hover:bg-gray-600 text-white rounded-xl transition-colors"
                         >
-                            Xóa Bộ Lọc
+                            Xóa bộ lọc
                         </button>
-                    </div>
-                </div>
+                    ]}
+                />
 
                 {error && (
                     <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
@@ -427,7 +393,7 @@ const AuditLogs = () => {
                                                 onClick={() => setCurrentPage(pageNumber)}
                                                 className={`relative inline-flex items-center px-4 py-2 border text-sm font-medium ${
                                                     currentPage === pageNumber
-                                                        ? 'z-10 bg-blue-50 border-blue-500 text-blue-600'
+                                                        ? 'z-10 bg-indigo-50 border-indigo-500 text-indigo-600'
                                                         : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50'
                                                 }`}
                                             >
@@ -467,7 +433,7 @@ const AuditLogs = () => {
                                     min="1"
                                     value={daysOld}
                                     onChange={(e) => setDaysOld(parseInt(e.target.value))}
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
                                 />
                             </div>
                             <div className="flex space-x-3">

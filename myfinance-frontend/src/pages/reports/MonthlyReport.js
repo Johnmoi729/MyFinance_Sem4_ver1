@@ -1,14 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { reportAPI, formatCurrency } from '../../services/api';
+import { reportAPI } from '../../services/api';
+import { useCurrencyFormatter } from '../../utils/currencyFormatter';
 import { exportMonthlyReportToCSV } from '../../utils/exportUtils';
 import { exportMonthlyReportToPDF } from '../../utils/pdfExportUtils';
+import { exportMonthlyReportToExcel } from '../../utils/excelExportUtils';
 import CategoryPieChart from '../../components/charts/CategoryPieChart';
 import FinancialHealthScore from '../../components/reports/FinancialHealthScore';
 import BudgetVsActual from '../../components/reports/BudgetVsActual';
+import { ChevronLeft, ChevronRight } from '../../components/icons';
 
 const MonthlyReport = () => {
-    const navigate = useNavigate();
+    const { formatCurrency } = useCurrencyFormatter();
     const currentDate = new Date();
     const [year, setYear] = useState(currentDate.getFullYear());
     const [month, setMonth] = useState(currentDate.getMonth() + 1);
@@ -96,7 +98,7 @@ const MonthlyReport = () => {
             <div className="min-h-screen bg-gray-50">
                 <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
                     <div className="text-center py-12">
-                        <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+                        <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-500"></div>
                         <p className="mt-2 text-gray-600">Đang tải báo cáo...</p>
                     </div>
                 </div>
@@ -114,52 +116,46 @@ const MonthlyReport = () => {
                 </div>
 
                 {/* Month/Year Selector */}
-                <div className="bg-white rounded-lg shadow-md p-6 mb-6">
-                    <div className="flex flex-wrap items-center gap-4">
+                <div className="bg-white rounded-lg shadow-md p-4 mb-6">
+                    <div className="flex flex-wrap items-center gap-3">
                         <button
                             onClick={handlePreviousMonth}
-                            className="px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
+                            className="p-2 bg-gray-100 hover:bg-gray-200 rounded-xl transition-colors"
                         >
-                            ← Tháng trước
+                            <ChevronLeft className="w-5 h-5" />
                         </button>
 
-                        <div className="flex items-center gap-2">
-                            <label className="text-sm font-medium text-gray-700">Tháng:</label>
-                            <select
-                                value={month}
-                                onChange={handleMonthChange}
-                                className="px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
-                            >
-                                {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map(m => (
-                                    <option key={m} value={m}>Tháng {m}</option>
-                                ))}
-                            </select>
-                        </div>
+                        <select
+                            value={month}
+                            onChange={handleMonthChange}
+                            className="px-3 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500"
+                        >
+                            {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map(m => (
+                                <option key={m} value={m}>Tháng {m}</option>
+                            ))}
+                        </select>
 
-                        <div className="flex items-center gap-2">
-                            <label className="text-sm font-medium text-gray-700">Năm:</label>
-                            <input
-                                type="number"
-                                value={year}
-                                onChange={handleYearChange}
-                                min="2000"
-                                max="2100"
-                                className="px-3 py-2 border border-gray-300 rounded-md w-24 focus:ring-2 focus:ring-blue-500"
-                            />
-                        </div>
+                        <input
+                            type="number"
+                            value={year}
+                            onChange={handleYearChange}
+                            min="2000"
+                            max="2100"
+                            className="px-3 py-2 border border-gray-300 rounded-xl w-24 focus:ring-2 focus:ring-indigo-500"
+                        />
 
                         <button
                             onClick={handleCurrentMonth}
-                            className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-md transition-colors"
+                            className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl transition-colors"
                         >
                             Tháng hiện tại
                         </button>
 
                         <button
                             onClick={handleNextMonth}
-                            className="px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
+                            className="p-2 bg-gray-100 hover:bg-gray-200 rounded-xl transition-colors"
                         >
-                            Tháng sau →
+                            <ChevronRight className="w-5 h-5" />
                         </button>
                     </div>
                 </div>
@@ -176,6 +172,13 @@ const MonthlyReport = () => {
                     <div className="space-y-6">
                         {/* Export Buttons */}
                         <div className="flex justify-end gap-3">
+                            <button
+                                onClick={() => exportMonthlyReportToExcel(report)}
+                                className="px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-md font-medium transition-colors flex items-center gap-2"
+                            >
+                                <span>📊</span>
+                                Xuất Excel
+                            </button>
                             <button
                                 onClick={() => exportMonthlyReportToCSV(report)}
                                 className="px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-md font-medium transition-colors flex items-center gap-2"
@@ -234,7 +237,7 @@ const MonthlyReport = () => {
                                 <div className="flex items-center justify-between">
                                     <div>
                                         <p className="text-sm font-medium text-gray-600">Tiết kiệm ròng</p>
-                                        <p className={`text-2xl font-bold mt-2 ${report.netSavings >= 0 ? 'text-blue-600' : 'text-red-600'}`}>
+                                        <p className={`text-2xl font-bold mt-2 ${report.netSavings >= 0 ? 'text-indigo-600' : 'text-red-600'}`}>
                                             {formatCurrency(report.netSavings)}
                                         </p>
                                         {report.savingsRate !== undefined && (

@@ -1,6 +1,6 @@
 import React from 'react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts';
-import { formatCurrency } from '../../services/api';
+import { useCurrencyFormatter } from '../../utils/currencyFormatter';
 
 const COLORS = [
     '#3B82F6', // Blue
@@ -16,6 +16,7 @@ const COLORS = [
 ];
 
 const CategoryPieChart = ({ data, title }) => {
+    const { formatCurrency } = useCurrencyFormatter();
     if (!data || data.length === 0) {
         return (
             <div className="flex items-center justify-center h-64 text-gray-500">

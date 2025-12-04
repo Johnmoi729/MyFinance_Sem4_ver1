@@ -149,6 +149,7 @@ public class ScheduledReportService {
                         getFileExtension(scheduledReport.getFormat()));
 
                 emailService.sendScheduledReportEmail(
+                        user.getId(),
                         user.getEmail(),
                         user.getFullName(),
                         getReportTypeName(scheduledReport.getReportType()),
@@ -285,6 +286,7 @@ public class ScheduledReportService {
             // Send email
             String fileName = String.format("test_monthly_report_%s.pdf", LocalDate.now());
             emailService.sendScheduledReportEmail(
+                    user.getId(),
                     user.getEmail(),
                     user.getFullName(),
                     "Báo cáo tháng (TEST)",

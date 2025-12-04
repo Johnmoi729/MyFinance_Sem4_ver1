@@ -115,7 +115,7 @@ const ScheduledReports = () => {
                     </div>
                     <button
                         onClick={() => setShowAddForm(!showAddForm)}
-                        className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-md font-medium transition-colors"
+                        className="px-4 py-2 bg-indigo-500 hover:bg-indigo-600 text-white rounded-md font-medium transition-colors"
                     >
                         {showAddForm ? 'Hủy' : '+ Thêm lịch mới'}
                     </button>
@@ -151,7 +151,7 @@ const ScheduledReports = () => {
                                         name="reportType"
                                         value={formData.reportType}
                                         onChange={handleInputChange}
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-indigo-500"
                                         required
                                     >
                                         <option value="monthly">Báo cáo tháng</option>
@@ -169,7 +169,7 @@ const ScheduledReports = () => {
                                         name="frequency"
                                         value={formData.frequency}
                                         onChange={handleInputChange}
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-indigo-500"
                                         required
                                     >
                                         <option value="daily">Hàng ngày</option>
@@ -189,7 +189,7 @@ const ScheduledReports = () => {
                                         name="format"
                                         value={formData.format}
                                         onChange={handleInputChange}
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-indigo-500"
                                         required
                                     >
                                         <option value="pdf">PDF</option>
@@ -209,7 +209,7 @@ const ScheduledReports = () => {
                                         value={formData.email}
                                         onChange={handleInputChange}
                                         placeholder="email@example.com"
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-indigo-500"
                                     />
                                 </div>
                             </div>
@@ -222,7 +222,7 @@ const ScheduledReports = () => {
                                     id="emailDelivery"
                                     checked={formData.emailDelivery}
                                     onChange={handleInputChange}
-                                    className="w-4 h-4 text-blue-600"
+                                    className="w-4 h-4 text-indigo-600"
                                 />
                                 <label htmlFor="emailDelivery" className="text-sm text-gray-700">
                                     Gửi báo cáo qua email tự động
@@ -240,7 +240,7 @@ const ScheduledReports = () => {
                                 </button>
                                 <button
                                     type="submit"
-                                    className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-md font-medium transition-colors"
+                                    className="px-4 py-2 bg-indigo-500 hover:bg-indigo-600 text-white rounded-md font-medium transition-colors"
                                 >
                                     Lưu lịch
                                 </button>
@@ -290,7 +290,7 @@ const ScheduledReports = () => {
                                         <td className="px-6 py-4 whitespace-nowrap text-sm">
                                             <button
                                                 onClick={() => handleToggleEnabled(schedule.id)}
-                                                className="text-blue-600 hover:text-blue-800 mr-3"
+                                                className="text-indigo-600 hover:text-indigo-800 mr-3"
                                             >
                                                 {schedule.enabled ? 'Tạm dừng' : 'Kích hoạt'}
                                             </button>

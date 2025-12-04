@@ -48,6 +48,16 @@ public class AuthController {
         return ResponseEntity.ok(ApiResponse.success("Cập nhật hồ sơ thành công", response));
     }
 
+    @PutMapping("/profile/extended")
+    public ResponseEntity<ApiResponse<UserResponse>> updateExtendedProfile(
+            @Valid @RequestBody ExtendedProfileRequest request,
+            @RequestHeader("Authorization") String authHeader) {
+
+        Long userId = extractUserIdFromToken(authHeader);
+        UserResponse response = authService.updateExtendedProfile(userId, request);
+        return ResponseEntity.ok(ApiResponse.success("Cập nhật thông tin chi tiết thành công", response));
+    }
+
     @PostMapping("/change-password")
     public ResponseEntity<ApiResponse<Void>> changePassword(
             @Valid @RequestBody ChangePasswordRequest request,

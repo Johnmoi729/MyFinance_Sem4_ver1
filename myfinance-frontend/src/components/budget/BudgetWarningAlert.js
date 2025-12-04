@@ -1,16 +1,12 @@
 import React from 'react';
+import { useCurrencyFormatter } from '../../utils/currencyFormatter';
 
 const BudgetWarningAlert = ({ alerts, onViewDetails, onDismiss, compact = false }) => {
+    const { formatCurrency } = useCurrencyFormatter();
+
     if (!alerts || alerts.length === 0) {
         return null;
     }
-
-    const formatCurrency = (amount) => {
-        return new Intl.NumberFormat('vi-VN', {
-            style: 'currency',
-            currency: 'VND',
-        }).format(amount);
-    };
 
     const getAlertIcon = (alertLevel) => {
         switch (alertLevel) {

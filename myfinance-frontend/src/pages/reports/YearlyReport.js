@@ -1,14 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { reportAPI, formatCurrency } from '../../services/api';
+import { reportAPI } from '../../services/api';
+import { useCurrencyFormatter } from '../../utils/currencyFormatter';
 import { exportYearlyReportToCSV } from '../../utils/exportUtils';
 import { exportYearlyReportToPDF } from '../../utils/pdfExportUtils';
+import { exportYearlyReportToExcel } from '../../utils/excelExportUtils';
 import CategoryPieChart from '../../components/charts/CategoryPieChart';
 import MonthlyTrendChart from '../../components/charts/MonthlyTrendChart';
 import FinancialHealthScore from '../../components/reports/FinancialHealthScore';
+import { ChevronLeft, ChevronRight } from '../../components/icons';
 
 const YearlyReport = () => {
-    const navigate = useNavigate();
+    const { formatCurrency } = useCurrencyFormatter();
     const currentDate = new Date();
     const [year, setYear] = useState(currentDate.getFullYear());
     const [report, setReport] = useState(null);
@@ -76,7 +78,7 @@ const YearlyReport = () => {
             <div className="min-h-screen bg-gray-50">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
                     <div className="text-center py-12">
-                        <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+                        <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-500"></div>
                         <p className="mt-2 text-gray-600">Đang tải báo cáo...</p>
                     </div>
                 </div>
@@ -94,39 +96,36 @@ const YearlyReport = () => {
                 </div>
 
                 {/* Year Selector */}
-                <div className="bg-white rounded-lg shadow-md p-6 mb-6">
-                    <div className="flex flex-wrap items-center gap-4">
+                <div className="bg-white rounded-lg shadow-md p-4 mb-6">
+                    <div className="flex flex-wrap items-center gap-3">
                         <button
                             onClick={handlePreviousYear}
-                            className="px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
+                            className="p-2 bg-gray-100 hover:bg-gray-200 rounded-xl transition-colors"
                         >
-                            ← Năm trước
+                            <ChevronLeft className="w-5 h-5" />
                         </button>
 
-                        <div className="flex items-center gap-2">
-                            <label className="text-sm font-medium text-gray-700">Năm:</label>
-                            <input
-                                type="number"
-                                value={year}
-                                onChange={handleYearChange}
-                                min="2000"
-                                max="2100"
-                                className="px-3 py-2 border border-gray-300 rounded-md w-24 focus:ring-2 focus:ring-blue-500"
-                            />
-                        </div>
+                        <input
+                            type="number"
+                            value={year}
+                            onChange={handleYearChange}
+                            min="2000"
+                            max="2100"
+                            className="px-3 py-2 border border-gray-300 rounded-xl w-24 focus:ring-2 focus:ring-indigo-500"
+                        />
 
                         <button
                             onClick={handleCurrentYear}
-                            className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-md transition-colors"
+                            className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl transition-colors"
                         >
                             Năm hiện tại
                         </button>
 
                         <button
                             onClick={handleNextYear}
-                            className="px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
+                            className="p-2 bg-gray-100 hover:bg-gray-200 rounded-xl transition-colors"
                         >
-                            Năm sau →
+                            <ChevronRight className="w-5 h-5" />
                         </button>
                     </div>
                 </div>
@@ -143,6 +142,13 @@ const YearlyReport = () => {
                     <div className="space-y-6">
                         {/* Export Buttons */}
                         <div className="flex justify-end gap-3">
+                            <button
+                                onClick={() => exportYearlyReportToExcel(report)}
+                                className="px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-md font-medium transition-colors flex items-center gap-2"
+                            >
+                                <span>📊</span>
+                                Xuất Excel
+                            </button>
                             <button
                                 onClick={() => exportYearlyReportToCSV(report)}
                                 className="px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-md font-medium transition-colors flex items-center gap-2"
@@ -201,7 +207,7 @@ const YearlyReport = () => {
                                 <div className="flex items-center justify-between">
                                     <div>
                                         <p className="text-sm font-medium text-gray-600">Tiết kiệm ròng</p>
-                                        <p className={`text-2xl font-bold mt-2 ${report.netSavings >= 0 ? 'text-blue-600' : 'text-red-600'}`}>
+                                        <p className={`text-2xl font-bold mt-2 ${report.netSavings >= 0 ? 'text-indigo-600' : 'text-red-600'}`}>
                                             {formatCurrency(report.netSavings)}
                                         </p>
                                         {report.savingsRate !== undefined && (
@@ -256,10 +262,10 @@ const YearlyReport = () => {
 
                             {/* Highest Income Month */}
                             {report.highestIncomeMonth && (
-                                <div className="bg-white rounded-lg shadow-md p-4 border-l-4 border-blue-500">
+                                <div className="bg-white rounded-lg shadow-md p-4 border-l-4 border-indigo-500">
                                     <p className="text-sm font-medium text-gray-600">Tháng thu nhập cao nhất</p>
                                     <p className="text-lg font-bold text-gray-900 mt-1">{report.highestIncomeMonth.monthName}</p>
-                                    <p className="text-sm font-bold text-blue-600">{formatCurrency(report.highestIncomeMonth.income)}</p>
+                                    <p className="text-sm font-bold text-indigo-600">{formatCurrency(report.highestIncomeMonth.income)}</p>
                                 </div>
                             )}
 
@@ -318,7 +324,7 @@ const YearlyReport = () => {
                                                     <td className="px-4 py-3 text-right font-medium text-red-600">
                                                         {formatCurrency(trend.expense)}
                                                     </td>
-                                                    <td className={`px-4 py-3 text-right font-medium ${trend.savings >= 0 ? 'text-blue-600' : 'text-red-600'}`}>
+                                                    <td className={`px-4 py-3 text-right font-medium ${trend.savings >= 0 ? 'text-indigo-600' : 'text-red-600'}`}>
                                                         {formatCurrency(trend.savings)}
                                                     </td>
                                                     <td className="px-4 py-3 text-right text-gray-600">

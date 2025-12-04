@@ -1,8 +1,9 @@
 import React from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-import { formatCurrency } from '../../services/api';
+import { useCurrencyFormatter } from '../../utils/currencyFormatter';
 
 const SpendingLineChart = ({ data, title, dataKeys = ['amount'] }) => {
+    const { formatCurrency } = useCurrencyFormatter();
     if (!data || data.length === 0) {
         return (
             <div className="flex items-center justify-center h-64 text-gray-500">

@@ -1,8 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import AdminLayout from '../../components/admin/AdminLayout';
-import { adminAPI, formatCurrency } from '../../services/api';
+import { adminAPI } from '../../services/api';
+import { useCurrencyFormatter } from '../../utils/currencyFormatter';
+import { TrendingUp, TrendingDown, BarChart3, Users } from '../../components/icons';
 
 const FinancialAnalytics = () => {
+    const { formatCurrency } = useCurrencyFormatter();
     const [analyticsData, setAnalyticsData] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -71,7 +74,7 @@ const FinancialAnalytics = () => {
         return (
             <AdminLayout>
                 <div className="flex items-center justify-center h-64">
-                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
                 </div>
             </AdminLayout>
         );
@@ -92,7 +95,7 @@ const FinancialAnalytics = () => {
                     {/* Export Button */}
                     <button
                         onClick={() => alert('Export functionality will be implemented in next phase')}
-                        className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+                        className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors"
                     >
                         Export Report
                     </button>
@@ -109,7 +112,7 @@ const FinancialAnalytics = () => {
                             <select
                                 value={timeFrame}
                                 onChange={(e) => handleTimeFrameChange(e.target.value)}
-                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
                             >
                                 <option value="month">Monthly</option>
                                 <option value="quarter">Quarterly</option>
@@ -123,7 +126,7 @@ const FinancialAnalytics = () => {
                             <select
                                 value={selectedPeriod.year}
                                 onChange={(e) => handlePeriodChange('year', e.target.value)}
-                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
                             >
                                 {Array.from({ length: 5 }, (_, i) => new Date().getFullYear() - i).map(year => (
                                     <option key={year} value={year}>{year}</option>
@@ -138,7 +141,7 @@ const FinancialAnalytics = () => {
                                 <select
                                     value={selectedPeriod.month}
                                     onChange={(e) => handlePeriodChange('month', e.target.value)}
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
                                 >
                                     {Array.from({ length: 12 }, (_, i) => i + 1).map(month => (
                                         <option key={month} value={month}>
@@ -155,7 +158,7 @@ const FinancialAnalytics = () => {
                                 <select
                                     value={selectedPeriod.quarter}
                                     onChange={(e) => handlePeriodChange('quarter', e.target.value)}
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
                                 >
                                     <option value={1}>Q1 (Jan-Mar)</option>
                                     <option value={2}>Q2 (Apr-Jun)</option>
@@ -188,9 +191,7 @@ const FinancialAnalytics = () => {
                                 </p>
                             </div>
                             <div className="p-2 bg-green-100 rounded-lg">
-                                <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
-                                </svg>
+                                <TrendingUp className="w-6 h-6 text-green-600" />
                             </div>
                         </div>
                     </div>
@@ -207,9 +208,7 @@ const FinancialAnalytics = () => {
                                 </p>
                             </div>
                             <div className="p-2 bg-red-100 rounded-lg">
-                                <svg className="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 17h8m0 0V9m0 8l-8-8-4 4-6-6" />
-                                </svg>
+                                <TrendingDown className="w-6 h-6 text-red-600" />
                             </div>
                         </div>
                     </div>
@@ -225,10 +224,8 @@ const FinancialAnalytics = () => {
                                     {formatGrowthRate(analyticsData?.profitGrowth || 0)} vs previous period
                                 </p>
                             </div>
-                            <div className="p-2 bg-blue-100 rounded-lg">
-                                <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                                </svg>
+                            <div className="p-2 bg-indigo-100 rounded-lg">
+                                <BarChart3 className="w-6 h-6 text-indigo-600" />
                             </div>
                         </div>
                     </div>
@@ -245,9 +242,7 @@ const FinancialAnalytics = () => {
                                 </p>
                             </div>
                             <div className="p-2 bg-purple-100 rounded-lg">
-                                <svg className="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
-                                </svg>
+                                <Users className="w-6 h-6 text-purple-600" />
                             </div>
                         </div>
                     </div>
@@ -309,7 +304,7 @@ const FinancialAnalytics = () => {
                     <h3 className="text-lg font-medium text-gray-900 mb-4">User Engagement Metrics</h3>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                         <div className="text-center">
-                            <p className="text-3xl font-bold text-blue-600">
+                            <p className="text-3xl font-bold text-indigo-600">
                                 {analyticsData?.avgTransactionsPerUser?.toFixed(1) || '0.0'}
                             </p>
                             <p className="text-sm text-gray-600">Avg Transactions per User</p>

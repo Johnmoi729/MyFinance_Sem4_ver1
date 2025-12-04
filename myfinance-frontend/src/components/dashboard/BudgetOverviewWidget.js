@@ -2,16 +2,11 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { useBudget } from '../../context/BudgetContext';
 import BudgetProgressBar from '../budget/BudgetProgressBar';
+import { useCurrencyFormatter } from '../../utils/currencyFormatter';
 
 const BudgetOverviewWidget = () => {
     const { budgetDashboard, analyticsLoading } = useBudget();
-
-    const formatCurrency = (amount) => {
-        return new Intl.NumberFormat('vi-VN', {
-            style: 'currency',
-            currency: 'VND',
-        }).format(amount);
-    };
+    const { formatCurrency } = useCurrencyFormatter();
 
     if (analyticsLoading) {
         return (

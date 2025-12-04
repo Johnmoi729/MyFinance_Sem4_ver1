@@ -13,6 +13,7 @@ import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Locale;
@@ -24,6 +25,7 @@ public class EmailService {
 
     private final JavaMailSender mailSender;
     private final TemplateEngine templateEngine;
+    private final UserPreferencesService userPreferencesService;
 
     @Value("${app.email.from}")
     private String fromEmail;
@@ -34,12 +36,57 @@ public class EmailService {
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm", new Locale("vi", "VN"));
 
     /**
+     * Check if email should be sent based on user preferences
+     * @param userId User ID
+     * @param specificPreference Specific preference to check (e.g., budgetAlerts, monthlySummary)
+     * @return true if email should be sent, false otherwise
+     */
+    private boolean shouldSendEmail(Long userId, String specificPreference) {
+        if (!emailEnabled) {
+            log.info("Email globally disabled via config");
+            return false;
+        }
+
+        try {
+            com.myfinance.entity.UserPreferences prefs = userPreferencesService.getUserPreferences(userId);
+
+            // First check master email notification switch
+            if (prefs.getEmailNotifications() == null || !prefs.getEmailNotifications()) {
+                log.info("Email notifications disabled for user: {}", userId);
+                return false;
+            }
+
+            // Then check specific preference if provided
+            if (specificPreference != null) {
+                Boolean specificPref = switch (specificPreference) {
+                    case "budgetAlerts" -> prefs.getBudgetAlerts();
+                    case "monthlySummary" -> prefs.getMonthlySummary();
+                    case "weeklySummary" -> prefs.getWeeklySummary();
+                    case "transactionReminders" -> prefs.getTransactionReminders();
+                    case "goalReminders" -> prefs.getGoalReminders();
+                    default -> true; // Unknown preference type, allow email
+                };
+
+                if (specificPref == null || !specificPref) {
+                    log.info("{} disabled for user: {}", specificPreference, userId);
+                    return false;
+                }
+            }
+
+            return true;
+        } catch (Exception e) {
+            log.error("Error checking email preferences for user: {}. Defaulting to not sending email.", userId, e);
+            return false; // Fail safe - don't send email if we can't check preferences
+        }
+    }
+
+    /**
      * Send welcome email to new user
      */
     @Async
-    public void sendWelcomeEmail(String toEmail, String fullName) {
-        if (!emailEnabled) {
-            log.info("Email disabled. Would send welcome email to: {}", toEmail);
+    public void sendWelcomeEmail(Long userId, String toEmail, String fullName) {
+        if (!shouldSendEmail(userId, null)) {
+            log.info("Welcome email not sent to {} - notifications disabled", toEmail);
             return;
         }
 
@@ -61,9 +108,9 @@ public class EmailService {
      * Send password reset email
      */
     @Async
-    public void sendPasswordResetEmail(String toEmail, String fullName, String resetToken) {
-        if (!emailEnabled) {
-            log.info("Email disabled. Would send password reset email to: {}", toEmail);
+    public void sendPasswordResetEmail(Long userId, String toEmail, String fullName, String resetToken) {
+        if (!shouldSendEmail(userId, null)) {
+            log.info("Password reset email not sent to {} - notifications disabled", toEmail);
             return;
         }
 
@@ -87,11 +134,11 @@ public class EmailService {
      * Send budget alert email when threshold exceeded
      */
     @Async
-    public void sendBudgetAlertEmail(String toEmail, String fullName, String categoryName,
+    public void sendBudgetAlertEmail(Long userId, String toEmail, String fullName, String categoryName,
                                       BigDecimal budgetAmount, BigDecimal actualAmount,
                                       Double usagePercent) {
-        if (!emailEnabled) {
-            log.info("Email disabled. Would send budget alert email to: {}", toEmail);
+        if (!shouldSendEmail(userId, "budgetAlerts")) {
+            log.info("Budget alert email not sent to {} - notifications or budgetAlerts disabled", toEmail);
             return;
         }
 
@@ -118,14 +165,14 @@ public class EmailService {
      * Send monthly summary email
      */
     @Async
-    public void sendMonthlySummaryEmail(String toEmail, String fullName,
+    public void sendMonthlySummaryEmail(Long userId, String toEmail, String fullName,
                                          int year, int month,
                                          BigDecimal totalIncome,
                                          BigDecimal totalExpense,
                                          BigDecimal netSavings,
                                          Double savingsRate) {
-        if (!emailEnabled) {
-            log.info("Email disabled. Would send monthly summary email to: {}", toEmail);
+        if (!shouldSendEmail(userId, "monthlySummary")) {
+            log.info("Monthly summary email not sent to {} - notifications or monthlySummary disabled", toEmail);
             return;
         }
 
@@ -152,14 +199,53 @@ public class EmailService {
     }
 
     /**
+     * Send weekly summary email
+     */
+    @Async
+    public void sendWeeklySummaryEmail(Long userId, String toEmail, String fullName,
+                                        LocalDate startDate, LocalDate endDate,
+                                        BigDecimal totalIncome,
+                                        BigDecimal totalExpense,
+                                        BigDecimal netSavings,
+                                        Double savingsRate,
+                                        int transactionCount) {
+        if (!shouldSendEmail(userId, "weeklySummary")) {
+            log.info("Weekly summary email not sent to {} - notifications or weeklySummary disabled", toEmail);
+            return;
+        }
+
+        try {
+            Context context = new Context();
+            context.setVariable("fullName", fullName);
+            context.setVariable("startDate", startDate.format(DATE_FORMATTER));
+            context.setVariable("endDate", endDate.format(DATE_FORMATTER));
+            context.setVariable("totalIncome", formatCurrency(totalIncome));
+            context.setVariable("totalExpense", formatCurrency(totalExpense));
+            context.setVariable("netSavings", formatCurrency(netSavings));
+            context.setVariable("savingsRate", String.format("%.1f", savingsRate));
+            context.setVariable("transactionCount", transactionCount);
+            context.setVariable("currentDate", LocalDateTime.now().format(DATE_FORMATTER));
+
+            String htmlContent = templateEngine.process("email/weekly-summary", context);
+
+            String subject = String.format("Báo cáo tuần %s - %s",
+                    startDate.format(DATE_FORMATTER), endDate.format(DATE_FORMATTER));
+            sendHtmlEmail(toEmail, subject, htmlContent);
+            log.info("Weekly summary email sent to: {} for {} to {}", toEmail, startDate, endDate);
+        } catch (Exception e) {
+            log.error("Failed to send weekly summary email to: {}", toEmail, e);
+        }
+    }
+
+    /**
      * Send scheduled report email
      */
     @Async
-    public void sendScheduledReportEmail(String toEmail, String fullName,
+    public void sendScheduledReportEmail(Long userId, String toEmail, String fullName,
                                           String reportType, byte[] attachment,
                                           String fileName) {
-        if (!emailEnabled) {
-            log.info("Email disabled. Would send scheduled report email to: {}", toEmail);
+        if (!shouldSendEmail(userId, null)) {
+            log.info("Scheduled report email not sent to {} - notifications disabled", toEmail);
             return;
         }
 
@@ -176,6 +262,31 @@ public class EmailService {
             log.info("Scheduled report email sent to: {} with attachment: {}", toEmail, fileName);
         } catch (Exception e) {
             log.error("Failed to send scheduled report email to: {}", toEmail, e);
+        }
+    }
+
+    /**
+     * Send password change notification email
+     */
+    @Async
+    public void sendPasswordChangeEmail(Long userId, String toEmail, String fullName, String changeTime) {
+        if (!shouldSendEmail(userId, null)) {
+            log.info("Password change email not sent to {} - notifications disabled", toEmail);
+            return;
+        }
+
+        try {
+            Context context = new Context();
+            context.setVariable("fullName", fullName);
+            context.setVariable("email", toEmail);
+            context.setVariable("changeTime", changeTime);
+
+            String htmlContent = templateEngine.process("email/password-change", context);
+
+            sendHtmlEmail(toEmail, "Mật khẩu đã được thay đổi", htmlContent);
+            log.info("Password change notification email sent to: {}", toEmail);
+        } catch (Exception e) {
+            log.error("Failed to send password change email to: {}", toEmail, e);
         }
     }
 

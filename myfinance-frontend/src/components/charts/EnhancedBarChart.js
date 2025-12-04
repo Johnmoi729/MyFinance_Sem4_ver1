@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Cell } from 'recharts';
-import { formatCurrency } from '../../services/api';
+import { useCurrencyFormatter } from '../../utils/currencyFormatter';
 
 const EnhancedBarChart = ({ data, title, onBarClick, showComparison = false }) => {
+    const { formatCurrency } = useCurrencyFormatter();
     const [activeIndex, setActiveIndex] = useState(null);
 
     if (!data || data.length === 0) {

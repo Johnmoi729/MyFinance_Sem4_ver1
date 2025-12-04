@@ -176,6 +176,19 @@ class UserAPI extends ApiService {
         }
     }
 
+    // Update extended profile (avatar, address, dateOfBirth)
+    async updateExtendedProfile(extendedData) {
+        try {
+            const response = await this.put('/api/auth/profile/extended', extendedData);
+            return response;
+        } catch (error) {
+            return {
+                success: false,
+                message: 'Không thể cập nhật thông tin mở rộng'
+            };
+        }
+    }
+
     // Change password
     async changePassword(passwordData) {
         try {
@@ -983,6 +996,116 @@ class ReportAPI extends ApiService {
     }
 }
 
+// User Preferences API methods
+class PreferencesAPI extends ApiService {
+    // Get user preferences
+    async getPreferences() {
+        try {
+            const response = await this.get('/api/preferences');
+            return response;
+        } catch (error) {
+            return {
+                success: false,
+                message: 'Không thể tải cài đặt'
+            };
+        }
+    }
+
+    // Update preferences
+    async updatePreferences(preferences) {
+        try {
+            const response = await this.put('/api/preferences', preferences);
+            return response;
+        } catch (error) {
+            return {
+                success: false,
+                message: 'Không thể cập nhật cài đặt'
+            };
+        }
+    }
+
+    // Reset to defaults
+    async resetToDefaults() {
+        try {
+            const response = await this.post('/api/preferences/reset', {});
+            return response;
+        } catch (error) {
+            return {
+                success: false,
+                message: 'Không thể đặt lại cài đặt'
+            };
+        }
+    }
+}
+
+// Onboarding Progress API methods
+class OnboardingAPI extends ApiService {
+    // Get onboarding progress
+    async getProgress() {
+        try {
+            const response = await this.get('/api/onboarding/progress');
+            return response;
+        } catch (error) {
+            return {
+                success: false,
+                message: 'Không thể tải tiến trình hướng dẫn'
+            };
+        }
+    }
+
+    // Complete a step
+    async completeStep(stepNumber) {
+        try {
+            const response = await this.post('/api/onboarding/complete-step', { stepNumber });
+            return response;
+        } catch (error) {
+            return {
+                success: false,
+                message: 'Không thể hoàn thành bước này'
+            };
+        }
+    }
+
+    // Complete onboarding
+    async completeOnboarding() {
+        try {
+            const response = await this.post('/api/onboarding/complete', {});
+            return response;
+        } catch (error) {
+            return {
+                success: false,
+                message: 'Không thể hoàn thành hướng dẫn'
+            };
+        }
+    }
+
+    // Skip onboarding
+    async skipOnboarding() {
+        try {
+            const response = await this.post('/api/onboarding/skip', {});
+            return response;
+        } catch (error) {
+            return {
+                success: false,
+                message: 'Không thể bỏ qua hướng dẫn'
+            };
+        }
+    }
+
+    // Restart onboarding
+    async restartOnboarding() {
+        try {
+            const response = await this.post('/api/onboarding/restart', {});
+            return response;
+        } catch (error) {
+            return {
+                success: false,
+                message: 'Không thể khởi động lại hướng dẫn'
+            };
+        }
+    }
+}
+
 // Create instances
 const userAPI = new UserAPI();
 const transactionAPI = new TransactionAPI();
@@ -991,9 +1114,11 @@ const budgetAPI = new BudgetAPI();
 const adminAPI = new AdminAPI();
 const budgetSettingsAPI = new BudgetSettingsAPI();
 const reportAPI = new ReportAPI();
+const preferencesAPI = new PreferencesAPI();
+const onboardingAPI = new OnboardingAPI();
 
 // Export APIs
-export { userAPI, transactionAPI, categoryAPI, budgetAPI, adminAPI, budgetSettingsAPI, reportAPI };
+export { userAPI, transactionAPI, categoryAPI, budgetAPI, adminAPI, budgetSettingsAPI, reportAPI, preferencesAPI, onboardingAPI };
 
 // Utility functions
 export const formatCurrency = (amount) => {

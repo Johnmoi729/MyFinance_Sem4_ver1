@@ -1,14 +1,10 @@
 import React from 'react';
 import BudgetProgressBar from './BudgetProgressBar';
 import BudgetStatusBadge from './BudgetStatusBadge';
+import { useCurrencyFormatter } from '../../utils/currencyFormatter';
 
 const BudgetUsageCard = ({ budgetUsage, onClick, showPeriod = false }) => {
-    const formatCurrency = (amount) => {
-        return new Intl.NumberFormat('vi-VN', {
-            style: 'currency',
-            currency: 'VND',
-        }).format(amount);
-    };
+    const { formatCurrency } = useCurrencyFormatter();
 
     const getRemainingAmount = () => {
         return budgetUsage.budgetAmount - budgetUsage.actualSpent;
@@ -27,28 +23,32 @@ const BudgetUsageCard = ({ budgetUsage, onClick, showPeriod = false }) => {
             onClick={onClick}
         >
             {/* Header */}
-            <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center space-x-3">
-                    <div
-                        className="w-4 h-4 rounded-full"
-                        style={{ backgroundColor: budgetUsage.categoryColor }}
-                    />
-                    <div>
+            <div className="mb-4 space-y-3">
+                {/* Category name and period on one line */}
+                <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-3">
+                        <div
+                            className="w-4 h-4 rounded-full flex-shrink-0"
+                            style={{ backgroundColor: budgetUsage.categoryColor }}
+                        />
                         <h3 className="text-lg font-semibold text-gray-900">
                             {budgetUsage.categoryName}
                         </h3>
-                        {showPeriod && (
-                            <p className="text-sm text-gray-500">
-                                Tháng {budgetUsage.budgetMonth}/{budgetUsage.budgetYear}
-                            </p>
-                        )}
                     </div>
+                    {showPeriod && (
+                        <p className="text-sm text-gray-500 whitespace-nowrap ml-2">
+                            Tháng {budgetUsage.budgetMonth}/{budgetUsage.budgetYear}
+                        </p>
+                    )}
                 </div>
 
-                <BudgetStatusBadge
-                    status={budgetUsage.status}
-                    usagePercentage={budgetUsage.usagePercentage}
-                />
+                {/* Badge on separate line to prevent overflow */}
+                <div className="flex justify-start">
+                    <BudgetStatusBadge
+                        status={budgetUsage.status}
+                        usagePercentage={budgetUsage.usagePercentage}
+                    />
+                </div>
             </div>
 
             {/* Progress Bar */}
@@ -79,10 +79,10 @@ const BudgetUsageCard = ({ budgetUsage, onClick, showPeriod = false }) => {
                 </div>
 
                 <div className="flex justify-between items-center border-t pt-3">
-                    <span className="text-sm font-medium text-gray-700">
+                    <span className="text-sm font-medium text-gray-700 min-w-[80px]">
                         {isOverBudget ? 'Vượt quá:' : 'Còn lại:'}
                     </span>
-                    <span className={`text-sm font-bold ${
+                    <span className={`text-sm font-bold text-right ${
                         isOverBudget ? 'text-red-600' : 'text-green-600'
                     }`}>
                         {isOverBudget ? '-' : ''}{formatCurrency(Math.abs(remainingAmount))}

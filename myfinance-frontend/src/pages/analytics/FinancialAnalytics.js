@@ -1,10 +1,12 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { reportAPI } from '../../services/api';
-import { formatCurrency } from '../../services/api';
+import { useCurrencyFormatter } from '../../utils/currencyFormatter';
 import EnhancedCategoryPieChart from '../../components/charts/EnhancedCategoryPieChart';
 import EnhancedBarChart from '../../components/charts/EnhancedBarChart';
+import { TrendingUp, TrendingDown } from '../../components/icons';
 
 const FinancialAnalytics = () => {
+    const { formatCurrency } = useCurrencyFormatter();
     const [loading, setLoading] = useState(true);
     const [monthlyData, setMonthlyData] = useState(null);
     const [yearlyData, setYearlyData] = useState(null);
@@ -158,13 +160,9 @@ const FinancialAnalytics = () => {
                                 </p>
                                 <div className={`flex items-center mt-1 ${comparison.incomeGrowth >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                                     {comparison.incomeGrowth >= 0 ? (
-                                        <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                                            <path fillRule="evenodd" d="M5.293 9.707a1 1 0 010-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 01-1.414 1.414L11 7.414V15a1 1 0 11-2 0V7.414L6.707 9.707a1 1 0 01-1.414 0z" clipRule="evenodd" />
-                                        </svg>
+                                        <TrendingUp className="w-4 h-4 mr-1" />
                                     ) : (
-                                        <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                                            <path fillRule="evenodd" d="M14.707 10.293a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 111.414-1.414L9 12.586V5a1 1 0 012 0v7.586l2.293-2.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                                        </svg>
+                                        <TrendingDown className="w-4 h-4 mr-1" />
                                     )}
                                     <span className="text-sm font-medium">{Math.abs(comparison.incomeGrowth).toFixed(1)}%</span>
                                 </div>
@@ -178,13 +176,9 @@ const FinancialAnalytics = () => {
                                 </p>
                                 <div className={`flex items-center mt-1 ${comparison.expenseGrowth >= 0 ? 'text-red-600' : 'text-green-600'}`}>
                                     {comparison.expenseGrowth >= 0 ? (
-                                        <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                                            <path fillRule="evenodd" d="M5.293 9.707a1 1 0 010-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 01-1.414 1.414L11 7.414V15a1 1 0 11-2 0V7.414L6.707 9.707a1 1 0 01-1.414 0z" clipRule="evenodd" />
-                                        </svg>
+                                        <TrendingUp className="w-4 h-4 mr-1" />
                                     ) : (
-                                        <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                                            <path fillRule="evenodd" d="M14.707 10.293a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 111.414-1.414L9 12.586V5a1 1 0 012 0v7.586l2.293-2.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                                        </svg>
+                                        <TrendingDown className="w-4 h-4 mr-1" />
                                     )}
                                     <span className="text-sm font-medium">{Math.abs(comparison.expenseGrowth).toFixed(1)}%</span>
                                 </div>

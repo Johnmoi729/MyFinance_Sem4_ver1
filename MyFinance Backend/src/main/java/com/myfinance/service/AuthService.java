@@ -33,6 +33,8 @@ public class AuthService {
     private final CategoryService categoryService;
     private final RoleService roleService;
     private final EmailService emailService;
+    private final UserPreferencesService preferencesService;
+    private final OnboardingProgressService onboardingService;
 
     @Transactional
     public UserResponse register(RegisterRequest request) {
@@ -76,9 +78,27 @@ public class AuthService {
             // Don't fail registration if category creation fails
         }
 
+        // Create default preferences for the new user
+        try {
+            preferencesService.createDefaultPreferences(savedUser.getId());
+            log.info("Default preferences created for user: {}", savedUser.getId());
+        } catch (Exception e) {
+            log.error("Failed to create default preferences for user: {}", savedUser.getId(), e);
+            // Don't fail registration if preferences creation fails
+        }
+
+        // Create onboarding progress for the new user
+        try {
+            onboardingService.createProgressRecord(savedUser.getId());
+            log.info("Onboarding progress record created for user: {}", savedUser.getId());
+        } catch (Exception e) {
+            log.error("Failed to create onboarding progress for user: {}", savedUser.getId(), e);
+            // Don't fail registration if onboarding creation fails
+        }
+
         // Send welcome email
         try {
-            emailService.sendWelcomeEmail(savedUser.getEmail(), savedUser.getFullName());
+            emailService.sendWelcomeEmail(savedUser.getId(), savedUser.getEmail(), savedUser.getFullName());
             log.info("Welcome email triggered for user: {}", savedUser.getEmail());
         } catch (Exception e) {
             log.error("Failed to send welcome email to user: {}", savedUser.getEmail(), e);
@@ -157,6 +177,35 @@ public class AuthService {
     }
 
     @Transactional
+    public UserResponse updateExtendedProfile(Long userId, com.myfinance.dto.request.ExtendedProfileRequest request) {
+        log.info("Updating extended profile for user ID: {}", userId);
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("Người dùng không tồn tại"));
+
+        if (request.getFullName() != null) {
+            user.setFullName(request.getFullName().trim());
+        }
+        if (request.getPhoneNumber() != null) {
+            user.setPhoneNumber(request.getPhoneNumber().trim());
+        }
+        if (request.getAddress() != null) {
+            user.setAddress(request.getAddress().trim());
+        }
+        if (request.getDateOfBirth() != null) {
+            user.setDateOfBirth(request.getDateOfBirth());
+        }
+        if (request.getAvatar() != null) {
+            user.setAvatar(request.getAvatar());
+        }
+
+        User updatedUser = userRepository.save(user);
+        log.info("Extended profile updated successfully for user ID: {}", userId);
+
+        return mapToUserResponse(updatedUser);
+    }
+
+    @Transactional
     public void changePassword(Long userId, ChangePasswordRequest request) {
         log.info("Changing password for user ID: {}", userId);
 
@@ -176,6 +225,17 @@ public class AuthService {
         // Update password
         user.setPassword(passwordEncoder.encode(request.getNewPassword()));
         userRepository.save(user);
+
+        // Send password change notification email
+        try {
+            java.time.format.DateTimeFormatter formatter = java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");
+            String changeTime = LocalDateTime.now().format(formatter);
+            emailService.sendPasswordChangeEmail(user.getId(), user.getEmail(), user.getFullName(), changeTime);
+            log.info("Password change notification email sent to: {}", user.getEmail());
+        } catch (Exception e) {
+            log.error("Failed to send password change email to: {}", user.getEmail(), e);
+            // Don't fail password change if email fails
+        }
 
         log.info("Password changed successfully for user ID: {}", userId);
     }
@@ -197,7 +257,7 @@ public class AuthService {
 
         // Send password reset email
         try {
-            emailService.sendPasswordResetEmail(user.getEmail(), user.getFullName(), resetToken);
+            emailService.sendPasswordResetEmail(user.getId(), user.getEmail(), user.getFullName(), resetToken);
             log.info("Password reset email sent to: {}", user.getEmail());
         } catch (Exception e) {
             log.error("Failed to send password reset email to: {}", user.getEmail(), e);
@@ -299,6 +359,9 @@ public class AuthService {
                 .email(user.getEmail())
                 .fullName(user.getFullName())
                 .phoneNumber(user.getPhoneNumber())
+                .address(user.getAddress())
+                .dateOfBirth(user.getDateOfBirth())
+                .avatar(user.getAvatar())
                 .isActive(user.getIsActive())
                 .isEmailVerified(user.getIsEmailVerified())
                 .lastLogin(user.getLastLogin())

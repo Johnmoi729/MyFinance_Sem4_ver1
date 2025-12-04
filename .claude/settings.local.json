@@ -3,7 +3,19 @@
     "allow": [
       "Bash(dir srcmainjavacommyfinanceconfig)",
       "Bash(findstr:*)",
-      "Bash(dir:*)"
+      "Bash(dir:*)",
+      "WebFetch(domain:fastbudget.app)",
+      "Bash(for:*)",
+      "Bash(done)",
+      "Bash(do basename \"$file\")",
+      "Bash(find:*)",
+      "Bash(npm run build)",
+      "Bash(do echo \"=== $file ===\")",
+      "Bash(wc -l \"$file\")",
+      "Bash(do echo \"=== $dir ===\")",
+      "Bash(ls -1 \"$dir\")",
+      "Bash(head -30 \"$file\")",
+      "Bash(del ACTION_PLAN.md EMAIL_INTEGRATION_GUIDE.md EMAIL_AND_PDF_CODE_ANALYSIS.md DOCUMENTATION_INDEX.md FIXES_SUMMARY.md ICON_MIGRATION_STATUS.md EXCEL_EXPORT_IMPLEMENTATION_PLAN.md)"
     ],
     "deny": [],
     "ask": []

@@ -1,4 +1,5 @@
 import React from 'react';
+import { useCurrencyFormatter } from '../../utils/currencyFormatter';
 
 const BudgetProgressBar = ({
     budgetAmount,
@@ -8,23 +9,31 @@ const BudgetProgressBar = ({
     showDetails = true,
     size = 'medium' // small, medium, large
 }) => {
-    const formatCurrency = (amount) => {
-        return new Intl.NumberFormat('vi-VN', {
-            style: 'currency',
-            currency: 'VND',
-        }).format(amount);
-    };
+    const { formatCurrency } = useCurrencyFormatter();
 
     const getStatusColor = (status) => {
         switch (status) {
             case 'GREEN':
-                return 'bg-green-500';
+                return 'bg-gradient-to-r from-green-500 to-emerald-500';
             case 'YELLOW':
-                return 'bg-yellow-500';
+                return 'bg-gradient-to-r from-yellow-500 to-amber-500';
             case 'RED':
-                return 'bg-red-500';
+                return 'bg-gradient-to-r from-red-500 to-rose-600';
             default:
-                return 'bg-gray-500';
+                return 'bg-gradient-to-r from-gray-400 to-gray-500';
+        }
+    };
+
+    const getGlowEffect = (status) => {
+        switch (status) {
+            case 'GREEN':
+                return 'shadow-sm shadow-green-200';
+            case 'YELLOW':
+                return 'shadow-md shadow-yellow-200';
+            case 'RED':
+                return 'shadow-lg shadow-red-300 animate-pulse';
+            default:
+                return '';
         }
     };
 
@@ -58,9 +67,9 @@ const BudgetProgressBar = ({
         <div className="space-y-2">
             {/* Progress Bar */}
             <div className="relative">
-                <div className={`w-full ${getProgressBarHeight()} bg-gray-200 rounded-full overflow-hidden`}>
+                <div className={`w-full ${getProgressBarHeight()} bg-gray-200 rounded-full overflow-hidden ${getGlowEffect(status)}`}>
                     <div
-                        className={`${getProgressBarHeight()} ${getStatusColor(status)} transition-all duration-500 ease-out`}
+                        className={`${getProgressBarHeight()} ${getStatusColor(status)} transition-all duration-500 ease-out rounded-full`}
                         style={{ width: `${visualProgress}%` }}
                     />
                 </div>

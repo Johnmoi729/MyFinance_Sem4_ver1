@@ -91,13 +91,18 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
 
-        // Allow specific origins (configure for your environment)
+        // Old configuration (specific ports only):
+        // configuration.setAllowedOriginPatterns(Arrays.asList(
+        //         "http://localhost:3000", "http://localhost:3001", "http://127.0.0.1:3000",
+        //         "https://yourapp.vercel.app", "https://yourapp.netlify.app"
+        // ));
+
+        // New configuration (allows Flutter Web dynamic ports + React):
         configuration.setAllowedOriginPatterns(Arrays.asList(
-                "http://localhost:3000",    // React development server
-                "http://localhost:3001",    // Alternative React port
-                "http://127.0.0.1:3000",    // Alternative localhost
-                "https://yourapp.vercel.app", // Production frontend URL
-                "https://yourapp.netlify.app" // Alternative production URL
+                "http://localhost:*",         // Allow any localhost port (Flutter Web + React)
+                "http://127.0.0.1:*",         // Allow loopback with any port
+                "https://*.vercel.app",       // Vercel deployments
+                "https://*.netlify.app"       // Netlify deployments
         ));
 
         // Allow specific methods

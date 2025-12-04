@@ -35,6 +35,12 @@ public class Transaction {
     @Positive
     private BigDecimal amount;
 
+    @Column(name = "currency_code", length = 3)
+    private String currencyCode = "VND"; // Default currency
+
+    @Column(name = "amount_in_base_currency", precision = 12, scale = 2)
+    private BigDecimal amountInBaseCurrency;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     @NotNull

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useCategory } from '../../context/CategoryContext';
+import * as Icons from '../../components/icons';
 
 const CategoriesPage = () => {
     const navigate = useNavigate();
@@ -47,7 +48,7 @@ const CategoriesPage = () => {
                         <h1 className="text-3xl font-bold text-gray-900 mb-4 sm:mb-0">Quản lý danh mục</h1>
                         <button
                             onClick={() => navigate('/categories/add')}
-                            className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors"
+                            className="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700 transition-colors"
                         >
                             + Thêm danh mục
                         </button>
@@ -59,7 +60,7 @@ const CategoriesPage = () => {
                             onClick={() => setFilter('ALL')}
                             className={`px-4 py-2 rounded-md font-medium transition-colors ${
                                 filter === 'ALL'
-                                    ? 'bg-blue-600 text-white'
+                                    ? 'bg-indigo-600 text-white'
                                     : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
                             }`}
                         >
@@ -103,7 +104,7 @@ const CategoriesPage = () => {
                 <div className="bg-white rounded-lg shadow">
                     {loading ? (
                         <div className="p-8 text-center">
-                            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+                            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600 mx-auto mb-4"></div>
                             <p className="text-gray-500">Đang tải...</p>
                         </div>
                     ) : filteredCategories.length === 0 ? (
@@ -111,7 +112,7 @@ const CategoriesPage = () => {
                             <p className="text-gray-500 mb-4">Chưa có danh mục nào</p>
                             <button
                                 onClick={() => navigate('/categories/add')}
-                                className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
+                                className="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700"
                             >
                                 Thêm danh mục đầu tiên
                             </button>
@@ -119,22 +120,29 @@ const CategoriesPage = () => {
                     ) : (
                         <div className="p-6">
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                                {filteredCategories.map((category) => (
-                                    <div key={category.id} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
-                                        <div className="flex items-center justify-between mb-3">
-                                            <div className="flex items-center">
-                                                <div
-                                                    className="w-4 h-4 rounded-full mr-3"
-                                                    style={{ backgroundColor: category.color }}
-                                                ></div>
-                                                <h3 className="font-medium text-gray-900">{category.name}</h3>
+                                {filteredCategories.map((category) => {
+                                    const IconComponent = Icons[category.icon] || Icons.Tag;
+                                    return (
+                                        <div key={category.id} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+                                            <div className="flex items-center justify-between mb-3">
+                                                <div className="flex items-center gap-3">
+                                                    <div
+                                                        className="w-10 h-10 rounded-lg flex items-center justify-center"
+                                                        style={{ backgroundColor: category.color + '20' }}
+                                                    >
+                                                        <IconComponent
+                                                            className="w-5 h-5"
+                                                            style={{ color: category.color }}
+                                                        />
+                                                    </div>
+                                                    <h3 className="font-medium text-gray-900">{category.name}</h3>
+                                                </div>
+                                                {category.isDefault && (
+                                                    <span className="px-2 py-1 text-xs bg-gray-100 text-gray-600 rounded">
+                                                        Mặc định
+                                                    </span>
+                                                )}
                                             </div>
-                                            {category.isDefault && (
-                                                <span className="px-2 py-1 text-xs bg-gray-100 text-gray-600 rounded">
-                                                    Mặc định
-                                                </span>
-                                            )}
-                                        </div>
                                         
                                         <div className="mb-3">
                                             <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
@@ -149,7 +157,7 @@ const CategoriesPage = () => {
                                         <div className="flex justify-end space-x-2">
                                             <button
                                                 onClick={() => navigate(`/categories/edit/${category.id}`)}
-                                                className="text-blue-600 hover:text-blue-900 text-sm"
+                                                className="text-indigo-600 hover:text-indigo-900 text-sm"
                                             >
                                                 Sửa
                                             </button>
@@ -163,7 +171,8 @@ const CategoriesPage = () => {
                                             )}
                                         </div>
                                     </div>
-                                ))}
+                                    );
+                                })}
                             </div>
                         </div>
                     )}
