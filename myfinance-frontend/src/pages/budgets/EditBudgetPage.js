@@ -2,23 +2,19 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useBudget } from '../../context/BudgetContext';
 import { useCategory } from '../../context/CategoryContext';
-import { usePreferences } from '../../context/PreferencesContext';
-import CurrencySelector from '../../components/common/CurrencySelector';
 
 const EditBudgetPage = () => {
   const navigate = useNavigate();
   const { id } = useParams();
   const { getBudgetById, updateBudget, loading, error, clearError } = useBudget();
   const { loadCategories, getCategoriesByType } = useCategory();
-  const { getCurrency } = usePreferences();
 
   const [formData, setFormData] = useState({
     categoryId: '',
     budgetAmount: '',
     budgetYear: new Date().getFullYear(),
     budgetMonth: new Date().getMonth() + 1,
-    description: '',
-    currencyCode: getCurrency() || 'VND'
+    description: ''
   });
   const [initialLoading, setInitialLoading] = useState(true);
 
@@ -36,8 +32,7 @@ const EditBudgetPage = () => {
             budgetAmount: budget.budgetAmount,
             budgetYear: budget.budgetYear,
             budgetMonth: budget.budgetMonth,
-            description: budget.description || '',
-            currencyCode: budget.currencyCode || getCurrency() || 'VND'
+            description: budget.description || ''
           });
         } else {
           navigate('/budgets');
@@ -143,28 +138,21 @@ const EditBudgetPage = () => {
               </select>
             </div>
 
-            {/* Budget Amount and Currency */}
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Số tiền ngân sách *
-                </label>
-                <input
-                  type="number"
-                  name="budgetAmount"
-                  value={formData.budgetAmount}
-                  onChange={handleInputChange}
-                  min="0"
-                  step="1000"
-                  required
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                  placeholder="Nhập số tiền ngân sách"
-                />
-              </div>
-              <CurrencySelector
-                value={formData.currencyCode}
-                onChange={(currency) => setFormData(prev => ({ ...prev, currencyCode: currency }))}
-                required={true}
+            {/* Budget Amount */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Số tiền ngân sách (VND) *
+              </label>
+              <input
+                type="number"
+                name="budgetAmount"
+                value={formData.budgetAmount}
+                onChange={handleInputChange}
+                min="0"
+                step="1000"
+                required
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                placeholder="Nhập số tiền ngân sách"
               />
             </div>
 

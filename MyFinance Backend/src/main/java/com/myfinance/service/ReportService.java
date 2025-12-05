@@ -378,9 +378,9 @@ public class ReportService {
                         .multiply(BigDecimal.valueOf(100))
                         .doubleValue();
 
-                // Budget comparison data (using base currency for multi-currency support)
+                // Budget comparison data
                 Budget budget = budgetMap.get(category.getId());
-                BigDecimal budgetAmount = budget != null ? budget.getBudgetAmountInBaseCurrency() : null;
+                BigDecimal budgetAmount = budget != null ? budget.getBudgetAmount() : null;
                 BigDecimal budgetDifference = null;
                 Double budgetUsagePercent = null;
 

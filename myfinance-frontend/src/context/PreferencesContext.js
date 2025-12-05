@@ -149,39 +149,25 @@ export const PreferencesProvider = ({ children }) => {
     // Default preferences (used when API fails or user has no preferences)
     const getDefaultPreferences = () => ({
         // Display Preferences
-        language: 'vi',
-        currency: 'VND',
-        dateFormat: 'dd/MM/yyyy',
-        timezone: 'Asia/Ho_Chi_Minh',
         theme: 'light',
-        itemsPerPage: 10,
         viewMode: 'detailed',
 
         // Notification Preferences
         emailNotifications: true,
         budgetAlerts: true,
-        transactionReminders: false,
         weeklySummary: false,
-        monthlySummary: true,
-        goalReminders: true
+        monthlySummary: true
     });
 
     // Display Preference Helpers
-    const getCurrency = () => preferences?.currency || 'VND';
-    const getDateFormat = () => preferences?.dateFormat || 'dd/MM/yyyy';
     const getTheme = () => preferences?.theme || 'light';
-    const getItemsPerPage = () => preferences?.itemsPerPage || 10;
-    const getLanguage = () => preferences?.language || 'vi';
-    const getTimezone = () => preferences?.timezone || 'Asia/Ho_Chi_Minh';
     const getViewMode = () => preferences?.viewMode || 'detailed';
 
     // Notification Preference Helpers
     const getEmailNotifications = () => preferences?.emailNotifications ?? true;
     const getBudgetAlerts = () => preferences?.budgetAlerts ?? true;
-    const getTransactionReminders = () => preferences?.transactionReminders ?? false;
     const getWeeklySummary = () => preferences?.weeklySummary ?? false;
     const getMonthlySummary = () => preferences?.monthlySummary ?? true;
-    const getGoalReminders = () => preferences?.goalReminders ?? true;
 
     // Check if any notification type is enabled
     const isNotificationEnabled = (type) => {
@@ -194,14 +180,10 @@ export const PreferencesProvider = ({ children }) => {
         switch (type) {
             case 'budgetAlerts':
                 return getBudgetAlerts();
-            case 'transactionReminders':
-                return getTransactionReminders();
             case 'weeklySummary':
                 return getWeeklySummary();
             case 'monthlySummary':
                 return getMonthlySummary();
-            case 'goalReminders':
-                return getGoalReminders();
             default:
                 return false;
         }
@@ -224,21 +206,14 @@ export const PreferencesProvider = ({ children }) => {
         clearError,
 
         // Display Preference Getters
-        getCurrency,
-        getDateFormat,
         getTheme,
-        getItemsPerPage,
-        getLanguage,
-        getTimezone,
         getViewMode,
 
         // Notification Preference Getters
         getEmailNotifications,
         getBudgetAlerts,
-        getTransactionReminders,
         getWeeklySummary,
         getMonthlySummary,
-        getGoalReminders,
 
         // Helper Functions
         isNotificationEnabled,

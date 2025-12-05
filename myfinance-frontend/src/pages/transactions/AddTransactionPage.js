@@ -1,21 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTransaction } from '../../context/TransactionContext';
-import { usePreferences } from '../../context/PreferencesContext';
-import CurrencySelector from '../../components/common/CurrencySelector';
 
 const AddTransactionPage = () => {
     const navigate = useNavigate();
     const { categories, addTransaction, loadCategories, loading } = useTransaction();
-    const { getCurrency } = usePreferences();
 
     const [formData, setFormData] = useState({
         amount: '',
         type: 'EXPENSE',
         categoryId: '',
         description: '',
-        transactionDate: new Date().toISOString().split('T')[0],
-        currencyCode: getCurrency() || 'VND'
+        transactionDate: new Date().toISOString().split('T')[0]
     });
     const [message, setMessage] = useState({ text: '', type: '' });
     const [filteredCategories, setFilteredCategories] = useState([]);
@@ -73,8 +69,7 @@ const AddTransactionPage = () => {
                 type: 'EXPENSE',
                 categoryId: '',
                 description: '',
-                transactionDate: new Date().toISOString().split('T')[0],
-                currencyCode: getCurrency() || 'VND'
+                transactionDate: new Date().toISOString().split('T')[0]
             });
             
             // Redirect to transactions page after 1 second
@@ -142,28 +137,21 @@ const AddTransactionPage = () => {
                             </div>
                         </div>
 
-                        {/* Amount and Currency */}
-                        <div className="grid grid-cols-2 gap-4">
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                    Số tiền *
-                                </label>
-                                <input
-                                    type="number"
-                                    name="amount"
-                                    value={formData.amount}
-                                    onChange={handleInputChange}
-                                    step="0.01"
-                                    min="0"
-                                    className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                                    placeholder="Nhập số tiền"
-                                    required
-                                />
-                            </div>
-                            <CurrencySelector
-                                value={formData.currencyCode}
-                                onChange={(currency) => setFormData(prev => ({ ...prev, currencyCode: currency }))}
-                                required={true}
+                        {/* Amount */}
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                Số tiền (VND) *
+                            </label>
+                            <input
+                                type="number"
+                                name="amount"
+                                value={formData.amount}
+                                onChange={handleInputChange}
+                                step="0.01"
+                                min="0"
+                                className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                                placeholder="Nhập số tiền"
+                                required
                             />
                         </div>
 

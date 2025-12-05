@@ -73,12 +73,12 @@ public class WeeklySummaryScheduler {
             // Calculate totals
             BigDecimal totalIncome = transactions.stream()
                     .filter(t -> t.getType() == TransactionType.INCOME)
-                    .map(Transaction::getAmountInBaseCurrency)
+                    .map(Transaction::getAmount)
                     .reduce(BigDecimal.ZERO, BigDecimal::add);
 
             BigDecimal totalExpense = transactions.stream()
                     .filter(t -> t.getType() == TransactionType.EXPENSE)
-                    .map(Transaction::getAmountInBaseCurrency)
+                    .map(Transaction::getAmount)
                     .reduce(BigDecimal.ZERO, BigDecimal::add);
 
             BigDecimal netSavings = totalIncome.subtract(totalExpense);

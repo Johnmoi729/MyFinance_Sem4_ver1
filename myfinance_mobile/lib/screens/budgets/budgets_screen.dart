@@ -92,7 +92,7 @@ class _BudgetsScreenState extends State<BudgetsScreen> {
                       padding: const EdgeInsets.all(16),
                       children: [
                         Text(
-                          'Ngân sách tháng ${monthName}',
+                          'Ngân sách tháng $monthName',
                           style: const TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
@@ -132,7 +132,7 @@ class _BudgetsScreenState extends State<BudgetsScreen> {
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
-                    color: statusColor.withOpacity(0.1),
+                    color: statusColor.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Text(

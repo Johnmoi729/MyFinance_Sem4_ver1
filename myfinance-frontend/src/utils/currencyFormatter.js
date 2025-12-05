@@ -1,20 +1,19 @@
-import { usePreferences } from '../context/PreferencesContext';
+/**
+ * Vietnamese Dong (VND) currency formatter
+ * Simplified version - VND only
+ */
 
 /**
- * Currency formatter hook that uses user preferences
- * Returns a function to format amounts based on user's preferred currency
+ * Currency formatter hook for Vietnamese Dong
+ * Returns functions to format amounts in VND
  */
 export const useCurrencyFormatter = () => {
-    const { getCurrency } = usePreferences();
-
     /**
-     * Format an amount according to user's currency preference
+     * Format an amount in Vietnamese Dong
      * @param {number|string} amount - The amount to format
-     * @param {string} currencyCode - Optional currency override (default: user preference)
      * @returns {string} Formatted currency string
      */
-    const formatCurrency = (amount, currencyCode = null) => {
-        const currency = currencyCode || getCurrency();
+    const formatCurrency = (amount) => {
         const numericAmount = typeof amount === 'string' ? parseFloat(amount) : amount;
 
         // Handle invalid amounts
@@ -23,123 +22,25 @@ export const useCurrencyFormatter = () => {
         }
 
         try {
-            // Currency-specific formatters using Intl.NumberFormat
-            const formatters = {
-                'VND': (amt) => {
-                    return new Intl.NumberFormat('vi-VN', {
-                        style: 'currency',
-                        currency: 'VND',
-                        minimumFractionDigits: 0,
-                        maximumFractionDigits: 0
-                    }).format(amt);
-                },
-                'USD': (amt) => {
-                    return new Intl.NumberFormat('en-US', {
-                        style: 'currency',
-                        currency: 'USD',
-                        minimumFractionDigits: 2,
-                        maximumFractionDigits: 2
-                    }).format(amt);
-                },
-                'EUR': (amt) => {
-                    return new Intl.NumberFormat('de-DE', {
-                        style: 'currency',
-                        currency: 'EUR',
-                        minimumFractionDigits: 2,
-                        maximumFractionDigits: 2
-                    }).format(amt);
-                },
-                'JPY': (amt) => {
-                    return new Intl.NumberFormat('ja-JP', {
-                        style: 'currency',
-                        currency: 'JPY',
-                        minimumFractionDigits: 0,
-                        maximumFractionDigits: 0
-                    }).format(amt);
-                },
-                'GBP': (amt) => {
-                    return new Intl.NumberFormat('en-GB', {
-                        style: 'currency',
-                        currency: 'GBP',
-                        minimumFractionDigits: 2,
-                        maximumFractionDigits: 2
-                    }).format(amt);
-                },
-                'CNY': (amt) => {
-                    return new Intl.NumberFormat('zh-CN', {
-                        style: 'currency',
-                        currency: 'CNY',
-                        minimumFractionDigits: 2,
-                        maximumFractionDigits: 2
-                    }).format(amt);
-                },
-                'KRW': (amt) => {
-                    return new Intl.NumberFormat('ko-KR', {
-                        style: 'currency',
-                        currency: 'KRW',
-                        minimumFractionDigits: 0,
-                        maximumFractionDigits: 0
-                    }).format(amt);
-                },
-                'THB': (amt) => {
-                    return new Intl.NumberFormat('th-TH', {
-                        style: 'currency',
-                        currency: 'THB',
-                        minimumFractionDigits: 2,
-                        maximumFractionDigits: 2
-                    }).format(amt);
-                },
-                'SGD': (amt) => {
-                    return new Intl.NumberFormat('en-SG', {
-                        style: 'currency',
-                        currency: 'SGD',
-                        minimumFractionDigits: 2,
-                        maximumFractionDigits: 2
-                    }).format(amt);
-                },
-                'MYR': (amt) => {
-                    return new Intl.NumberFormat('ms-MY', {
-                        style: 'currency',
-                        currency: 'MYR',
-                        minimumFractionDigits: 2,
-                        maximumFractionDigits: 2
-                    }).format(amt);
-                }
-            };
-
-            // Use formatter if available, otherwise fallback to VND
-            const formatter = formatters[currency] || formatters['VND'];
-            return formatter(numericAmount);
-
+            return new Intl.NumberFormat('vi-VN', {
+                style: 'currency',
+                currency: 'VND',
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 0
+            }).format(numericAmount);
         } catch (error) {
             console.error('Currency formatting error:', error);
             // Fallback to simple formatting
-            return `${getCurrencySymbol(currency)} ${numericAmount.toLocaleString()}`;
+            return `₫ ${numericAmount.toLocaleString('vi-VN')}`;
         }
     };
 
     /**
-     * Get currency symbol for a given currency code
-     * @param {string} currencyCode - Currency code (e.g., 'VND', 'USD')
-     * @returns {string} Currency symbol
+     * Get Vietnamese Dong currency symbol
+     * @returns {string} Currency symbol '₫'
      */
-    const getCurrencySymbol = (currencyCode = null) => {
-        const currency = currencyCode || getCurrency();
-
-        const symbols = {
-            'VND': '₫',
-            'USD': '$',
-            'EUR': '€',
-            'JPY': '¥',
-            'GBP': '£',
-            'CNY': '¥',
-            'KRW': '₩',
-            'THB': '฿',
-            'SGD': 'S$',
-            'MYR': 'RM'
-        };
-
-        return symbols[currency] || '₫';
+    const getCurrencySymbol = () => {
+        return '₫';
     };
 
     /**
@@ -161,18 +62,16 @@ export const useCurrencyFormatter = () => {
      * Format amount with currency symbol but no locale-specific formatting
      * Useful for input fields
      * @param {number|string} amount - The amount to format
-     * @param {string} currencyCode - Optional currency override
-     * @returns {string} Formatted string like "$ 1,234.56"
+     * @returns {string} Formatted string like "₫ 1,234"
      */
-    const formatCurrencySimple = (amount, currencyCode = null) => {
-        const currency = currencyCode || getCurrency();
+    const formatCurrencySimple = (amount) => {
         const numericAmount = typeof amount === 'string' ? parseFloat(amount) : amount;
 
         if (isNaN(numericAmount)) {
-            return `${getCurrencySymbol(currency)} 0`;
+            return '₫ 0';
         }
 
-        return `${getCurrencySymbol(currency)} ${formatNumber(numericAmount)}`;
+        return `₫ ${formatNumber(numericAmount)}`;
     };
 
     /**
@@ -207,52 +106,26 @@ export const useCurrencyFormatter = () => {
 
 /**
  * Standalone currency formatter (without hook)
- * Use this in non-React contexts or when you have the currency code directly
+ * Use this in non-React contexts
  */
-export const formatCurrencyStandalone = (amount, currencyCode = 'VND') => {
+export const formatCurrencyStandalone = (amount) => {
     const numericAmount = typeof amount === 'string' ? parseFloat(amount) : amount;
 
     if (isNaN(numericAmount)) {
         return '0 ₫';
     }
 
-    const formatters = {
-        'VND': (amt) => new Intl.NumberFormat('vi-VN', {
-            style: 'currency',
-            currency: 'VND',
-            minimumFractionDigits: 0,
-            maximumFractionDigits: 0
-        }).format(amt),
-        'USD': (amt) => new Intl.NumberFormat('en-US', {
-            style: 'currency',
-            currency: 'USD'
-        }).format(amt),
-        'EUR': (amt) => new Intl.NumberFormat('de-DE', {
-            style: 'currency',
-            currency: 'EUR'
-        }).format(amt)
-    };
-
-    const formatter = formatters[currencyCode] || formatters['VND'];
-    return formatter(numericAmount);
+    return new Intl.NumberFormat('vi-VN', {
+        style: 'currency',
+        currency: 'VND',
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 0
+    }).format(numericAmount);
 };
 
 /**
  * Get currency symbol (standalone version)
  */
-export const getCurrencySymbolStandalone = (currencyCode = 'VND') => {
-    const symbols = {
-        'VND': '₫',
-        'USD': '$',
-        'EUR': '€',
-        'JPY': '¥',
-        'GBP': '£',
-        'CNY': '¥',
-        'KRW': '₩',
-        'THB': '฿',
-        'SGD': 'S$',
-        'MYR': 'RM'
-    };
-
-    return symbols[currencyCode] || '₫';
+export const getCurrencySymbolStandalone = () => {
+    return '₫';
 };

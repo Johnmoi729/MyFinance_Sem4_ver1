@@ -5,24 +5,29 @@ import '../../services/category_service.dart';
 import '../../models/transaction.dart';
 import '../../models/category.dart';
 
-class AddTransactionScreen extends StatefulWidget {
-  const AddTransactionScreen({super.key});
+class EditTransactionScreen extends StatefulWidget {
+  final Transaction transaction;
+
+  const EditTransactionScreen({
+    super.key,
+    required this.transaction,
+  });
 
   @override
-  State<AddTransactionScreen> createState() => _AddTransactionScreenState();
+  State<EditTransactionScreen> createState() => _EditTransactionScreenState();
 }
 
-class _AddTransactionScreenState extends State<AddTransactionScreen> {
+class _EditTransactionScreenState extends State<EditTransactionScreen> {
   final _formKey = GlobalKey<FormState>();
-  final _amountController = TextEditingController();
-  final _descriptionController = TextEditingController();
+  late final TextEditingController _amountController;
+  late final TextEditingController _descriptionController;
 
   final TransactionService _transactionService = TransactionService();
   final CategoryService _categoryService = CategoryService();
 
-  TransactionType _selectedType = TransactionType.EXPENSE;
+  late TransactionType _selectedType;
   Category? _selectedCategory;
-  DateTime _selectedDate = DateTime.now();
+  late DateTime _selectedDate;
   List<Category> _categories = [];
   bool _isLoading = false;
   bool _isCategoriesLoading = true;
@@ -30,6 +35,16 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
   @override
   void initState() {
     super.initState();
+    // Initialize with existing transaction data
+    _selectedType = widget.transaction.type;
+    _selectedCategory = widget.transaction.category;
+    _selectedDate = widget.transaction.transactionDate;
+    _amountController = TextEditingController(
+      text: widget.transaction.amount.toStringAsFixed(0),
+    );
+    _descriptionController = TextEditingController(
+      text: widget.transaction.description ?? '',
+    );
     _loadCategories();
   }
 
@@ -41,13 +56,21 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
   }
 
   Future<void> _loadCategories() async {
+    setState(() => _isCategoriesLoading = true);
+
     final response = await _categoryService.getCategories(type: _selectedType);
     if (response.success && response.data != null) {
       setState(() {
         _categories = response.data!;
-        _selectedCategory = null;
+        // Find the matching category by ID
+        _selectedCategory = _categories.firstWhere(
+          (cat) => cat.id == widget.transaction.category.id,
+          orElse: () => _categories.isNotEmpty ? _categories.first : widget.transaction.category,
+        );
         _isCategoriesLoading = false;
       });
+    } else {
+      setState(() => _isCategoriesLoading = false);
     }
   }
 
@@ -63,7 +86,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
     }
   }
 
-  Future<void> _saveTransaction() async {
+  Future<void> _updateTransaction() async {
     if (!_formKey.currentState!.validate()) return;
     if (_selectedCategory == null) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -82,7 +105,10 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
       transactionDate: _selectedDate,
     );
 
-    final response = await _transactionService.createTransaction(request);
+    final response = await _transactionService.updateTransaction(
+      widget.transaction.id,
+      request,
+    );
 
     if (!mounted) return;
 
@@ -91,7 +117,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
     if (response.success) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Thêm giao dịch thành công'),
+          content: Text('Cập nhật giao dịch thành công'),
           backgroundColor: Colors.green,
         ),
       );
@@ -110,7 +136,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Thêm giao dịch'),
+        title: const Text('Chỉnh sửa giao dịch'),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
@@ -223,9 +249,9 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
               ),
               const SizedBox(height: 24),
 
-              // Save button
+              // Update button
               ElevatedButton(
-                onPressed: _isLoading ? null : _saveTransaction,
+                onPressed: _isLoading ? null : _updateTransaction,
                 style: ElevatedButton.styleFrom(
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   shape: RoundedRectangleBorder(
@@ -238,7 +264,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                         width: 20,
                         child: CircularProgressIndicator(strokeWidth: 2),
                       )
-                    : const Text('Lưu giao dịch', style: TextStyle(fontSize: 16)),
+                    : const Text('Cập nhật', style: TextStyle(fontSize: 16)),
               ),
             ],
           ),

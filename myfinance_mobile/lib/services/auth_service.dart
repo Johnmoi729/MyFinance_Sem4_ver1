@@ -92,6 +92,55 @@ class AuthService {
     }
   }
 
+  Future<ApiResponse<User>> updateProfile(String fullName, String? phoneNumber) async {
+    try {
+      final response = await _api.put('/auth/profile', data: {
+        'fullName': fullName,
+        'phoneNumber': phoneNumber,
+      });
+
+      if (response.data['success'] == true) {
+        return ApiResponse(
+          success: true,
+          message: response.data['message'],
+          data: User.fromJson(response.data['data']),
+        );
+      }
+
+      return ApiResponse(
+        success: false,
+        message: response.data['message'] ?? 'Không thể cập nhật thông tin',
+      );
+    } catch (e) {
+      return ApiResponse(
+        success: false,
+        message: _getErrorMessage(e),
+      );
+    }
+  }
+
+  Future<ApiResponse<void>> changePassword(
+    String currentPassword,
+    String newPassword,
+  ) async {
+    try {
+      final response = await _api.post('/auth/change-password', data: {
+        'currentPassword': currentPassword,
+        'newPassword': newPassword,
+      });
+
+      return ApiResponse(
+        success: response.data['success'] == true,
+        message: response.data['message'] ?? 'Đổi mật khẩu thành công',
+      );
+    } catch (e) {
+      return ApiResponse(
+        success: false,
+        message: _getErrorMessage(e),
+      );
+    }
+  }
+
   Future<void> logout() async {
     await _api.clearToken();
   }

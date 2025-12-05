@@ -16,8 +16,6 @@ public class BudgetResponse {
     private Long id;
     private CategoryResponse category;
     private BigDecimal budgetAmount;
-    private String currencyCode;
-    private BigDecimal budgetAmountInBaseCurrency;
     private Integer budgetYear;
     private Integer budgetMonth;
     private String budgetPeriod; // "2024-03" format

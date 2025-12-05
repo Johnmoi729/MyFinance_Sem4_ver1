@@ -21,6 +21,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   List<Transaction> _recentTransactions = [];
   List<BudgetUsage> _budgetUsage = [];
+  BudgetWarningResponse? _budgetWarnings;
   bool _isLoading = true;
   double _totalIncome = 0;
   double _totalExpense = 0;
@@ -57,6 +58,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
       _budgetUsage = budgetResponse.data!;
     }
 
+    // Load budget warnings
+    final warningsResponse = await _budgetService.getBudgetWarnings();
+    if (warningsResponse.success && warningsResponse.data != null) {
+      _budgetWarnings = warningsResponse.data;
+    }
+
     setState(() => _isLoading = false);
   }
 
@@ -76,6 +83,167 @@ class _DashboardScreenState extends State<DashboardScreen> {
     return 'Chào buổi tối';
   }
 
+  void _showBudgetWarningsSheet() {
+    if (_budgetWarnings == null || _budgetWarnings!.alerts.isEmpty) return;
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) => DraggableScrollableSheet(
+        initialChildSize: 0.6,
+        minChildSize: 0.4,
+        maxChildSize: 0.9,
+        expand: false,
+        builder: (context, scrollController) => Column(
+          children: [
+            // Handle bar
+            Container(
+              margin: const EdgeInsets.only(top: 8, bottom: 16),
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: Colors.grey[300],
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            // Header
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text(
+                    'Cảnh báo ngân sách',
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.close),
+                    onPressed: () => Navigator.pop(context),
+                  ),
+                ],
+              ),
+            ),
+            // Summary
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              child: Row(
+                children: [
+                  if (_budgetWarnings!.warningCount > 0)
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: Colors.orange.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Text(
+                        '${_budgetWarnings!.warningCount} Cảnh báo',
+                        style: const TextStyle(
+                          color: Colors.orange,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  const SizedBox(width: 8),
+                  if (_budgetWarnings!.overBudgetCount > 0)
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: Colors.red.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Text(
+                        '${_budgetWarnings!.overBudgetCount} Vượt ngân sách',
+                        style: const TextStyle(
+                          color: Colors.red,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+            ),
+            const Divider(),
+            // Alerts list
+            Expanded(
+              child: ListView.builder(
+                controller: scrollController,
+                padding: const EdgeInsets.all(16),
+                itemCount: _budgetWarnings!.alerts.length,
+                itemBuilder: (context, index) {
+                  final alert = _budgetWarnings!.alerts[index];
+                  final color = alert.alertLevel == 'RED' ? Colors.red : Colors.orange;
+
+                  return Card(
+                    margin: const EdgeInsets.only(bottom: 12),
+                    child: ListTile(
+                      leading: CircleAvatar(
+                        backgroundColor: color.withValues(alpha: 0.1),
+                        child: Icon(
+                          alert.alertType == 'OVER_BUDGET'
+                              ? Icons.error
+                              : Icons.warning_amber_rounded,
+                          color: color,
+                        ),
+                      ),
+                      title: Text(
+                        alert.categoryName,
+                        style: const TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                      subtitle: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const SizedBox(height: 4),
+                          Text(alert.message),
+                          const SizedBox(height: 8),
+                          LinearProgressIndicator(
+                            value: (alert.usagePercentage / 100).clamp(0.0, 1.0),
+                            backgroundColor: Colors.grey[200],
+                            valueColor: AlwaysStoppedAnimation(color),
+                          ),
+                          const SizedBox(height: 4),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                '${_formatCurrency(alert.actualSpent)} / ${_formatCurrency(alert.budgetAmount)}',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: Colors.grey[600],
+                                ),
+                              ),
+                              Text(
+                                '${alert.usagePercentage.toStringAsFixed(0)}%',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.bold,
+                                  color: color,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                      onTap: () {
+                        Navigator.pop(context);
+                        Navigator.pushNamed(context, '/budgets');
+                      },
+                    ),
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final authProvider = context.watch<AuthProvider>();
@@ -85,6 +253,48 @@ class _DashboardScreenState extends State<DashboardScreen> {
       appBar: AppBar(
         title: const Text('MyFinance'),
         actions: [
+          // Budget warnings indicator
+          if (_budgetWarnings != null &&
+              (_budgetWarnings!.warningCount > 0 || _budgetWarnings!.overBudgetCount > 0))
+            Stack(
+              children: [
+                IconButton(
+                  icon: const Icon(Icons.warning_amber_rounded),
+                  color: _budgetWarnings!.overBudgetCount > 0 ? Colors.red : Colors.orange,
+                  onPressed: _showBudgetWarningsSheet,
+                ),
+                Positioned(
+                  right: 8,
+                  top: 8,
+                  child: Container(
+                    padding: const EdgeInsets.all(4),
+                    decoration: BoxDecoration(
+                      color: _budgetWarnings!.overBudgetCount > 0 ? Colors.red : Colors.orange,
+                      shape: BoxShape.circle,
+                    ),
+                    constraints: const BoxConstraints(
+                      minWidth: 16,
+                      minHeight: 16,
+                    ),
+                    child: Text(
+                      '${_budgetWarnings!.warningCount + _budgetWarnings!.overBudgetCount}',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          IconButton(
+            icon: const Icon(Icons.person),
+            onPressed: () {
+              Navigator.pushNamed(context, '/profile');
+            },
+          ),
           IconButton(
             icon: const Icon(Icons.refresh),
             onPressed: _loadData,
@@ -93,7 +303,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             icon: const Icon(Icons.logout),
             onPressed: () async {
               await authProvider.logout();
-              if (mounted) {
+              if (context.mounted) {
                 Navigator.pushReplacementNamed(context, '/login');
               }
             },
@@ -164,6 +374,38 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       ..._budgetUsage.take(3).map((usage) => _buildBudgetCard(usage)),
                       const SizedBox(height: 24),
                     ],
+
+                    // Reports button
+                    Card(
+                      child: InkWell(
+                        onTap: () {
+                          Navigator.pushNamed(context, '/reports/monthly');
+                        },
+                        child: const Padding(
+                          padding: EdgeInsets.all(16),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Row(
+                                children: [
+                                  Icon(Icons.assessment, color: Colors.blue),
+                                  SizedBox(width: 12),
+                                  Text(
+                                    'Xem báo cáo tháng',
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              Icon(Icons.chevron_right, color: Colors.grey),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 24),
 
                     // Recent transactions
                     Row(
@@ -261,7 +503,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: color.withOpacity(0.1),
+                color: color.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Icon(icon, color: color),
@@ -363,8 +605,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
       child: ListTile(
         leading: CircleAvatar(
           backgroundColor: isIncome
-              ? Colors.green.withOpacity(0.1)
-              : Colors.red.withOpacity(0.1),
+              ? Colors.green.withValues(alpha: 0.1)
+              : Colors.red.withValues(alpha: 0.1),
           child: Icon(
             isIncome ? Icons.arrow_upward : Icons.arrow_downward,
             color: isIncome ? Colors.green : Colors.red,

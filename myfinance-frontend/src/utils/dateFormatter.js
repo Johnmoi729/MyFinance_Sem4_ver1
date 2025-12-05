@@ -1,14 +1,10 @@
-import { usePreferences } from '../context/PreferencesContext';
-
 /**
- * Date formatter hook that uses user preferences
- * Returns functions to format dates based on user's preferred date format
+ * Date formatter hook - uses Vietnamese format (dd/MM/yyyy)
+ * Returns functions to format dates in Vietnamese standard format
  */
 export const useDateFormatter = () => {
-    const { getDateFormat, getTimezone } = usePreferences();
-
     /**
-     * Format a date according to user's date format preference
+     * Format a date in Vietnamese format (dd/MM/yyyy)
      * @param {Date|string|number} date - The date to format
      * @param {string} formatOverride - Optional format override
      * @returns {string} Formatted date string
@@ -16,7 +12,7 @@ export const useDateFormatter = () => {
     const formatDate = (date, formatOverride = null) => {
         if (!date) return '';
 
-        const format = formatOverride || getDateFormat();
+        const format = formatOverride || 'dd/MM/yyyy'; // Hardcoded to Vietnamese format
         const dateObj = typeof date === 'string' || typeof date === 'number' ? new Date(date) : date;
 
         // Validate date
@@ -94,7 +90,7 @@ export const useDateFormatter = () => {
     };
 
     /**
-     * Parse a date string based on user's format preference
+     * Parse a date string in Vietnamese format (dd/MM/yyyy)
      * @param {string} dateString - The date string to parse
      * @param {string} formatOverride - Optional format override
      * @returns {Date|null} Parsed Date object or null if invalid
@@ -102,7 +98,7 @@ export const useDateFormatter = () => {
     const parseDate = (dateString, formatOverride = null) => {
         if (!dateString) return null;
 
-        const format = formatOverride || getDateFormat();
+        const format = formatOverride || 'dd/MM/yyyy'; // Hardcoded to Vietnamese format
         const parts = dateString.split(/[/-]/);
 
         if (parts.length !== 3) {

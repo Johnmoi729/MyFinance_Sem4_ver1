@@ -132,4 +132,32 @@ class TransactionService {
       );
     }
   }
+
+  Future<ApiResponse<List<Transaction>>> searchTransactions(String searchTerm) async {
+    try {
+      final response = await _api.get('/transactions/search?searchTerm=$searchTerm');
+
+      if (response.data['success'] == true) {
+        final List<dynamic> dataList = response.data['data'] ?? [];
+        final transactions = dataList.map((e) => Transaction.fromJson(e)).toList();
+        return ApiResponse(
+          success: true,
+          message: response.data['message'],
+          data: transactions,
+        );
+      }
+
+      return ApiResponse(
+        success: false,
+        message: response.data['message'] ?? 'Không thể tìm kiếm giao dịch',
+        data: [],
+      );
+    } catch (e) {
+      return ApiResponse(
+        success: false,
+        message: 'Đã xảy ra lỗi: ${e.toString()}',
+        data: [],
+      );
+    }
+  }
 }

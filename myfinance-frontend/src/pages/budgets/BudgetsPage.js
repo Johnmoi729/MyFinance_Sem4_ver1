@@ -12,7 +12,7 @@ import { budgetAPI } from '../../services/api';
 const BudgetsPage = () => {
   const { budgets, loading, error, fetchBudgets, deleteBudget } = useBudget();
   const { loadCategories, getCategoriesByType } = useCategory();
-  const { getCurrency, getViewMode, updatePreference } = usePreferences();
+  const { getViewMode, updatePreference } = usePreferences();
   const { formatCurrency } = useCurrencyFormatter();
 
   const [filters, setFilters] = useState({
@@ -358,16 +358,9 @@ const BudgetsPage = () => {
                 </div>
 
                 <div className="mb-4">
-                  <div className="flex flex-col">
-                    <p className="text-2xl font-bold text-gray-800 dark:text-gray-50">
-                      {formatCurrency(budget.budgetAmount, budget.currencyCode || getCurrency())}
-                    </p>
-                    {budget.currencyCode && budget.currencyCode !== getCurrency() && budget.budgetAmountInBaseCurrency && (
-                      <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                        ≈ {formatCurrency(budget.budgetAmountInBaseCurrency, 'VND')}
-                      </p>
-                    )}
-                  </div>
+                  <p className="text-2xl font-bold text-gray-800 dark:text-gray-50">
+                    {formatCurrency(budget.budgetAmount)}
+                  </p>
                 </div>
 
                 {budget.description && (

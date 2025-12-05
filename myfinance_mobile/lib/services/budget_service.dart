@@ -95,4 +95,29 @@ class BudgetService {
       );
     }
   }
+
+  Future<ApiResponse<BudgetWarningResponse>> getBudgetWarnings() async {
+    try {
+      final response = await _api.get('/budgets/analytics/warnings');
+
+      if (response.data['success'] == true) {
+        final warnings = BudgetWarningResponse.fromJson(response.data['data']);
+        return ApiResponse(
+          success: true,
+          message: response.data['message'],
+          data: warnings,
+        );
+      }
+
+      return ApiResponse(
+        success: false,
+        message: response.data['message'] ?? 'Không thể tải cảnh báo ngân sách',
+      );
+    } catch (e) {
+      return ApiResponse(
+        success: false,
+        message: 'Đã xảy ra lỗi: ${e.toString()}',
+      );
+    }
+  }
 }

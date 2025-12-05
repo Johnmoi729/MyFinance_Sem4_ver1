@@ -18,8 +18,6 @@ public class BudgetRequest {
     @Positive(message = "Số tiền ngân sách phải lớn hơn 0")
     private BigDecimal budgetAmount;
 
-    private String currencyCode; // Optional, defaults to VND
-
     @NotNull(message = "Năm ngân sách không được để trống")
     @Min(value = 2000, message = "Năm ngân sách không hợp lệ")
     @Max(value = 2100, message = "Năm ngân sách không hợp lệ")

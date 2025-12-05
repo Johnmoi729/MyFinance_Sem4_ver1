@@ -46,17 +46,17 @@ public interface BudgetRepository extends JpaRepository<Budget, Long> {
     boolean existsByUserIdAndCategoryIdAndBudgetYearAndBudgetMonthAndIsActiveTrue(
             Long userId, Long categoryId, Integer budgetYear, Integer budgetMonth);
 
-    // Get total budget amount for a period (using base currency for multi-currency support)
-    @Query("SELECT COALESCE(SUM(b.budgetAmountInBaseCurrency), 0) FROM Budget b WHERE b.userId = :userId AND b.budgetYear = :year AND b.budgetMonth = :month AND b.isActive = true")
+    // Get total budget amount for a period
+    @Query("SELECT COALESCE(SUM(b.budgetAmount), 0) FROM Budget b WHERE b.userId = :userId AND b.budgetYear = :year AND b.budgetMonth = :month AND b.isActive = true")
     Double getTotalBudgetForPeriod(@Param("userId") Long userId,
                                  @Param("year") Integer year,
                                  @Param("month") Integer month);
 
-    // Get budget statistics for dashboard (using base currency for multi-currency support)
+    // Get budget statistics for dashboard
     @Query("SELECT NEW map(" +
            "COUNT(b) as totalBudgets, " +
-           "COALESCE(SUM(b.budgetAmountInBaseCurrency), 0) as totalBudgetAmount, " +
-           "COALESCE(AVG(b.budgetAmountInBaseCurrency), 0) as avgBudgetAmount) " +
+           "COALESCE(SUM(b.budgetAmount), 0) as totalBudgetAmount, " +
+           "COALESCE(AVG(b.budgetAmount), 0) as avgBudgetAmount) " +
            "FROM Budget b WHERE b.userId = :userId AND b.budgetYear = :year AND b.budgetMonth = :month AND b.isActive = true")
     List<Object> getBudgetStatistics(@Param("userId") Long userId,
                                    @Param("year") Integer year,

@@ -15,7 +15,9 @@
       "Bash(do echo \"=== $dir ===\")",
       "Bash(ls -1 \"$dir\")",
       "Bash(head -30 \"$file\")",
-      "Bash(del ACTION_PLAN.md EMAIL_INTEGRATION_GUIDE.md EMAIL_AND_PDF_CODE_ANALYSIS.md DOCUMENTATION_INDEX.md FIXES_SUMMARY.md ICON_MIGRATION_STATUS.md EXCEL_EXPORT_IMPLEMENTATION_PLAN.md)"
+      "Bash(del ACTION_PLAN.md EMAIL_INTEGRATION_GUIDE.md EMAIL_AND_PDF_CODE_ANALYSIS.md DOCUMENTATION_INDEX.md FIXES_SUMMARY.md ICON_MIGRATION_STATUS.md EXCEL_EXPORT_IMPLEMENTATION_PLAN.md)",
+      "Bash(del \"D:\\P1\\Java_Project_Collections\\MyFinance-Project\\myfinance-frontend\\src\\components\\common\\CurrencySelector.js\")",
+      "Bash(flutter analyze:*)"
     ],
     "deny": [],
     "ask": []

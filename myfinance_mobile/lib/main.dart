@@ -10,6 +10,10 @@ import 'screens/transactions/transactions_screen.dart';
 import 'screens/transactions/add_transaction_screen.dart';
 import 'screens/budgets/budgets_screen.dart';
 import 'screens/categories/categories_screen.dart';
+import 'screens/profile/profile_screen.dart';
+import 'screens/profile/edit_profile_screen.dart';
+import 'screens/profile/change_password_screen.dart';
+import 'screens/reports/monthly_report_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -71,6 +75,10 @@ class MyFinanceApp extends StatelessWidget {
           '/transactions/add': (context) => const AddTransactionScreen(),
           '/budgets': (context) => const BudgetsScreen(),
           '/categories': (context) => const CategoriesScreen(),
+          '/profile': (context) => const ProfileScreen(),
+          '/profile/edit': (context) => const EditProfileScreen(),
+          '/profile/change-password': (context) => const ChangePasswordScreen(),
+          '/reports/monthly': (context) => const MonthlyReportScreen(),
         },
       ),
     );

@@ -1,24 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { preferencesAPI } from '../../services/api';
-import { X, Globe, DollarSign, Calendar, Sun, Moon, Eye, Bell } from '../../components/icons';
+import { X, Sun, Moon, Eye, Bell } from '../../components/icons';
 
 const UserPreferencesPage = () => {
     const navigate = useNavigate();
     const [preferences, setPreferences] = useState({
-        language: 'vi',
-        currency: 'VND',
-        dateFormat: 'dd/MM/yyyy',
-        timezone: 'Asia/Ho_Chi_Minh',
         theme: 'light',
-        itemsPerPage: 10,
         viewMode: 'detailed',
         emailNotifications: true,
         budgetAlerts: true,
-        transactionReminders: false,
         weeklySummary: false,
-        monthlySummary: true,
-        goalReminders: true
+        monthlySummary: true
     });
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
@@ -157,56 +150,6 @@ const UserPreferencesPage = () => {
                             <h2 className="text-xl font-semibold text-gray-900">Tùy chỉnh hiển thị</h2>
                         </div>
 
-                        {/* Language */}
-                        <div className="mb-6">
-                            <label className="block text-sm font-medium text-gray-700 mb-2">
-                                <Globe className="w-4 h-4 inline mr-1" />
-                                Ngôn ngữ
-                            </label>
-                            <select
-                                value={preferences.language}
-                                onChange={(e) => handleInputChange('language', e.target.value)}
-                                className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                            >
-                                <option value="vi">Tiếng Việt</option>
-                                <option value="en">English</option>
-                            </select>
-                        </div>
-
-                        {/* Currency */}
-                        <div className="mb-6">
-                            <label className="block text-sm font-medium text-gray-700 mb-2">
-                                <DollarSign className="w-4 h-4 inline mr-1" />
-                                Tiền tệ
-                            </label>
-                            <select
-                                value={preferences.currency}
-                                onChange={(e) => handleInputChange('currency', e.target.value)}
-                                className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                            >
-                                <option value="VND">VND - Việt Nam Đồng</option>
-                                <option value="USD">USD - US Dollar</option>
-                                <option value="EUR">EUR - Euro</option>
-                            </select>
-                        </div>
-
-                        {/* Date Format */}
-                        <div className="mb-6">
-                            <label className="block text-sm font-medium text-gray-700 mb-2">
-                                <Calendar className="w-4 h-4 inline mr-1" />
-                                Định dạng ngày tháng
-                            </label>
-                            <select
-                                value={preferences.dateFormat}
-                                onChange={(e) => handleInputChange('dateFormat', e.target.value)}
-                                className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                            >
-                                <option value="dd/MM/yyyy">dd/MM/yyyy (31/12/2025)</option>
-                                <option value="MM/dd/yyyy">MM/dd/yyyy (12/31/2025)</option>
-                                <option value="yyyy-MM-dd">yyyy-MM-dd (2025-12-31)</option>
-                            </select>
-                        </div>
-
                         {/* Theme */}
                         <div className="mb-6">
                             <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -220,23 +163,6 @@ const UserPreferencesPage = () => {
                             >
                                 <option value="light">Sáng</option>
                                 <option value="dark">Tối (sắp ra mắt)</option>
-                            </select>
-                        </div>
-
-                        {/* Items Per Page */}
-                        <div className="mb-6">
-                            <label className="block text-sm font-medium text-gray-700 mb-2">
-                                Số mục trên mỗi trang
-                            </label>
-                            <select
-                                value={preferences.itemsPerPage}
-                                onChange={(e) => handleInputChange('itemsPerPage', parseInt(e.target.value))}
-                                className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                            >
-                                <option value={5}>5 mục</option>
-                                <option value={10}>10 mục</option>
-                                <option value={20}>20 mục</option>
-                                <option value={50}>50 mục</option>
                             </select>
                         </div>
 
@@ -301,17 +227,17 @@ const UserPreferencesPage = () => {
                             </p>
                         </div>
 
-                        {/* Transaction Reminders */}
-                        <div className="mb-6">
+                        {/* Transaction Reminders - Coming Soon */}
+                        <div className="mb-6 opacity-50">
                             <label className="flex items-center">
                                 <input
                                     type="checkbox"
-                                    checked={preferences.transactionReminders}
-                                    onChange={(e) => handleInputChange('transactionReminders', e.target.checked)}
+                                    checked={false}
+                                    disabled
                                     className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
                                 />
                                 <span className="ml-3 text-sm font-medium text-gray-700">
-                                    Nhắc nhở ghi giao dịch
+                                    Nhắc nhở ghi giao dịch <span className="text-xs text-gray-400">(sắp ra mắt)</span>
                                 </span>
                             </label>
                             <p className="text-sm text-gray-500 mt-1 ml-7">
@@ -355,17 +281,17 @@ const UserPreferencesPage = () => {
                             </p>
                         </div>
 
-                        {/* Goal Reminders */}
-                        <div className="mb-6">
+                        {/* Goal Reminders - Coming Soon */}
+                        <div className="mb-6 opacity-50">
                             <label className="flex items-center">
                                 <input
                                     type="checkbox"
-                                    checked={preferences.goalReminders}
-                                    onChange={(e) => handleInputChange('goalReminders', e.target.checked)}
+                                    checked={false}
+                                    disabled
                                     className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
                                 />
                                 <span className="ml-3 text-sm font-medium text-gray-700">
-                                    Nhắc nhở mục tiêu
+                                    Nhắc nhở mục tiêu <span className="text-xs text-gray-400">(sắp ra mắt)</span>
                                 </span>
                             </label>
                             <p className="text-sm text-gray-500 mt-1 ml-7">

@@ -15,7 +15,6 @@ const TransactionsPage = () => {
     const location = useLocation();
     const { formatCurrency } = useCurrencyFormatter();
     const { formatDate } = useDateFormatter();
-    const { getCurrency } = usePreferences();
     const {
         transactions,
         loading,
@@ -414,17 +413,10 @@ const TransactionsPage = () => {
                                                 {transaction.description || '-'}
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap">
-                                                <div className="flex flex-col">
-                                                    <span className={`text-sm font-semibold ${getTransactionTypeColor(transaction.type)}`}>
-                                                        {transaction.type === 'EXPENSE' ? '-' : '+'}
-                                                        {formatCurrency(transaction.amount, transaction.currencyCode || getCurrency())}
-                                                    </span>
-                                                    {transaction.currencyCode && transaction.currencyCode !== getCurrency() && transaction.amountInBaseCurrency && (
-                                                        <span className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                                                            ≈ {formatCurrency(transaction.amountInBaseCurrency, 'VND')}
-                                                        </span>
-                                                    )}
-                                                </div>
+                                                <span className={`text-sm font-semibold ${getTransactionTypeColor(transaction.type)}`}>
+                                                    {transaction.type === 'EXPENSE' ? '-' : '+'}
+                                                    {formatCurrency(transaction.amount)}
+                                                </span>
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
                                                 <button

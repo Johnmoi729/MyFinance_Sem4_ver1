@@ -543,54 +543,22 @@ This flow focuses on improving user experience, polishing the UI/UX, and impleme
   - 🔲 Time period zoom and pan controls - optional enhancement
   - 🔲 Comparison mode (compare multiple periods side-by-side) - optional enhancement
 
-**Phase 6E: Advanced User Features** [14% COMPLETE - Multi-Currency Done]
+**Phase 6E: Advanced User Features** [0% - Multi-Currency REMOVED]
 
-- **✅ Multi-Currency Support** [100% COMPLETE - November 11, 2025]:
-  - ✅ Currency entity with 10 supported currencies (VND, USD, EUR, JPY, GBP, CNY, KRW, THB, SGD, MYR)
-  - ✅ Exchange rate management with BigDecimal precision (6 decimal places)
-  - ✅ CurrencyService with conversion logic (convertAmount, convertToBaseCurrency)
-  - ✅ Currency API endpoints (GET /api/currencies, /api/currencies/{code}, /api/currencies/base)
-  - ✅ DataInitializer for auto-currency initialization on startup
-  - ✅ Transaction currency selection (currencyCode field in Transaction entity)
-  - ✅ Budget currency selection (currencyCode field in Budget entity)
-  - ✅ Automatic conversion to base currency (VND) for aggregation
-  - ✅ amountInBaseCurrency stored for reports and analytics
-  - ✅ CurrencySelector component with symbol display
-  - ✅ Updated TransactionResponse and BudgetResponse DTOs
-  - ✅ Updated all transaction and budget forms (Add/Edit)
-  - ✅ Multi-currency display in TransactionsPage (original + converted)
-  - ✅ Multi-currency display in BudgetsPage (original + converted)
-  - ✅ Smart UI: Shows conversion info when currency differs from user preference
-  - ✅ Backward compatibility: Existing data defaults to VND
-  - **Benefits**: 10 currencies, precise conversions, accurate reports across currencies
-
-**📊 Files Created (Multi-Currency)**:
-- **Backend** (5 new files):
-  - Currency.java entity (10 fields with exchange rates)
-  - CurrencyRepository.java
-  - CurrencyService.java (conversion methods)
-  - CurrencyController.java (3 REST endpoints)
-  - DataInitializer.java (auto-initialize currencies)
-- **Frontend** (1 new file):
-  - CurrencySelector.js component (reusable dropdown)
-
-**🔄 Files Modified (Multi-Currency)**:
-- **Backend** (6 files):
-  - Transaction.java (+currencyCode, +amountInBaseCurrency)
-  - Budget.java (+currencyCode, +budgetAmountInBaseCurrency)
-  - TransactionRequest/Response.java (+currency fields)
-  - BudgetRequest/Response.java (+currency fields)
-  - TransactionService.java (auto-conversion + mapper update)
-  - BudgetService.java (auto-conversion + mapper update)
-- **Frontend** (6 files):
-  - AddTransactionPage.js, EditTransactionPage.js (currency selector)
-  - AddBudgetPage.js, EditBudgetPage.js (currency selector)
-  - TransactionsPage.js, BudgetsPage.js (multi-currency display)
-
-**🔌 API Endpoints (Multi-Currency)** - 3 New Endpoints:
-- GET /api/currencies - Get all active currencies
-- GET /api/currencies/{code} - Get currency by code
-- GET /api/currencies/base - Get base currency (VND)
+- **❌ Multi-Currency Support** [REMOVED - December 5, 2025]:
+  - **Decision**: Simplified to VND-only to reduce complexity and focus on Vietnamese market
+  - **Migration**: Option A Simplification completed successfully
+  - ❌ Deleted 5 backend files (Currency entity, repository, service, controller, DataInitializer)
+  - ❌ Deleted 1 frontend file (CurrencySelector component)
+  - ❌ Removed `currencyCode` and `amountInBaseCurrency` fields from Transaction entity
+  - ❌ Removed `currencyCode` and `budgetAmountInBaseCurrency` fields from Budget entity
+  - ❌ Removed currency selection UI from all transaction/budget forms
+  - ❌ Removed `getCurrency()` from PreferencesContext
+  - ✅ Simplified currencyFormatter.js to VND-only (286 lines → 132 lines)
+  - ✅ All amounts now display in VND with no conversion logic
+  - ✅ Database migration SQL created to drop currency columns and table
+  - **Benefits**: Simpler codebase, faster performance, no conversion errors, better UX for Vietnamese users
+  - **See**: VND_ONLY_MIGRATION_COMPLETE.md for full migration details
 
 **Phase 6E+: Additional Preference Implementations** [100% COMPLETE] ✅
 

@@ -42,7 +42,6 @@ public class BudgetService {
     private final UserBudgetSettingsService userBudgetSettingsService;
     private final EmailService emailService;
     private final com.myfinance.repository.UserRepository userRepository;
-    private final CurrencyService currencyService;
 
     @PostConstruct
     public void init() {
@@ -126,13 +125,6 @@ public class BudgetService {
         budget.setDescription(request.getDescription());
         budget.setIsActive(true);
 
-        // Set currency and convert to base currency
-        String currencyCode = request.getCurrencyCode() != null ? request.getCurrencyCode() : "VND";
-        budget.setCurrencyCode(currencyCode);
-        budget.setBudgetAmountInBaseCurrency(
-            currencyService.convertToBaseCurrency(request.getBudgetAmount(), currencyCode)
-        );
-
         Budget savedBudget = budgetRepository.save(budget);
         log.info("Budget created successfully with ID: {}", savedBudget.getId());
 
@@ -169,13 +161,6 @@ public class BudgetService {
         budget.setBudgetYear(request.getBudgetYear());
         budget.setBudgetMonth(request.getBudgetMonth());
         budget.setDescription(request.getDescription());
-
-        // Update currency and convert to base currency
-        String currencyCode = request.getCurrencyCode() != null ? request.getCurrencyCode() : "VND";
-        budget.setCurrencyCode(currencyCode);
-        budget.setBudgetAmountInBaseCurrency(
-            currencyService.convertToBaseCurrency(request.getBudgetAmount(), currencyCode)
-        );
 
         Budget updatedBudget = budgetRepository.save(budget);
         log.info("Budget updated successfully with ID: {}", budgetId);
@@ -315,11 +300,10 @@ public class BudgetService {
 
     private BudgetUsageResponse calculateBudgetUsage(Budget budget, Long userId) {
         BigDecimal actualSpent = calculateActualSpending(budget, userId);
-        // Use base currency amount for accurate multi-currency calculation
-        BigDecimal remaining = budget.getBudgetAmountInBaseCurrency().subtract(actualSpent);
+        BigDecimal remaining = budget.getBudgetAmount().subtract(actualSpent);
 
-        double usagePercentage = budget.getBudgetAmountInBaseCurrency().compareTo(BigDecimal.ZERO) > 0
-                ? actualSpent.divide(budget.getBudgetAmountInBaseCurrency(), 4, RoundingMode.HALF_UP)
+        double usagePercentage = budget.getBudgetAmount().compareTo(BigDecimal.ZERO) > 0
+                ? actualSpent.divide(budget.getBudgetAmount(), 4, RoundingMode.HALF_UP)
                     .multiply(BigDecimal.valueOf(100))
                     .doubleValue()
                 : 0.0;
@@ -333,7 +317,7 @@ public class BudgetService {
                 .categoryName(budget.getCategory().getName())
                 .categoryColor(budget.getCategory().getColor())
                 .categoryIcon(budget.getCategory().getIcon())
-                .budgetAmount(budget.getBudgetAmountInBaseCurrency())
+                .budgetAmount(budget.getBudgetAmount())
                 .actualSpent(actualSpent)
                 .remainingAmount(remaining)
                 .usagePercentage(usagePercentage)
@@ -414,9 +398,9 @@ public class BudgetService {
                 null
         );
 
-        // Sum amounts in base currency for accurate multi-currency calculation
+        // Sum transaction amounts
         return transactions.stream()
-                .map(Transaction::getAmountInBaseCurrency)
+                .map(Transaction::getAmount)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 
@@ -543,8 +527,6 @@ public class BudgetService {
                 .id(budget.getId())
                 .category(categoryResponse)
                 .budgetAmount(budget.getBudgetAmount())
-                .currencyCode(budget.getCurrencyCode())
-                .budgetAmountInBaseCurrency(budget.getBudgetAmountInBaseCurrency())
                 .budgetYear(budget.getBudgetYear())
                 .budgetMonth(budget.getBudgetMonth())
                 .budgetPeriod(budget.getBudgetPeriod())

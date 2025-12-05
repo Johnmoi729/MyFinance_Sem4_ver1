@@ -90,3 +90,73 @@ class BudgetUsage {
     );
   }
 }
+
+class BudgetWarningResponse {
+  final int totalBudgets;
+  final int warningCount;
+  final int overBudgetCount;
+  final List<BudgetAlert> alerts;
+
+  BudgetWarningResponse({
+    required this.totalBudgets,
+    required this.warningCount,
+    required this.overBudgetCount,
+    required this.alerts,
+  });
+
+  factory BudgetWarningResponse.fromJson(Map<String, dynamic> json) {
+    return BudgetWarningResponse(
+      totalBudgets: json['totalBudgets'] ?? 0,
+      warningCount: json['warningCount'] ?? 0,
+      overBudgetCount: json['overBudgetCount'] ?? 0,
+      alerts: (json['alerts'] as List<dynamic>?)
+              ?.map((item) => BudgetAlert.fromJson(item))
+              .toList() ??
+          [],
+    );
+  }
+}
+
+class BudgetAlert {
+  final int budgetId;
+  final String categoryName;
+  final String? categoryColor;
+  final String alertType; // WARNING, OVER_BUDGET
+  final String alertLevel; // YELLOW, RED
+  final double budgetAmount;
+  final double actualSpent;
+  final double usagePercentage;
+  final String message;
+  final int budgetYear;
+  final int budgetMonth;
+
+  BudgetAlert({
+    required this.budgetId,
+    required this.categoryName,
+    this.categoryColor,
+    required this.alertType,
+    required this.alertLevel,
+    required this.budgetAmount,
+    required this.actualSpent,
+    required this.usagePercentage,
+    required this.message,
+    required this.budgetYear,
+    required this.budgetMonth,
+  });
+
+  factory BudgetAlert.fromJson(Map<String, dynamic> json) {
+    return BudgetAlert(
+      budgetId: json['budgetId'] ?? 0,
+      categoryName: json['categoryName'] ?? '',
+      categoryColor: json['categoryColor'],
+      alertType: json['alertType'] ?? '',
+      alertLevel: json['alertLevel'] ?? '',
+      budgetAmount: (json['budgetAmount'] as num?)?.toDouble() ?? 0.0,
+      actualSpent: (json['actualSpent'] as num?)?.toDouble() ?? 0.0,
+      usagePercentage: (json['usagePercentage'] as num?)?.toDouble() ?? 0.0,
+      message: json['message'] ?? '',
+      budgetYear: json['budgetYear'] ?? 0,
+      budgetMonth: json['budgetMonth'] ?? 0,
+    );
+  }
+}
