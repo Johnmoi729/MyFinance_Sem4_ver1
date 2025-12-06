@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { reportAPI } from '../../services/api';
 import { useCurrencyFormatter } from '../../utils/currencyFormatter';
 import EnhancedCategoryPieChart from '../../components/charts/EnhancedCategoryPieChart';
@@ -6,11 +7,14 @@ import EnhancedBarChart from '../../components/charts/EnhancedBarChart';
 import { TrendingUp, TrendingDown } from '../../components/icons';
 
 const FinancialAnalytics = () => {
+    const navigate = useNavigate();
     const { formatCurrency } = useCurrencyFormatter();
     const [loading, setLoading] = useState(true);
     const [monthlyData, setMonthlyData] = useState(null);
     const [yearlyData, setYearlyData] = useState(null);
     const [selectedPeriod, setSelectedPeriod] = useState(null);
+    const [currentYear, setCurrentYear] = useState(new Date().getFullYear());
+    const [currentMonth, setCurrentMonth] = useState(new Date().getMonth() + 1);
 
     const fetchAnalytics = useCallback(async () => {
         try {
@@ -18,6 +22,10 @@ const FinancialAnalytics = () => {
             const currentDate = new Date();
             const year = currentDate.getFullYear();
             const month = currentDate.getMonth() + 1;
+
+            // Store current year and month for drill-down navigation
+            setCurrentYear(year);
+            setCurrentMonth(month);
 
             // Fetch monthly report
             const monthlyResponse = await reportAPI.getMonthlyReport(year, month);
@@ -42,12 +50,61 @@ const FinancialAnalytics = () => {
         fetchAnalytics();
     }, [fetchAnalytics]);
 
-    const handleCategoryClick = (category) => {
-        alert(`Xem chi tiết danh mục: ${category.name}\nSố tiền: ${formatCurrency(category.value)}`);
+    // Helper function to calculate month date range
+    const getMonthDateRange = (year, month) => {
+        const startDate = `${year}-${String(month).padStart(2, '0')}-01`;
+        const lastDay = new Date(year, month, 0).getDate();
+        const endDate = `${year}-${String(month).padStart(2, '0')}-${String(lastDay).padStart(2, '0')}`;
+        return { startDate, endDate };
     };
 
+    // Helper function to extract month number from Vietnamese month name
+    const extractMonthNumber = (monthName) => {
+        // monthName format: "Tháng 1", "Tháng 2", etc.
+        const match = monthName.match(/Tháng (\d+)/);
+        return match ? parseInt(match[1]) : null;
+    };
+
+    // Handle category click - drill down to transactions filtered by category
+    const handleCategoryClick = (category) => {
+        if (!category.categoryId) return;
+
+        // Get current month date range
+        const { startDate, endDate } = getMonthDateRange(currentYear, currentMonth);
+
+        // Navigate to transactions page with filters
+        const params = new URLSearchParams({
+            categoryId: category.categoryId,
+            type: 'EXPENSE',
+            startDate: startDate,
+            endDate: endDate,
+            source: 'analytics',
+            sourceName: category.name
+        });
+
+        navigate(`/transactions?${params.toString()}`);
+    };
+
+    // Handle month click - drill down to transactions filtered by month
     const handleMonthClick = (monthData) => {
         setSelectedPeriod(monthData);
+
+        // Extract month number from Vietnamese month name
+        const monthNumber = extractMonthNumber(monthData.month);
+        if (!monthNumber) return;
+
+        // Get date range for the clicked month
+        const { startDate, endDate } = getMonthDateRange(currentYear, monthNumber);
+
+        // Navigate to transactions page with filters
+        const params = new URLSearchParams({
+            startDate: startDate,
+            endDate: endDate,
+            source: 'analytics',
+            sourceName: monthData.month
+        });
+
+        navigate(`/transactions?${params.toString()}`);
     };
 
     const calculateMonthOverMonth = () => {

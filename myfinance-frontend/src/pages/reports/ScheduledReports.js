@@ -1,18 +1,44 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { scheduledReportAPI } from '../../services/api';
 
 const ScheduledReports = () => {
     const navigate = useNavigate();
     const [scheduledReports, setScheduledReports] = useState([]);
     const [showAddForm, setShowAddForm] = useState(false);
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState('');
+    const [successMessage, setSuccessMessage] = useState('');
     const [formData, setFormData] = useState({
-        reportType: 'monthly',
-        frequency: 'monthly',
-        format: 'pdf',
-        emailDelivery: false,
-        email: '',
-        enabled: true
+        reportType: 'MONTHLY',
+        frequency: 'MONTHLY',
+        format: 'PDF',
+        emailDelivery: true,
+        isActive: true
     });
+
+    // Load schedules on component mount
+    useEffect(() => {
+        fetchSchedules();
+    }, []);
+
+    // Fetch all scheduled reports
+    const fetchSchedules = async () => {
+        setLoading(true);
+        setError('');
+        try {
+            const response = await scheduledReportAPI.getSchedules();
+            if (response && response.success) {
+                setScheduledReports(response.data || []);
+            } else {
+                setError(response.message || 'Không thể tải danh sách lịch báo cáo');
+            }
+        } catch (err) {
+            setError('Đã xảy ra lỗi khi tải dữ liệu');
+        } finally {
+            setLoading(false);
+        }
+    };
 
     const handleInputChange = (e) => {
         const { name, value, type, checked } = e.target;
@@ -22,30 +48,34 @@ const ScheduledReports = () => {
         }));
     };
 
-    const handleAddSchedule = (e) => {
+    const handleAddSchedule = async (e) => {
         e.preventDefault();
+        setLoading(true);
+        setError('');
+        setSuccessMessage('');
 
-        // Placeholder implementation - would integrate with backend API
-        const newSchedule = {
-            id: Date.now(),
-            ...formData,
-            createdAt: new Date().toISOString(),
-            lastGenerated: null,
-            nextGeneration: calculateNextGeneration(formData.frequency)
-        };
-
-        setScheduledReports([...scheduledReports, newSchedule]);
-        setShowAddForm(false);
-        setFormData({
-            reportType: 'monthly',
-            frequency: 'monthly',
-            format: 'pdf',
-            emailDelivery: false,
-            email: '',
-            enabled: true
-        });
-
-        alert('Lưu ý: Tính năng lập lịch báo cáo tự động đang trong giai đoạn phát triển. Hiện tại đây là giao diện demo.');
+        try {
+            const response = await scheduledReportAPI.createSchedule(formData);
+            if (response && response.success) {
+                setSuccessMessage('Tạo lịch báo cáo thành công!');
+                setShowAddForm(false);
+                setFormData({
+                    reportType: 'MONTHLY',
+                    frequency: 'MONTHLY',
+                    format: 'PDF',
+                    emailDelivery: true,
+                    isActive: true
+                });
+                // Refresh the list
+                await fetchSchedules();
+            } else {
+                setError(response.message || 'Không thể tạo lịch báo cáo');
+            }
+        } catch (err) {
+            setError('Đã xảy ra lỗi khi tạo lịch báo cáo');
+        } finally {
+            setLoading(false);
+        }
     };
 
     const calculateNextGeneration = (frequency) => {
@@ -70,38 +100,70 @@ const ScheduledReports = () => {
         return now.toISOString();
     };
 
-    const handleToggleEnabled = (scheduleId) => {
-        setScheduledReports(scheduledReports.map(schedule =>
-            schedule.id === scheduleId
-                ? { ...schedule, enabled: !schedule.enabled }
-                : schedule
-        ));
+    const handleToggleEnabled = async (scheduleId) => {
+        setLoading(true);
+        setError('');
+        setSuccessMessage('');
+
+        try {
+            const response = await scheduledReportAPI.toggleSchedule(scheduleId);
+            if (response && response.success) {
+                setSuccessMessage('Đã thay đổi trạng thái lịch báo cáo');
+                // Refresh the list
+                await fetchSchedules();
+            } else {
+                setError(response.message || 'Không thể thay đổi trạng thái');
+            }
+        } catch (err) {
+            setError('Đã xảy ra lỗi khi thay đổi trạng thái');
+        } finally {
+            setLoading(false);
+        }
     };
 
-    const handleDeleteSchedule = (scheduleId) => {
-        if (window.confirm('Bạn có chắc chắn muốn xóa lịch báo cáo này?')) {
-            setScheduledReports(scheduledReports.filter(schedule => schedule.id !== scheduleId));
+    const handleDeleteSchedule = async (scheduleId) => {
+        if (!window.confirm('Bạn có chắc chắn muốn xóa lịch báo cáo này?')) {
+            return;
+        }
+
+        setLoading(true);
+        setError('');
+        setSuccessMessage('');
+
+        try {
+            const response = await scheduledReportAPI.deleteSchedule(scheduleId);
+            if (response && response.success) {
+                setSuccessMessage('Đã xóa lịch báo cáo thành công');
+                // Refresh the list
+                await fetchSchedules();
+            } else {
+                setError(response.message || 'Không thể xóa lịch báo cáo');
+            }
+        } catch (err) {
+            setError('Đã xảy ra lỗi khi xóa lịch báo cáo');
+        } finally {
+            setLoading(false);
         }
     };
 
     const getFrequencyLabel = (frequency) => {
         const labels = {
-            daily: 'Hàng ngày',
-            weekly: 'Hàng tuần',
-            monthly: 'Hàng tháng',
-            quarterly: 'Hàng quý',
-            yearly: 'Hàng năm'
+            DAILY: 'Hàng ngày',
+            WEEKLY: 'Hàng tuần',
+            MONTHLY: 'Hàng tháng',
+            QUARTERLY: 'Hàng quý',
+            YEARLY: 'Hàng năm'
         };
-        return labels[frequency] || frequency;
+        return labels[frequency] || labels[frequency?.toUpperCase()] || frequency;
     };
 
     const getReportTypeLabel = (type) => {
         const labels = {
-            monthly: 'Báo cáo tháng',
-            yearly: 'Báo cáo năm',
-            category: 'Báo cáo danh mục'
+            MONTHLY: 'Báo cáo tháng',
+            YEARLY: 'Báo cáo năm',
+            CATEGORY: 'Báo cáo danh mục'
         };
-        return labels[type] || type;
+        return labels[type] || labels[type?.toUpperCase()] || type;
     };
 
     return (
@@ -115,26 +177,38 @@ const ScheduledReports = () => {
                     </div>
                     <button
                         onClick={() => setShowAddForm(!showAddForm)}
-                        className="px-4 py-2 bg-indigo-500 hover:bg-indigo-600 text-white rounded-md font-medium transition-colors"
+                        disabled={loading}
+                        className="px-4 py-2 bg-indigo-500 hover:bg-indigo-600 disabled:bg-indigo-300 text-white rounded-md font-medium transition-colors"
                     >
                         {showAddForm ? 'Hủy' : '+ Thêm lịch mới'}
                     </button>
                 </div>
 
-                {/* Beta Notice */}
-                <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
-                    <div className="flex items-start gap-3">
-                        <span className="text-2xl">⚠️</span>
-                        <div>
-                            <p className="font-semibold text-yellow-800">Tính năng đang phát triển</p>
-                            <p className="text-sm text-yellow-700 mt-1">
-                                Tính năng lập lịch báo cáo tự động hiện đang trong giai đoạn phát triển.
-                                Giao diện này là bản demo để thu thập phản hồi từ người dùng.
-                                Tích hợp backend với Spring @Scheduled sẽ được hoàn thiện trong phiên bản tiếp theo.
-                            </p>
+                {/* Error Message */}
+                {error && (
+                    <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+                        <div className="flex items-start gap-3">
+                            <span className="text-2xl">❌</span>
+                            <div>
+                                <p className="font-semibold text-red-800">Lỗi</p>
+                                <p className="text-sm text-red-700 mt-1">{error}</p>
+                            </div>
                         </div>
                     </div>
-                </div>
+                )}
+
+                {/* Success Message */}
+                {successMessage && (
+                    <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-6">
+                        <div className="flex items-start gap-3">
+                            <span className="text-2xl">✅</span>
+                            <div>
+                                <p className="font-semibold text-green-800">Thành công</p>
+                                <p className="text-sm text-green-700 mt-1">{successMessage}</p>
+                            </div>
+                        </div>
+                    </div>
+                )}
 
                 {/* Add Schedule Form */}
                 {showAddForm && (
@@ -154,9 +228,9 @@ const ScheduledReports = () => {
                                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-indigo-500"
                                         required
                                     >
-                                        <option value="monthly">Báo cáo tháng</option>
-                                        <option value="yearly">Báo cáo năm</option>
-                                        <option value="category">Báo cáo danh mục</option>
+                                        <option value="MONTHLY">Báo cáo tháng</option>
+                                        <option value="YEARLY">Báo cáo năm</option>
+                                        <option value="CATEGORY">Báo cáo danh mục</option>
                                     </select>
                                 </div>
 
@@ -172,11 +246,11 @@ const ScheduledReports = () => {
                                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-indigo-500"
                                         required
                                     >
-                                        <option value="daily">Hàng ngày</option>
-                                        <option value="weekly">Hàng tuần</option>
-                                        <option value="monthly">Hàng tháng</option>
-                                        <option value="quarterly">Hàng quý</option>
-                                        <option value="yearly">Hàng năm</option>
+                                        <option value="DAILY">Hàng ngày</option>
+                                        <option value="WEEKLY">Hàng tuần</option>
+                                        <option value="MONTHLY">Hàng tháng</option>
+                                        <option value="QUARTERLY">Hàng quý</option>
+                                        <option value="YEARLY">Hàng năm</option>
                                     </select>
                                 </div>
 
@@ -192,26 +266,12 @@ const ScheduledReports = () => {
                                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-indigo-500"
                                         required
                                     >
-                                        <option value="pdf">PDF</option>
-                                        <option value="csv">CSV</option>
-                                        <option value="both">Cả hai (PDF + CSV)</option>
+                                        <option value="PDF">PDF</option>
+                                        <option value="CSV">CSV</option>
+                                        <option value="BOTH">Cả hai (PDF + CSV)</option>
                                     </select>
                                 </div>
 
-                                {/* Email */}
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                                        Email nhận báo cáo
-                                    </label>
-                                    <input
-                                        type="email"
-                                        name="email"
-                                        value={formData.email}
-                                        onChange={handleInputChange}
-                                        placeholder="email@example.com"
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-indigo-500"
-                                    />
-                                </div>
                             </div>
 
                             {/* Email Delivery Checkbox */}
@@ -234,23 +294,33 @@ const ScheduledReports = () => {
                                 <button
                                     type="button"
                                     onClick={() => setShowAddForm(false)}
-                                    className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 transition-colors"
+                                    disabled={loading}
+                                    className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 disabled:opacity-50 transition-colors"
                                 >
                                     Hủy
                                 </button>
                                 <button
                                     type="submit"
-                                    className="px-4 py-2 bg-indigo-500 hover:bg-indigo-600 text-white rounded-md font-medium transition-colors"
+                                    disabled={loading}
+                                    className="px-4 py-2 bg-indigo-500 hover:bg-indigo-600 disabled:bg-indigo-300 text-white rounded-md font-medium transition-colors"
                                 >
-                                    Lưu lịch
+                                    {loading ? 'Đang lưu...' : 'Lưu lịch'}
                                 </button>
                             </div>
                         </form>
                     </div>
                 )}
 
+                {/* Loading State */}
+                {loading && scheduledReports.length === 0 && (
+                    <div className="bg-white rounded-lg shadow-md p-12 text-center">
+                        <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-500 mb-4"></div>
+                        <p className="text-gray-500 text-lg">Đang tải dữ liệu...</p>
+                    </div>
+                )}
+
                 {/* Scheduled Reports List */}
-                {scheduledReports.length > 0 ? (
+                {!loading && scheduledReports.length > 0 ? (
                     <div className="bg-white rounded-lg shadow-md overflow-hidden">
                         <table className="min-w-full divide-y divide-gray-200">
                             <thead className="bg-gray-50">
@@ -265,7 +335,7 @@ const ScheduledReports = () => {
                             </thead>
                             <tbody className="bg-white divide-y divide-gray-200">
                                 {scheduledReports.map(schedule => (
-                                    <tr key={schedule.id} className={!schedule.enabled ? 'opacity-50' : ''}>
+                                    <tr key={schedule.id} className={!schedule.isActive ? 'opacity-50' : ''}>
                                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                                             {getReportTypeLabel(schedule.reportType)}
                                         </td>
@@ -276,27 +346,35 @@ const ScheduledReports = () => {
                                             {schedule.format}
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                                            {new Date(schedule.nextGeneration).toLocaleDateString('vi-VN')}
+                                            {schedule.nextRun ? new Date(schedule.nextRun).toLocaleDateString('vi-VN', {
+                                                year: 'numeric',
+                                                month: '2-digit',
+                                                day: '2-digit',
+                                                hour: '2-digit',
+                                                minute: '2-digit'
+                                            }) : 'Chưa xác định'}
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap">
                                             <span className={`px-2 py-1 text-xs rounded-full ${
-                                                schedule.enabled
+                                                schedule.isActive
                                                     ? 'bg-green-100 text-green-700'
                                                     : 'bg-gray-100 text-gray-700'
                                             }`}>
-                                                {schedule.enabled ? 'Đang hoạt động' : 'Tạm dừng'}
+                                                {schedule.isActive ? 'Đang hoạt động' : 'Tạm dừng'}
                                             </span>
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap text-sm">
                                             <button
                                                 onClick={() => handleToggleEnabled(schedule.id)}
-                                                className="text-indigo-600 hover:text-indigo-800 mr-3"
+                                                disabled={loading}
+                                                className="text-indigo-600 hover:text-indigo-800 disabled:opacity-50 mr-3"
                                             >
-                                                {schedule.enabled ? 'Tạm dừng' : 'Kích hoạt'}
+                                                {schedule.isActive ? 'Tạm dừng' : 'Kích hoạt'}
                                             </button>
                                             <button
                                                 onClick={() => handleDeleteSchedule(schedule.id)}
-                                                className="text-red-600 hover:text-red-800"
+                                                disabled={loading}
+                                                className="text-red-600 hover:text-red-800 disabled:opacity-50"
                                             >
                                                 Xóa
                                             </button>
@@ -306,7 +384,10 @@ const ScheduledReports = () => {
                             </tbody>
                         </table>
                     </div>
-                ) : (
+                ) : null}
+
+                {/* Empty State */}
+                {!loading && scheduledReports.length === 0 && (
                     <div className="bg-white rounded-lg shadow-md p-12 text-center">
                         <div className="text-6xl mb-4">📅</div>
                         <p className="text-gray-500 text-lg mb-2">Chưa có lịch báo cáo nào</p>

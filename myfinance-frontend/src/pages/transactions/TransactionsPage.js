@@ -8,6 +8,8 @@ import { useCurrencyFormatter } from '../../utils/currencyFormatter';
 import { useDateFormatter } from '../../utils/dateFormatter';
 import VietnameseDateInput from '../../components/common/VietnameseDateInput';
 import SearchFilter from '../../components/common/SearchFilter';
+import Breadcrumb from '../../components/common/Breadcrumb';
+import FilterSummary from '../../components/common/FilterSummary';
 import { Plus, Minus, Coins, TrendingUp, TrendingDown, Filter as FilterIcon } from '../../components/icons';
 
 const TransactionsPage = () => {
@@ -42,19 +44,55 @@ const TransactionsPage = () => {
         searchTerm: ''
     });
 
-    // Load transactions when component mounts or handle search from URL
+    // Load transactions when component mounts or handle filters from URL
     useEffect(() => {
         const loadData = async () => {
             await loadCategories();
 
-            // Check if there's a search query in URL
+            // Parse URL parameters
             const urlParams = new URLSearchParams(location.search);
+            const categoryId = urlParams.get('categoryId');
+            const type = urlParams.get('type');
+            const startDate = urlParams.get('startDate');
+            const endDate = urlParams.get('endDate');
             const searchQuery = urlParams.get('search');
+            const source = urlParams.get('source');
 
-            if (searchQuery) {
+            // Check if we have drill-down filters from analytics
+            const hasDrillDownFilters = categoryId || type || (startDate && endDate);
+
+            if (hasDrillDownFilters) {
+                // Apply filters from URL parameters
+                const urlFilters = {
+                    type: type || '',
+                    categoryId: categoryId || '',
+                    startDate: startDate || '',
+                    endDate: endDate || '',
+                    searchTerm: ''
+                };
+
+                // Update local filter state
+                setFilters(urlFilters);
+
+                // Show advanced filters panel if we have drill-down filters
+                if (source === 'analytics') {
+                    setShowAdvancedFilters(true);
+                }
+
+                // Apply filters automatically
+                const activeFilters = {};
+                if (urlFilters.type) activeFilters.type = urlFilters.type;
+                if (urlFilters.categoryId) activeFilters.categoryId = parseInt(urlFilters.categoryId);
+                if (urlFilters.startDate) activeFilters.startDate = urlFilters.startDate;
+                if (urlFilters.endDate) activeFilters.endDate = urlFilters.endDate;
+
+                await loadTransactionsWithFilters(activeFilters);
+            } else if (searchQuery) {
+                // Handle search query
                 setSearchTerm(searchQuery);
                 await searchTransactions(searchQuery);
             } else {
+                // Load all transactions
                 await loadTransactions();
             }
         };
@@ -103,7 +141,52 @@ const TransactionsPage = () => {
         });
         setSearchTerm('');
         setFilter('ALL');
+
+        // Clear URL parameters
+        navigate('/transactions', { replace: true });
+
         await loadTransactions();
+    };
+
+    // Clear individual filter
+    const clearIndividualFilter = async (filterKey) => {
+        const updatedFilters = { ...filters };
+
+        if (filterKey === 'dateRange') {
+            updatedFilters.startDate = '';
+            updatedFilters.endDate = '';
+        } else {
+            updatedFilters[filterKey] = '';
+        }
+
+        setFilters(updatedFilters);
+
+        // Apply updated filters
+        const activeFilters = {};
+        if (updatedFilters.type) activeFilters.type = updatedFilters.type;
+        if (updatedFilters.categoryId) activeFilters.categoryId = parseInt(updatedFilters.categoryId);
+        if (updatedFilters.startDate) activeFilters.startDate = updatedFilters.startDate;
+        if (updatedFilters.endDate) activeFilters.endDate = updatedFilters.endDate;
+        if (updatedFilters.searchTerm) activeFilters.searchTerm = updatedFilters.searchTerm;
+
+        // Update URL parameters
+        const urlParams = new URLSearchParams(location.search);
+        if (filterKey === 'dateRange') {
+            urlParams.delete('startDate');
+            urlParams.delete('endDate');
+        } else {
+            urlParams.delete(filterKey);
+        }
+
+        const newSearch = urlParams.toString();
+        navigate(`/transactions${newSearch ? '?' + newSearch : ''}`, { replace: true });
+
+        // Reload transactions with updated filters
+        if (Object.keys(activeFilters).length > 0) {
+            await loadTransactionsWithFilters(activeFilters);
+        } else {
+            await loadTransactions();
+        }
     };
 
     // Handle basic filter (quick filters)
@@ -135,11 +218,23 @@ const TransactionsPage = () => {
     const totalExpenses = getTotalExpenses();
     const balance = getBalance();
 
+    // Get source and sourceName from URL
+    const urlParams = new URLSearchParams(location.search);
+    const source = urlParams.get('source');
+    const sourceName = urlParams.get('sourceName');
+
     return (
         <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-violet-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
             <div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
                 {/* Header */}
                 <div className="card p-6 mb-6">
+                    {/* Breadcrumb Navigation */}
+                    <Breadcrumb
+                        source={source}
+                        sourceName={sourceName}
+                        onBack={() => navigate('/analytics')}
+                    />
+
                     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6">
                         <h1 className="text-3xl font-bold bg-gradient-to-r from-indigo-600 to-violet-600 bg-clip-text text-transparent mb-4 sm:mb-0">Lịch sử giao dịch</h1>
                         <button
@@ -149,6 +244,13 @@ const TransactionsPage = () => {
                             + Thêm giao dịch
                         </button>
                     </div>
+
+                    {/* Filter Summary */}
+                    <FilterSummary
+                        filters={filters}
+                        categories={categories}
+                        onClearFilter={clearIndividualFilter}
+                    />
 
                     {/* Summary Cards */}
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">

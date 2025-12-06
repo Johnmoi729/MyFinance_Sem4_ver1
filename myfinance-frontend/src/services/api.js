@@ -117,6 +117,14 @@ class ApiService {
             method: 'DELETE',
         });
     }
+
+    // PATCH request
+    async patch(endpoint, data = {}) {
+        return this.request(endpoint, {
+            method: 'PATCH',
+            body: JSON.stringify(data),
+        });
+    }
 }
 
 // Authentication API methods
@@ -1106,6 +1114,87 @@ class OnboardingAPI extends ApiService {
     }
 }
 
+// Scheduled Report API methods
+class ScheduledReportAPI extends ApiService {
+    // Create a new scheduled report
+    async createSchedule(scheduleData) {
+        try {
+            const response = await this.post('/api/scheduled-reports', scheduleData);
+            return response;
+        } catch (error) {
+            return {
+                success: false,
+                message: 'Không thể tạo lịch báo cáo'
+            };
+        }
+    }
+
+    // Get all scheduled reports for current user
+    async getSchedules() {
+        try {
+            const response = await this.get('/api/scheduled-reports');
+            return response;
+        } catch (error) {
+            return {
+                success: false,
+                message: 'Không thể tải danh sách lịch báo cáo'
+            };
+        }
+    }
+
+    // Get a specific scheduled report
+    async getSchedule(id) {
+        try {
+            const response = await this.get(`/api/scheduled-reports/${id}`);
+            return response;
+        } catch (error) {
+            return {
+                success: false,
+                message: 'Không thể tải lịch báo cáo'
+            };
+        }
+    }
+
+    // Update a scheduled report
+    async updateSchedule(id, scheduleData) {
+        try {
+            const response = await this.put(`/api/scheduled-reports/${id}`, scheduleData);
+            return response;
+        } catch (error) {
+            return {
+                success: false,
+                message: 'Không thể cập nhật lịch báo cáo'
+            };
+        }
+    }
+
+    // Delete a scheduled report
+    async deleteSchedule(id) {
+        try {
+            const response = await this.delete(`/api/scheduled-reports/${id}`);
+            return response;
+        } catch (error) {
+            return {
+                success: false,
+                message: 'Không thể xóa lịch báo cáo'
+            };
+        }
+    }
+
+    // Toggle scheduled report active status
+    async toggleSchedule(id) {
+        try {
+            const response = await this.patch(`/api/scheduled-reports/${id}/toggle`, {});
+            return response;
+        } catch (error) {
+            return {
+                success: false,
+                message: 'Không thể thay đổi trạng thái lịch báo cáo'
+            };
+        }
+    }
+}
+
 // Create instances
 const userAPI = new UserAPI();
 const transactionAPI = new TransactionAPI();
@@ -1116,9 +1205,10 @@ const budgetSettingsAPI = new BudgetSettingsAPI();
 const reportAPI = new ReportAPI();
 const preferencesAPI = new PreferencesAPI();
 const onboardingAPI = new OnboardingAPI();
+const scheduledReportAPI = new ScheduledReportAPI();
 
 // Export APIs
-export { userAPI, transactionAPI, categoryAPI, budgetAPI, adminAPI, budgetSettingsAPI, reportAPI, preferencesAPI, onboardingAPI };
+export { userAPI, transactionAPI, categoryAPI, budgetAPI, adminAPI, budgetSettingsAPI, reportAPI, preferencesAPI, onboardingAPI, scheduledReportAPI };
 
 // Utility functions
 export const formatCurrency = (amount) => {
