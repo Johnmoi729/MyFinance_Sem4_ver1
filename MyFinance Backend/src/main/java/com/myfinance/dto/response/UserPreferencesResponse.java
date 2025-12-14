@@ -11,22 +11,12 @@ public class UserPreferencesResponse {
     private Long id;
     private Long userId;
 
-    // Display Preferences
-    private String language;
-    private String currency;
-    private String dateFormat;
-    private String timezone;
-    private String theme;
-    private Integer itemsPerPage;
-    private String viewMode;
+    // Display Preferences (1 field)
+    private String viewMode; // Controls budget view display (usage/basic)
 
-    // Notification Preferences
-    private Boolean emailNotifications;
-    private Boolean budgetAlerts;
-    private Boolean transactionReminders;
-    private Boolean weeklySummary;
-    private Boolean monthlySummary;
-    private Boolean goalReminders;
+    // Notification Preferences (2 fields)
+    private Boolean emailNotifications; // Master email switch
+    private Boolean budgetAlerts; // Budget alert emails
 
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;

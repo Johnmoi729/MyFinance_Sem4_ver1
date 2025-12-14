@@ -38,9 +38,6 @@ public class UserBudgetSettingsService {
         // Update settings
         settings.setWarningThreshold(request.getWarningThreshold());
         settings.setCriticalThreshold(request.getCriticalThreshold());
-        settings.setNotificationsEnabled(request.getNotificationsEnabled());
-        settings.setEmailAlertsEnabled(request.getEmailAlertsEnabled());
-        settings.setDailySummaryEnabled(request.getDailySummaryEnabled());
 
         UserBudgetSettings savedSettings = settingsRepository.save(settings);
         log.info("Updated budget settings for user: {}", userId);
@@ -56,9 +53,6 @@ public class UserBudgetSettingsService {
         // Reset to default values
         settings.setWarningThreshold(75.0);
         settings.setCriticalThreshold(90.0);
-        settings.setNotificationsEnabled(true);
-        settings.setEmailAlertsEnabled(false);
-        settings.setDailySummaryEnabled(true);
 
         settingsRepository.save(settings);
         log.info("Reset budget settings to defaults for user: {}", userId);
@@ -76,20 +70,11 @@ public class UserBudgetSettingsService {
                 .orElse(90.0); // Default threshold
     }
 
-    public boolean areNotificationsEnabled(Long userId) {
-        return settingsRepository.findByUserId(userId)
-                .map(UserBudgetSettings::getNotificationsEnabled)
-                .orElse(true); // Default enabled
-    }
-
     private UserBudgetSettings createDefaultSettings(Long userId) {
         UserBudgetSettings defaultSettings = new UserBudgetSettings();
         defaultSettings.setUserId(userId);
         defaultSettings.setWarningThreshold(75.0);
         defaultSettings.setCriticalThreshold(90.0);
-        defaultSettings.setNotificationsEnabled(true);
-        defaultSettings.setEmailAlertsEnabled(false);
-        defaultSettings.setDailySummaryEnabled(true);
 
         return settingsRepository.save(defaultSettings);
     }
@@ -100,9 +85,6 @@ public class UserBudgetSettingsService {
                 .userId(settings.getUserId())
                 .warningThreshold(settings.getWarningThreshold())
                 .criticalThreshold(settings.getCriticalThreshold())
-                .notificationsEnabled(settings.getNotificationsEnabled())
-                .emailAlertsEnabled(settings.getEmailAlertsEnabled())
-                .dailySummaryEnabled(settings.getDailySummaryEnabled())
                 .createdAt(settings.getCreatedAt())
                 .updatedAt(settings.getUpdatedAt())
                 .build();

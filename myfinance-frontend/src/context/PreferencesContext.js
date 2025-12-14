@@ -5,237 +5,203 @@ import { useAuth } from './AuthContext';
 const PreferencesContext = createContext();
 
 export const usePreferences = () => {
-    const context = useContext(PreferencesContext);
-    if (!context) {
-        throw new Error('usePreferences must be used within a PreferencesProvider');
-    }
-    return context;
+ const context = useContext(PreferencesContext);
+ if (!context) {
+ throw new Error('usePreferences must be used within a PreferencesProvider');
+ }
+ return context;
 };
 
 export const PreferencesProvider = ({ children }) => {
-    const { user } = useAuth();
-    const [preferences, setPreferences] = useState(null);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState('');
+ const { user } = useAuth();
+ const [preferences, setPreferences] = useState(null);
+ const [loading, setLoading] = useState(true);
+ const [error, setError] = useState('');
 
-    // Apply theme to document root
-    const applyTheme = useCallback((theme) => {
-        const root = document.documentElement;
-        if (theme === 'dark') {
-            root.setAttribute('data-theme', 'dark');
-        } else {
-            root.removeAttribute('data-theme');
-        }
-    }, []);
+ // Load preferences only when user is authenticated
+ useEffect(() => {
+ if (user) {
+ loadPreferences();
+ } else {
+ // Use default preferences for non-authenticated users
+ setPreferences(getDefaultPreferences());
+ setLoading(false);
+ }
+ // eslint-disable-next-line react-hooks/exhaustive-deps
+ }, [user]);
 
-    // Apply theme when preferences change
-    useEffect(() => {
-        if (preferences && preferences.theme) {
-            applyTheme(preferences.theme);
-        }
-    }, [preferences, applyTheme]);
+ const loadPreferences = async () => {
+ try {
+ setLoading(true);
+ setError('');
 
-    // Load preferences only when user is authenticated
-    useEffect(() => {
-        if (user) {
-            loadPreferences();
-        } else {
-            // Use default preferences for non-authenticated users
-            setPreferences(getDefaultPreferences());
-            setLoading(false);
-        }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [user]);
+ const response = await preferencesAPI.getPreferences();
 
-    const loadPreferences = async () => {
-        try {
-            setLoading(true);
-            setError('');
+ if (response && response.success) {
+ setPreferences(response.data);
+ } else {
+ // If preferences don't exist, use defaults
+ setPreferences(getDefaultPreferences());
+ setError(response.message || 'Không thể tải cài đặt người dùng');
+ }
+ } catch (err) {
+ console.error('Failed to load preferences:', err);
+ setPreferences(getDefaultPreferences());
+ setError('Đã xảy ra lỗi khi tải cài đặt');
+ } finally {
+ setLoading(false);
+ }
+ };
 
-            const response = await preferencesAPI.getPreferences();
+ const updatePreferences = async (newPreferences) => {
+ try {
+ setError('');
 
-            if (response && response.success) {
-                setPreferences(response.data);
-            } else {
-                // If preferences don't exist, use defaults
-                setPreferences(getDefaultPreferences());
-                setError(response.message || 'Không thể tải cài đặt người dùng');
-            }
-        } catch (err) {
-            console.error('Failed to load preferences:', err);
-            setPreferences(getDefaultPreferences());
-            setError('Đã xảy ra lỗi khi tải cài đặt');
-        } finally {
-            setLoading(false);
-        }
-    };
+ const response = await preferencesAPI.updatePreferences(newPreferences);
 
-    const updatePreferences = async (newPreferences) => {
-        try {
-            setError('');
+ if (response && response.success) {
+ setPreferences(response.data);
+ return { success: true, message: 'Cập nhật cài đặt thành công' };
+ } else {
+ setError(response.message || 'Không thể cập nhật cài đặt');
+ return { success: false, message: response.message };
+ }
+ } catch (err) {
+ console.error('Failed to update preferences:', err);
+ setError('Đã xảy ra lỗi khi cập nhật cài đặt');
+ return { success: false, message: 'Đã xảy ra lỗi khi cập nhật cài đặt' };
+ }
+ };
 
-            const response = await preferencesAPI.updatePreferences(newPreferences);
+ const updatePreference = async (key, value) => {
+ try {
+ setError('');
 
-            if (response && response.success) {
-                setPreferences(response.data);
-                return { success: true, message: 'Cập nhật cài đặt thành công' };
-            } else {
-                setError(response.message || 'Không thể cập nhật cài đặt');
-                return { success: false, message: response.message };
-            }
-        } catch (err) {
-            console.error('Failed to update preferences:', err);
-            setError('Đã xảy ra lỗi khi cập nhật cài đặt');
-            return { success: false, message: 'Đã xảy ra lỗi khi cập nhật cài đặt' };
-        }
-    };
+ const updatedPreferences = {
+ ...preferences,
+ [key]: value
+ };
 
-    const updatePreference = async (key, value) => {
-        try {
-            setError('');
+ // Optimistically update UI
+ setPreferences(updatedPreferences);
 
-            const updatedPreferences = {
-                ...preferences,
-                [key]: value
-            };
+ const response = await preferencesAPI.updatePreferences(updatedPreferences);
 
-            // Optimistically update UI
-            setPreferences(updatedPreferences);
+ if (response && response.success) {
+ setPreferences(response.data);
+ return { success: true, message: 'Cập nhật cài đặt thành công' };
+ } else {
+ // Revert on error
+ setPreferences(preferences);
+ setError(response.message || 'Không thể cập nhật cài đặt');
+ return { success: false, message: response.message };
+ }
+ } catch (err) {
+ console.error('Failed to update preference:', err);
+ // Revert on error
+ setPreferences(preferences);
+ setError('Đã xảy ra lỗi khi cập nhật cài đặt');
+ return { success: false, message: 'Đã xảy ra lỗi khi cập nhật cài đặt' };
+ }
+ };
 
-            const response = await preferencesAPI.updatePreferences(updatedPreferences);
+ const resetToDefaults = async () => {
+ try {
+ setError('');
 
-            if (response && response.success) {
-                setPreferences(response.data);
-                return { success: true, message: 'Cập nhật cài đặt thành công' };
-            } else {
-                // Revert on error
-                setPreferences(preferences);
-                setError(response.message || 'Không thể cập nhật cài đặt');
-                return { success: false, message: response.message };
-            }
-        } catch (err) {
-            console.error('Failed to update preference:', err);
-            // Revert on error
-            setPreferences(preferences);
-            setError('Đã xảy ra lỗi khi cập nhật cài đặt');
-            return { success: false, message: 'Đã xảy ra lỗi khi cập nhật cài đặt' };
-        }
-    };
+ const response = await preferencesAPI.resetToDefaults();
 
-    const resetToDefaults = async () => {
-        try {
-            setError('');
+ if (response && response.success) {
+ setPreferences(response.data);
+ return { success: true, message: 'Đã khôi phục cài đặt mặc định' };
+ } else {
+ setError(response.message || 'Không thể khôi phục cài đặt');
+ return { success: false, message: response.message };
+ }
+ } catch (err) {
+ console.error('Failed to reset preferences:', err);
+ setError('Đã xảy ra lỗi khi khôi phục cài đặt');
+ return { success: false, message: 'Đã xảy ra lỗi khi khôi phục cài đặt' };
+ }
+ };
 
-            const response = await preferencesAPI.resetToDefaults();
+ const clearError = () => {
+ setError('');
+ };
 
-            if (response && response.success) {
-                setPreferences(response.data);
-                return { success: true, message: 'Đã khôi phục cài đặt mặc định' };
-            } else {
-                setError(response.message || 'Không thể khôi phục cài đặt');
-                return { success: false, message: response.message };
-            }
-        } catch (err) {
-            console.error('Failed to reset preferences:', err);
-            setError('Đã xảy ra lỗi khi khôi phục cài đặt');
-            return { success: false, message: 'Đã xảy ra lỗi khi khôi phục cài đặt' };
-        }
-    };
+ // Default preferences (used when API fails or user has no preferences)
+ const getDefaultPreferences = () => ({
+ // Display Preferences (1 field)
+ viewMode: 'usage',
 
-    const clearError = () => {
-        setError('');
-    };
+ // Notification Preferences (2 fields)
+ emailNotifications: true,
+ budgetAlerts: true
+ });
 
-    // Default preferences (used when API fails or user has no preferences)
-    const getDefaultPreferences = () => ({
-        // Display Preferences
-        theme: 'light',
-        viewMode: 'detailed',
+ // Display Preference Helpers
+ const getViewMode = () => preferences?.viewMode || 'usage';
 
-        // Notification Preferences
-        emailNotifications: true,
-        budgetAlerts: true,
-        weeklySummary: false,
-        monthlySummary: true
-    });
+ // Notification Preference Helpers
+ const getEmailNotifications = () => preferences?.emailNotifications ?? true;
+ const getBudgetAlerts = () => preferences?.budgetAlerts ?? true;
 
-    // Display Preference Helpers
-    const getTheme = () => preferences?.theme || 'light';
-    const getViewMode = () => preferences?.viewMode || 'detailed';
+ // Check if any notification type is enabled
+ const isNotificationEnabled = (type) => {
+ // Master switch - if emailNotifications is false, all notifications are disabled
+ if (!getEmailNotifications()) {
+ return false;
+ }
 
-    // Notification Preference Helpers
-    const getEmailNotifications = () => preferences?.emailNotifications ?? true;
-    const getBudgetAlerts = () => preferences?.budgetAlerts ?? true;
-    const getWeeklySummary = () => preferences?.weeklySummary ?? false;
-    const getMonthlySummary = () => preferences?.monthlySummary ?? true;
+ // Check specific notification type
+ switch (type) {
+ case 'budgetAlerts':
+ return getBudgetAlerts();
+ default:
+ return false;
+ }
+ };
 
-    // Check if any notification type is enabled
-    const isNotificationEnabled = (type) => {
-        // Master switch - if emailNotifications is false, all notifications are disabled
-        if (!getEmailNotifications()) {
-            return false;
-        }
+ const value = {
+ // State
+ preferences,
+ loading,
+ error,
 
-        // Check specific notification type
-        switch (type) {
-            case 'budgetAlerts':
-                return getBudgetAlerts();
-            case 'weeklySummary':
-                return getWeeklySummary();
-            case 'monthlySummary':
-                return getMonthlySummary();
-            default:
-                return false;
-        }
-    };
+ // Actions
+ loadPreferences,
+ updatePreferences,
+ updatePreference,
+ resetToDefaults,
+ clearError,
 
-    // Check if dark mode is enabled
-    const isDarkMode = () => getTheme() === 'dark';
+ // Display Preference Getters
+ getViewMode,
 
-    const value = {
-        // State
-        preferences,
-        loading,
-        error,
+ // Notification Preference Getters
+ getEmailNotifications,
+ getBudgetAlerts,
 
-        // Actions
-        loadPreferences,
-        updatePreferences,
-        updatePreference,
-        resetToDefaults,
-        clearError,
+ // Helper Functions
+ isNotificationEnabled,
+ getDefaultPreferences
+ };
 
-        // Display Preference Getters
-        getTheme,
-        getViewMode,
+ // Show loading spinner while fetching preferences
+ if (loading) {
+ return (
+ <div className="flex items-center justify-center min-h-screen bg-gray-50">
+ <div className="text-center">
+ <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto mb-4"></div>
+ <p className="text-gray-600">Đang tải cài đặt...</p>
+ </div>
+ </div>
+ );
+ }
 
-        // Notification Preference Getters
-        getEmailNotifications,
-        getBudgetAlerts,
-        getWeeklySummary,
-        getMonthlySummary,
-
-        // Helper Functions
-        isNotificationEnabled,
-        isDarkMode,
-        getDefaultPreferences
-    };
-
-    // Show loading spinner while fetching preferences
-    if (loading) {
-        return (
-            <div className="flex items-center justify-center min-h-screen bg-gray-50">
-                <div className="text-center">
-                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto mb-4"></div>
-                    <p className="text-gray-600">Đang tải cài đặt...</p>
-                </div>
-            </div>
-        );
-    }
-
-    return (
-        <PreferencesContext.Provider value={value}>
-            {children}
-        </PreferencesContext.Provider>
-    );
+ return (
+ <PreferencesContext.Provider value={value}>
+ {children}
+ </PreferencesContext.Provider>
+ );
 };

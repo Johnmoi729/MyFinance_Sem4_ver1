@@ -1,7 +1,7 @@
 -- MyFinance Complete Database Initialization Script
 -- This script creates the complete database schema for MyFinance application
 -- Includes all tables from Flows 1-6: Auth, Transactions, Categories, Budgets, Reports, Admin, UX Enhancements
--- Last Updated: October 28, 2025 (includes Flow 6A features)
+-- Last Updated: December 13, 2025 (includes Flow 6A features + Flow 6D scheduled report enhancements)
 
 -- Create database
 CREATE DATABASE IF NOT EXISTS myfinance CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
@@ -100,15 +100,13 @@ CREATE TABLE IF NOT EXISTS budgets (
     INDEX idx_budgets_active (is_active)
 );
 
--- Create user_budget_settings table
+-- Create user_budget_settings table (simplified - removed unused notification fields)
+-- Note: Notification preferences are managed in user_preferences table instead
 CREATE TABLE IF NOT EXISTS user_budget_settings (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     user_id BIGINT UNIQUE NOT NULL,
     warning_threshold DOUBLE NOT NULL DEFAULT 75.0,
     critical_threshold DOUBLE NOT NULL DEFAULT 90.0,
-    notifications_enabled BOOLEAN NOT NULL DEFAULT TRUE,
-    email_alerts_enabled BOOLEAN NOT NULL DEFAULT FALSE,
-    daily_summary_enabled BOOLEAN NOT NULL DEFAULT TRUE,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
@@ -119,7 +117,7 @@ CREATE TABLE IF NOT EXISTS user_budget_settings (
 -- FLOW 4: REPORTS & ANALYTICS
 -- ============================================================================
 
--- Create scheduled_reports table
+-- Create scheduled_reports table (includes specific time scheduling and rate limiting)
 CREATE TABLE IF NOT EXISTS scheduled_reports (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     user_id BIGINT NOT NULL,
@@ -131,9 +129,24 @@ CREATE TABLE IF NOT EXISTS scheduled_reports (
     last_run TIMESTAMP NULL,
     next_run TIMESTAMP NULL,
     run_count INT DEFAULT 0,
+
+    -- Specific time scheduling fields (added December 13, 2025)
+    scheduled_hour INT DEFAULT NULL COMMENT 'Hour of day (0-23), NULL = use current time',
+    scheduled_minute INT DEFAULT 0 COMMENT 'Minute (0-59)',
+    scheduled_day_of_week INT DEFAULT NULL COMMENT 'Day of week (1=Monday, 7=Sunday) for WEEKLY schedules',
+    scheduled_day_of_month INT DEFAULT NULL COMMENT 'Day of month (1-31) for MONTHLY schedules',
+    last_manual_send TIMESTAMP NULL COMMENT 'Timestamp of last manual "Send Now" trigger (for rate limiting)',
+
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+
+    -- CHECK constraints for data validation (MySQL 8.0.16+)
+    CONSTRAINT check_scheduled_hour CHECK (scheduled_hour IS NULL OR (scheduled_hour >= 0 AND scheduled_hour <= 23)),
+    CONSTRAINT check_scheduled_minute CHECK (scheduled_minute >= 0 AND scheduled_minute <= 59),
+    CONSTRAINT check_scheduled_day_of_week CHECK (scheduled_day_of_week IS NULL OR (scheduled_day_of_week >= 1 AND scheduled_day_of_week <= 7)),
+    CONSTRAINT check_scheduled_day_of_month CHECK (scheduled_day_of_month IS NULL OR (scheduled_day_of_month >= 1 AND scheduled_day_of_month <= 31)),
+
     INDEX idx_scheduled_reports_user_id (user_id),
     INDEX idx_scheduled_reports_is_active (is_active),
     INDEX idx_scheduled_reports_next_run (next_run)
@@ -233,27 +246,18 @@ CREATE TABLE IF NOT EXISTS user_preferences (
     id BIGINT PRIMARY KEY AUTO_INCREMENT,
     user_id BIGINT UNIQUE NOT NULL,
 
-    -- Display Preferences
-    language VARCHAR(10) DEFAULT 'vi',
-    currency VARCHAR(10) DEFAULT 'VND',
-    date_format VARCHAR(20) DEFAULT 'dd/MM/yyyy',
-    timezone VARCHAR(50) DEFAULT 'Asia/Ho_Chi_Minh',
-    theme VARCHAR(20) DEFAULT 'light',
-    items_per_page INT DEFAULT 10,
-    view_mode VARCHAR(20) DEFAULT 'detailed',
+    -- Display Preferences (1 field)
+    view_mode VARCHAR(20) DEFAULT 'usage', -- Controls budget view display (usage=analytics, basic=simple list)
 
-    -- Notification Preferences
-    email_notifications BOOLEAN DEFAULT TRUE,
-    budget_alerts BOOLEAN DEFAULT TRUE,
-    transaction_reminders BOOLEAN DEFAULT FALSE,
-    weekly_summary BOOLEAN DEFAULT FALSE,
-    monthly_summary BOOLEAN DEFAULT TRUE,
-    goal_reminders BOOLEAN DEFAULT TRUE,
+    -- Notification Preferences (2 fields)
+    email_notifications BOOLEAN DEFAULT TRUE, -- Master email switch
+    budget_alerts BOOLEAN DEFAULT TRUE, -- Budget alert emails
 
-    -- Privacy Settings
-    profile_visibility VARCHAR(20) DEFAULT 'private',
-    data_sharing BOOLEAN DEFAULT FALSE,
-    analytics_tracking BOOLEAN DEFAULT TRUE,
+    -- NOTE: All other preferences have been removed (non-functional or redundant)
+    -- Removed Display: language, currency, date_format, timezone, theme, items_per_page
+    -- Removed Notification: transaction_reminders, goal_reminders, weekly_summary, monthly_summary
+    -- Removed Privacy: profile_visibility, data_sharing, analytics_tracking
+    -- Reason: weekly_summary and monthly_summary overlap with ScheduledReports (more features)
 
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,

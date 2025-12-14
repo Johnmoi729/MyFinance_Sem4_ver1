@@ -20,46 +20,16 @@ public class UserPreferences {
     @Column(name = "user_id", unique = true, nullable = false)
     private Long userId;
 
-    // Display Preferences
-    @Column(name = "language")
-    private String language = "vi"; // vi, en
-
-    @Column(name = "currency")
-    private String currency = "VND"; // VND, USD, EUR
-
-    @Column(name = "date_format")
-    private String dateFormat = "dd/MM/yyyy"; // dd/MM/yyyy, MM/dd/yyyy, yyyy-MM-dd
-
-    @Column(name = "timezone")
-    private String timezone = "Asia/Ho_Chi_Minh";
-
-    @Column(name = "theme")
-    private String theme = "light"; // light, dark
-
-    @Column(name = "items_per_page")
-    private Integer itemsPerPage = 10; // 5, 10, 20, 50
-
+    // Display Preferences (1 field)
     @Column(name = "view_mode")
-    private String viewMode = "detailed"; // detailed, compact
+    private String viewMode = "detailed"; // Controls budget view display (usage/basic)
 
-    // Notification Preferences
+    // Notification Preferences (2 fields)
     @Column(name = "email_notifications")
-    private Boolean emailNotifications = true;
+    private Boolean emailNotifications = true; // Master email switch
 
     @Column(name = "budget_alerts")
-    private Boolean budgetAlerts = true;
-
-    @Column(name = "transaction_reminders")
-    private Boolean transactionReminders = false;
-
-    @Column(name = "weekly_summary")
-    private Boolean weeklySummary = false;
-
-    @Column(name = "monthly_summary")
-    private Boolean monthlySummary = true;
-
-    @Column(name = "goal_reminders")
-    private Boolean goalReminders = true;
+    private Boolean budgetAlerts = true; // Budget alert emails
 
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;

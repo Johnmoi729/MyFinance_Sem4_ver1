@@ -27,15 +27,6 @@ public class UserBudgetSettings {
     @Column(name = "critical_threshold", nullable = false)
     private Double criticalThreshold = 90.0; // Default 90%
 
-    @Column(name = "notifications_enabled", nullable = false)
-    private Boolean notificationsEnabled = true;
-
-    @Column(name = "email_alerts_enabled", nullable = false)
-    private Boolean emailAlertsEnabled = false;
-
-    @Column(name = "daily_summary_enabled", nullable = false)
-    private Boolean dailySummaryEnabled = true;
-
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 

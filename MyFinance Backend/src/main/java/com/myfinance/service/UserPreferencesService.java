@@ -40,21 +40,12 @@ public class UserPreferencesService {
         preferences.setUserId(userId);
 
         // Set default values (already defined in entity, but explicit here for clarity)
-        preferences.setLanguage("vi");
-        preferences.setCurrency("VND");
-        preferences.setDateFormat("dd/MM/yyyy");
-        preferences.setTimezone("Asia/Ho_Chi_Minh");
-        preferences.setTheme("light");
-        preferences.setItemsPerPage(10);
+        // Display Preferences (1 field)
         preferences.setViewMode("detailed");
 
-        // Notification defaults
+        // Notification Preferences (2 fields)
         preferences.setEmailNotifications(true);
         preferences.setBudgetAlerts(true);
-        preferences.setTransactionReminders(false);
-        preferences.setWeeklySummary(false);
-        preferences.setMonthlySummary(true);
-        preferences.setGoalReminders(true);
 
         UserPreferences savedPreferences = preferencesRepository.save(preferences);
         log.info("Default preferences created for user: {}", userId);
@@ -71,47 +62,17 @@ public class UserPreferencesService {
 
         UserPreferences preferences = getUserPreferences(userId);
 
-        // Update display preferences
-        if (updatedPreferences.getLanguage() != null) {
-            preferences.setLanguage(updatedPreferences.getLanguage());
-        }
-        if (updatedPreferences.getCurrency() != null) {
-            preferences.setCurrency(updatedPreferences.getCurrency());
-        }
-        if (updatedPreferences.getDateFormat() != null) {
-            preferences.setDateFormat(updatedPreferences.getDateFormat());
-        }
-        if (updatedPreferences.getTimezone() != null) {
-            preferences.setTimezone(updatedPreferences.getTimezone());
-        }
-        if (updatedPreferences.getTheme() != null) {
-            preferences.setTheme(updatedPreferences.getTheme());
-        }
-        if (updatedPreferences.getItemsPerPage() != null) {
-            preferences.setItemsPerPage(updatedPreferences.getItemsPerPage());
-        }
+        // Update display preferences (1 field)
         if (updatedPreferences.getViewMode() != null) {
             preferences.setViewMode(updatedPreferences.getViewMode());
         }
 
-        // Update notification preferences
+        // Update notification preferences (2 fields)
         if (updatedPreferences.getEmailNotifications() != null) {
             preferences.setEmailNotifications(updatedPreferences.getEmailNotifications());
         }
         if (updatedPreferences.getBudgetAlerts() != null) {
             preferences.setBudgetAlerts(updatedPreferences.getBudgetAlerts());
-        }
-        if (updatedPreferences.getTransactionReminders() != null) {
-            preferences.setTransactionReminders(updatedPreferences.getTransactionReminders());
-        }
-        if (updatedPreferences.getWeeklySummary() != null) {
-            preferences.setWeeklySummary(updatedPreferences.getWeeklySummary());
-        }
-        if (updatedPreferences.getMonthlySummary() != null) {
-            preferences.setMonthlySummary(updatedPreferences.getMonthlySummary());
-        }
-        if (updatedPreferences.getGoalReminders() != null) {
-            preferences.setGoalReminders(updatedPreferences.getGoalReminders());
         }
 
         UserPreferences savedPreferences = preferencesRepository.save(preferences);
@@ -130,20 +91,12 @@ public class UserPreferencesService {
         UserPreferences preferences = getUserPreferences(userId);
 
         // Reset to default values
-        preferences.setLanguage("vi");
-        preferences.setCurrency("VND");
-        preferences.setDateFormat("dd/MM/yyyy");
-        preferences.setTimezone("Asia/Ho_Chi_Minh");
-        preferences.setTheme("light");
-        preferences.setItemsPerPage(10);
+        // Display Preferences (1 field)
         preferences.setViewMode("detailed");
 
+        // Notification Preferences (2 fields)
         preferences.setEmailNotifications(true);
         preferences.setBudgetAlerts(true);
-        preferences.setTransactionReminders(false);
-        preferences.setWeeklySummary(false);
-        preferences.setMonthlySummary(true);
-        preferences.setGoalReminders(true);
 
         UserPreferences savedPreferences = preferencesRepository.save(preferences);
         log.info("Preferences reset to default for user: {}", userId);

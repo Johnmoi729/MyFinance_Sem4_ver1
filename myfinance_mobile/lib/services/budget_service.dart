@@ -1,5 +1,6 @@
 import '../models/api_response.dart';
 import '../models/budget.dart';
+import '../models/budget_settings.dart';
 import 'api_service.dart';
 
 class BudgetService {
@@ -112,6 +113,76 @@ class BudgetService {
       return ApiResponse(
         success: false,
         message: response.data['message'] ?? 'Không thể tải cảnh báo ngân sách',
+      );
+    } catch (e) {
+      return ApiResponse(
+        success: false,
+        message: 'Đã xảy ra lỗi: ${e.toString()}',
+      );
+    }
+  }
+
+  Future<ApiResponse<BudgetSettings>> getBudgetSettings() async {
+    try {
+      final response = await _api.get('/budget-settings');
+
+      if (response.data['success'] == true) {
+        final settings = BudgetSettings.fromJson(response.data['data']);
+        return ApiResponse(
+          success: true,
+          message: response.data['message'],
+          data: settings,
+        );
+      }
+
+      return ApiResponse(
+        success: false,
+        message: response.data['message'] ?? 'Không thể tải cài đặt ngân sách',
+      );
+    } catch (e) {
+      return ApiResponse(
+        success: false,
+        message: 'Đã xảy ra lỗi: ${e.toString()}',
+      );
+    }
+  }
+
+  Future<ApiResponse<BudgetSettings>> updateBudgetSettings(
+      BudgetSettings settings) async {
+    try {
+      final response = await _api.put(
+        '/budget-settings',
+        data: settings.toJson(),
+      );
+
+      if (response.data['success'] == true) {
+        final updatedSettings = BudgetSettings.fromJson(response.data['data']);
+        return ApiResponse(
+          success: true,
+          message: response.data['message'] ?? 'Cập nhật cài đặt thành công',
+          data: updatedSettings,
+        );
+      }
+
+      return ApiResponse(
+        success: false,
+        message: response.data['message'] ?? 'Không thể cập nhật cài đặt',
+      );
+    } catch (e) {
+      return ApiResponse(
+        success: false,
+        message: 'Đã xảy ra lỗi: ${e.toString()}',
+      );
+    }
+  }
+
+  Future<ApiResponse<void>> resetBudgetSettings() async {
+    try {
+      final response = await _api.post('/budget-settings/reset');
+
+      return ApiResponse(
+        success: response.data['success'] == true,
+        message: response.data['message'] ?? 'Đặt lại cài đặt thành công',
       );
     } catch (e) {
       return ApiResponse(

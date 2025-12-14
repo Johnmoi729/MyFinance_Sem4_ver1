@@ -18,13 +18,6 @@ public class UserBudgetSettingsRequest {
     @Max(value = 100, message = "Ngưỡng nghiêm trọng không được vượt quá 100%")
     private Double criticalThreshold;
 
-    @NotNull(message = "Cài đặt thông báo không được để trống")
-    private Boolean notificationsEnabled;
-
-    private Boolean emailAlertsEnabled = false;
-
-    private Boolean dailySummaryEnabled = true;
-
     // Custom validation to ensure criticalThreshold > warningThreshold
     public boolean isValid() {
         return criticalThreshold > warningThreshold;

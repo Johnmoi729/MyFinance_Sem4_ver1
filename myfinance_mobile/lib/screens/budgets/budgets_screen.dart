@@ -79,6 +79,15 @@ class _BudgetsScreenState extends State<BudgetsScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Ngân sách'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.settings),
+            onPressed: () {
+              Navigator.pushNamed(context, '/budgets/settings');
+            },
+            tooltip: 'Cài đặt ngân sách',
+          ),
+        ],
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())

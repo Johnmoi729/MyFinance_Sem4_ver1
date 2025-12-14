@@ -14,9 +14,13 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 @Service
 @RequiredArgsConstructor
@@ -37,9 +41,13 @@ public class ScheduledReportService {
     public ScheduledReport createScheduledReport(Long userId, ScheduledReport.ReportType reportType,
                                                    ScheduledReport.ScheduleFrequency frequency,
                                                    ScheduledReport.ReportFormat format,
-                                                   Boolean emailDelivery) {
-        log.info("Creating scheduled report for user {}: type={}, frequency={}, format={}",
-                userId, reportType, frequency, format);
+                                                   Boolean emailDelivery,
+                                                   Integer scheduledHour,
+                                                   Integer scheduledMinute,
+                                                   Integer scheduledDayOfWeek,
+                                                   Integer scheduledDayOfMonth) {
+        log.info("Creating scheduled report for user {}: type={}, frequency={}, format={}, hour={}, minute={}, dayOfWeek={}, dayOfMonth={}",
+                userId, reportType, frequency, format, scheduledHour, scheduledMinute, scheduledDayOfWeek, scheduledDayOfMonth);
 
         ScheduledReport scheduledReport = ScheduledReport.builder()
                 .userId(userId)
@@ -47,6 +55,10 @@ public class ScheduledReportService {
                 .frequency(frequency)
                 .format(format)
                 .emailDelivery(emailDelivery != null ? emailDelivery : true)
+                .scheduledHour(scheduledHour)
+                .scheduledMinute(scheduledMinute)
+                .scheduledDayOfWeek(scheduledDayOfWeek)
+                .scheduledDayOfMonth(scheduledDayOfMonth)
                 .isActive(true)
                 .runCount(0)
                 .build();
@@ -78,17 +90,37 @@ public class ScheduledReportService {
                                                    ScheduledReport.ScheduleFrequency frequency,
                                                    ScheduledReport.ReportFormat format,
                                                    Boolean emailDelivery,
-                                                   Boolean isActive) {
+                                                   Boolean isActive,
+                                                   Integer scheduledHour,
+                                                   Integer scheduledMinute,
+                                                   Integer scheduledDayOfWeek,
+                                                   Integer scheduledDayOfMonth) {
         ScheduledReport report = getScheduledReport(reportId, userId);
+
+        boolean needsNextRunRecalculation = false;
 
         if (reportType != null) report.setReportType(reportType);
         if (frequency != null) {
             report.setFrequency(frequency);
-            report.setNextRun(report.calculateNextRun());
+            needsNextRunRecalculation = true;
         }
         if (format != null) report.setFormat(format);
         if (emailDelivery != null) report.setEmailDelivery(emailDelivery);
         if (isActive != null) report.setIsActive(isActive);
+
+        // Update time-related fields
+        if (scheduledHour != null || scheduledMinute != null || scheduledDayOfWeek != null || scheduledDayOfMonth != null) {
+            if (scheduledHour != null) report.setScheduledHour(scheduledHour);
+            if (scheduledMinute != null) report.setScheduledMinute(scheduledMinute);
+            if (scheduledDayOfWeek != null) report.setScheduledDayOfWeek(scheduledDayOfWeek);
+            if (scheduledDayOfMonth != null) report.setScheduledDayOfMonth(scheduledDayOfMonth);
+            needsNextRunRecalculation = true;
+        }
+
+        // Recalculate nextRun if frequency or time settings changed
+        if (needsNextRunRecalculation) {
+            report.setNextRun(report.calculateNextRun());
+        }
 
         return scheduledReportRepository.save(report);
     }
@@ -172,6 +204,25 @@ public class ScheduledReportService {
     }
 
     /**
+     * Execute a scheduled report manually (triggered by "Send Now" button)
+     * Updates lastManualSend timestamp for rate limiting
+     */
+    @Transactional
+    public void executeReportManually(ScheduledReport scheduledReport) {
+        log.info("Manually executing scheduled report {}: type={}, user={}",
+                scheduledReport.getId(), scheduledReport.getReportType(), scheduledReport.getUserId());
+
+        // Execute the report normally
+        executeReport(scheduledReport);
+
+        // Update lastManualSend timestamp for rate limiting
+        scheduledReport.setLastManualSend(LocalDateTime.now());
+        scheduledReportRepository.save(scheduledReport);
+
+        log.info("Successfully executed manual report send for schedule {}", scheduledReport.getId());
+    }
+
+    /**
      * Generate report data based on report type and format
      */
     private byte[] generateReportData(ScheduledReport scheduledReport, User user) {
@@ -226,11 +277,16 @@ public class ScheduledReportService {
                     }
                 }
                 case BOTH -> {
-                    // For BOTH format, generate PDF (we could zip both files in the future)
+                    // Generate both PDF and CSV, then create a ZIP archive
                     if (monthlyReport != null) {
-                        yield pdfReportGenerator.generateMonthlyReportPDF(monthlyReport);
+                        byte[] pdfData = pdfReportGenerator.generateMonthlyReportPDF(monthlyReport);
+                        byte[] csvData = csvReportGenerator.generateMonthlyReportCSV(monthlyReport);
+                        yield createZipFile(pdfData, csvData, "monthly_report_" +
+                            monthlyReport.getYear() + "_" + monthlyReport.getMonth());
                     } else if (yearlyReport != null) {
-                        yield pdfReportGenerator.generateYearlyReportPDF(yearlyReport);
+                        byte[] pdfData = pdfReportGenerator.generateYearlyReportPDF(yearlyReport);
+                        byte[] csvData = csvReportGenerator.generateYearlyReportCSV(yearlyReport);
+                        yield createZipFile(pdfData, csvData, "yearly_report_" + yearlyReport.getYear());
                     } else {
                         yield null;
                     }
@@ -238,6 +294,38 @@ public class ScheduledReportService {
             };
         } catch (Exception e) {
             log.error("Failed to generate report bytes", e);
+            return null;
+        }
+    }
+
+    /**
+     * Create a ZIP file containing both PDF and CSV reports
+     */
+    private byte[] createZipFile(byte[] pdfData, byte[] csvData, String baseName) {
+        if (pdfData == null || csvData == null) {
+            log.error("Cannot create ZIP file: missing PDF or CSV data");
+            return null;
+        }
+
+        try (ByteArrayOutputStream baos = new ByteArrayOutputStream();
+             ZipOutputStream zos = new ZipOutputStream(baos)) {
+
+            // Add PDF entry
+            ZipEntry pdfEntry = new ZipEntry(baseName + ".pdf");
+            zos.putNextEntry(pdfEntry);
+            zos.write(pdfData);
+            zos.closeEntry();
+
+            // Add CSV entry
+            ZipEntry csvEntry = new ZipEntry(baseName + ".csv");
+            zos.putNextEntry(csvEntry);
+            zos.write(csvData);
+            zos.closeEntry();
+
+            zos.finish();
+            return baos.toByteArray();
+        } catch (IOException e) {
+            log.error("Failed to create ZIP file", e);
             return null;
         }
     }

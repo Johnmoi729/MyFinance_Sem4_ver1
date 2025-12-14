@@ -372,7 +372,7 @@ This flow focuses on improving user experience, polishing the UI/UX, and impleme
   - ✅ **Date Formatter** - useDateFormatter() hook with 5 date formats + Vietnamese helpers (November 4, 2025)
   - ✅ **Apply preferences app-wide** - Integrated formatters into 24+ components (Phase 2a Complete - November 4, 2025)
   - ✅ **Notification filtering** - Email preferences checked before sending (Phase 2b Complete - November 4, 2025)
-  - ✅ **Theme switching** - Dark mode with ThemeToggle component (Phase 2c Complete - November 4, 2025)
+  - ❌ **Theme switching** - Dark mode removed from frontend (December 2025) - preference exists in DB but unused
 
   **✅ PHASE 1 COMPLETE**: PreferencesContext foundation is ready for integration:
   - Frontend: PreferencesContext provides 13 helper methods (getCurrency(), getDateFormat(), isNotificationEnabled(), etc.)
@@ -609,9 +609,9 @@ This flow focuses on improving user experience, polishing the UI/UX, and impleme
 - GET /api/test/emails/weekly-summary - Test weekly summary email (requires JWT)
 
 **📈 Preference Implementation Progress**:
-- ✅ **Display Preferences**: 4/7 complete (currency, dateFormat, theme, viewMode)
+- ✅ **Display Preferences**: 3/7 complete (currency, dateFormat, viewMode) - theme removed from frontend
 - ✅ **Notification Preferences**: 4/6 complete (emailNotifications, budgetAlerts, monthlySummary, weeklySummary)
-- **Overall**: 8/13 preferences fully functional (61.5% complete)
+- **Overall**: 7/13 preferences fully functional (53.8% complete)
 - **Removed**: Privacy Preferences (profileVisibility, dataSharing, analyticsTracking - too large in scope)
 - **Deferred**: itemsPerPage (requires extensive backend pagination), timezone, language
 - **Blocked**: transactionReminders (requires Phase 5), goalReminders (requires Phase 4)
@@ -643,22 +643,22 @@ This flow focuses on improving user experience, polishing the UI/UX, and impleme
 - **Time Saved**: ~2-3 weeks of multi-currency testing and edge case handling
 
 **User Preferences - TO BE SIMPLIFIED**:
-- ✅ **Keep** (6 essential preferences):
-  1. theme (dark mode)
-  2. emailNotifications (master email switch)
-  3. budgetAlerts (budget threshold emails)
-  4. monthlySummary (monthly reports)
-  5. weeklySummary (weekly reports)
-  6. viewMode (list view toggle)
-- ❌ **Remove** (7 unused/unimplemented preferences):
+- ✅ **Keep** (5 essential preferences):
+  1. emailNotifications (master email switch)
+  2. budgetAlerts (budget threshold emails)
+  3. monthlySummary (monthly reports)
+  4. weeklySummary (weekly reports)
+  5. viewMode (list view toggle)
+- ❌ **Remove** (8 unused/unimplemented preferences):
   1. currency (VND-only after simplification)
   2. dateFormat (hardcode to dd/MM/yyyy Vietnamese standard)
-  3. language (no i18n system implemented)
-  4. timezone (Vietnam single timezone)
-  5. itemsPerPage (pagination hardcoded to 10)
-  6. transactionReminders (feature doesn't exist)
-  7. goalReminders (goal feature doesn't exist)
-- **Impact**: UserPreferences entity reduced from 13 to 6 fields, -7 database columns
+  3. theme (dark mode removed from frontend - December 2025)
+  4. language (no i18n system implemented)
+  5. timezone (Vietnam single timezone)
+  6. itemsPerPage (pagination hardcoded to 10)
+  7. transactionReminders (feature doesn't exist)
+  8. goalReminders (goal feature doesn't exist)
+- **Impact**: UserPreferences entity reduced from 13 to 5 fields, -8 database columns
 - **Time Saved**: ~1 week of implementing unused features
 
 **Migration Status**:
@@ -890,7 +890,7 @@ user_preferences (
   currency VARCHAR(10) DEFAULT 'VND',
   date_format VARCHAR(20) DEFAULT 'dd/MM/yyyy',
   timezone VARCHAR(50) DEFAULT 'Asia/Ho_Chi_Minh',
-  theme VARCHAR(20) DEFAULT 'light',
+  theme VARCHAR(20) DEFAULT 'light', -- UNUSED: Dark mode removed from frontend (December 2025)
   items_per_page INT DEFAULT 10,
   view_mode VARCHAR(20) DEFAULT 'detailed',
   -- Notification Preferences (6 fields)
@@ -1430,7 +1430,7 @@ Authorization: Bearer your_jwt_token
 
 **Backend Implementation** (12 new files, 4 modified files):
 1. ✅ **UserPreferences.java** entity - 13 preference fields across 2 categories:
-   - Display Preferences: language, currency, dateFormat, timezone, theme, itemsPerPage, viewMode
+   - Display Preferences: language, currency, dateFormat, timezone, ~~theme~~ (DEPRECATED - Dec 2025), itemsPerPage, viewMode
    - Notification Preferences: emailNotifications, budgetAlerts, transactionReminders, weeklySummary, monthlySummary, goalReminders
 2. ✅ **OnboardingProgress.java** entity - 4-step progress tracking with business logic:
    - step1: Complete profile
@@ -2025,7 +2025,8 @@ See **EMAIL_AND_PDF_CODE_ANALYSIS.md** for detailed fix instructions.
 - ✅ User preferences infrastructure (database, backend APIs, UI)
 - ✅ **Phase 1 Complete** - PreferencesContext, currency formatter, date formatter (November 4, 2025)
 - 🔲 **Phase 2** - Apply preferences app-wide (currency/date formatting in 24+ components)
-- 🔲 Notification filtering, theme switching
+- 🔲 Notification filtering
+- ❌ **Theme switching removed** - Dark mode removed from frontend (December 2025)
 
 **Phase 6B: Professional UI/UX** (0% - Not Started)
 - Visual design polish, consistent spacing/colors
@@ -3057,16 +3058,18 @@ The MyFinance project demonstrates **production-ready quality** with sophisticat
 #### **📁 Migration Strategy Status: Excellent**
 ```
 ✅ V1__Complete_Database_Schema.sql - Comprehensive single migration
+✅ complete-database-init.sql - Unified initialization for fresh installs (includes all enhancements)
 ✅ Default Data Initialization - Roles, configurations, proper defaults
 ✅ Migration Utilities - Automated enum updates with safety checks
 ✅ Backup/Recovery Tools - Built-in safety measures
-✅ complete-database-init.sql - Standalone initialization for fresh installs
 ```
 
 **Key Findings:**
 - Sophisticated migration strategy with rollback capabilities
 - Automated migration tools for schema updates
 - Comprehensive default data initialization
+- Unified SQL scripts with no conflicts (verified December 13, 2025)
+- **Cleanup complete**: Redundant migrations removed (V3, multi-currency) - not using Flyway
 
 ---
 

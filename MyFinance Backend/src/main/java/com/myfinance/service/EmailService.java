@@ -38,7 +38,7 @@ public class EmailService {
     /**
      * Check if email should be sent based on user preferences
      * @param userId User ID
-     * @param specificPreference Specific preference to check (e.g., budgetAlerts, monthlySummary)
+     * @param specificPreference Specific preference to check (e.g., budgetAlerts)
      * @return true if email should be sent, false otherwise
      */
     private boolean shouldSendEmail(Long userId, String specificPreference) {
@@ -60,10 +60,6 @@ public class EmailService {
             if (specificPreference != null) {
                 Boolean specificPref = switch (specificPreference) {
                     case "budgetAlerts" -> prefs.getBudgetAlerts();
-                    case "monthlySummary" -> prefs.getMonthlySummary();
-                    case "weeklySummary" -> prefs.getWeeklySummary();
-                    case "transactionReminders" -> prefs.getTransactionReminders();
-                    case "goalReminders" -> prefs.getGoalReminders();
                     default -> true; // Unknown preference type, allow email
                 };
 
@@ -158,82 +154,6 @@ public class EmailService {
             log.info("Budget alert email sent to: {} for category: {}", toEmail, categoryName);
         } catch (Exception e) {
             log.error("Failed to send budget alert email to: {}", toEmail, e);
-        }
-    }
-
-    /**
-     * Send monthly summary email
-     */
-    @Async
-    public void sendMonthlySummaryEmail(Long userId, String toEmail, String fullName,
-                                         int year, int month,
-                                         BigDecimal totalIncome,
-                                         BigDecimal totalExpense,
-                                         BigDecimal netSavings,
-                                         Double savingsRate) {
-        if (!shouldSendEmail(userId, "monthlySummary")) {
-            log.info("Monthly summary email not sent to {} - notifications or monthlySummary disabled", toEmail);
-            return;
-        }
-
-        try {
-            Context context = new Context();
-            context.setVariable("fullName", fullName);
-            context.setVariable("year", year);
-            context.setVariable("month", month);
-            context.setVariable("monthName", getVietnameseMonthName(month));
-            context.setVariable("totalIncome", formatCurrency(totalIncome));
-            context.setVariable("totalExpense", formatCurrency(totalExpense));
-            context.setVariable("netSavings", formatCurrency(netSavings));
-            context.setVariable("savingsRate", String.format("%.1f", savingsRate));
-            context.setVariable("currentDate", LocalDateTime.now().format(DATE_FORMATTER));
-
-            String htmlContent = templateEngine.process("email/monthly-summary", context);
-
-            String subject = String.format("Báo cáo tài chính tháng %d/%d", month, year);
-            sendHtmlEmail(toEmail, subject, htmlContent);
-            log.info("Monthly summary email sent to: {} for {}/{}", toEmail, month, year);
-        } catch (Exception e) {
-            log.error("Failed to send monthly summary email to: {}", toEmail, e);
-        }
-    }
-
-    /**
-     * Send weekly summary email
-     */
-    @Async
-    public void sendWeeklySummaryEmail(Long userId, String toEmail, String fullName,
-                                        LocalDate startDate, LocalDate endDate,
-                                        BigDecimal totalIncome,
-                                        BigDecimal totalExpense,
-                                        BigDecimal netSavings,
-                                        Double savingsRate,
-                                        int transactionCount) {
-        if (!shouldSendEmail(userId, "weeklySummary")) {
-            log.info("Weekly summary email not sent to {} - notifications or weeklySummary disabled", toEmail);
-            return;
-        }
-
-        try {
-            Context context = new Context();
-            context.setVariable("fullName", fullName);
-            context.setVariable("startDate", startDate.format(DATE_FORMATTER));
-            context.setVariable("endDate", endDate.format(DATE_FORMATTER));
-            context.setVariable("totalIncome", formatCurrency(totalIncome));
-            context.setVariable("totalExpense", formatCurrency(totalExpense));
-            context.setVariable("netSavings", formatCurrency(netSavings));
-            context.setVariable("savingsRate", String.format("%.1f", savingsRate));
-            context.setVariable("transactionCount", transactionCount);
-            context.setVariable("currentDate", LocalDateTime.now().format(DATE_FORMATTER));
-
-            String htmlContent = templateEngine.process("email/weekly-summary", context);
-
-            String subject = String.format("Báo cáo tuần %s - %s",
-                    startDate.format(DATE_FORMATTER), endDate.format(DATE_FORMATTER));
-            sendHtmlEmail(toEmail, subject, htmlContent);
-            log.info("Weekly summary email sent to: {} for {} to {}", toEmail, startDate, endDate);
-        } catch (Exception e) {
-            log.error("Failed to send weekly summary email to: {}", toEmail, e);
         }
     }
 

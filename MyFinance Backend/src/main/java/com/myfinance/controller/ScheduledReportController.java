@@ -39,7 +39,11 @@ public class ScheduledReportController {
                     request.getReportType(),
                     request.getFrequency(),
                     request.getFormat(),
-                    request.getEmailDelivery()
+                    request.getEmailDelivery(),
+                    request.getScheduledHour(),
+                    request.getScheduledMinute(),
+                    request.getScheduledDayOfWeek(),
+                    request.getScheduledDayOfMonth()
             );
 
             return ResponseEntity.status(HttpStatus.CREATED)
@@ -112,7 +116,11 @@ public class ScheduledReportController {
                     request.getFrequency(),
                     request.getFormat(),
                     request.getEmailDelivery(),
-                    request.getIsActive()
+                    request.getIsActive(),
+                    request.getScheduledHour(),
+                    request.getScheduledMinute(),
+                    request.getScheduledDayOfWeek(),
+                    request.getScheduledDayOfMonth()
             );
 
             return ResponseEntity.ok(ApiResponse.success("Cập nhật báo cáo định kỳ thành công", report));
@@ -164,7 +172,11 @@ public class ScheduledReportController {
                     null,
                     null,
                     null,
-                    !report.getIsActive()
+                    !report.getIsActive(),
+                    null,  // scheduledHour
+                    null,  // scheduledMinute
+                    null,  // scheduledDayOfWeek
+                    null   // scheduledDayOfMonth
             );
 
             String message = report.getIsActive() ? "Bật báo cáo định kỳ thành công" : "Tắt báo cáo định kỳ thành công";
@@ -173,6 +185,39 @@ public class ScheduledReportController {
             log.error("Error toggling scheduled report {}", id, e);
             return ResponseEntity.internalServerError()
                     .body(ApiResponse.error("Lỗi khi thay đổi trạng thái báo cáo định kỳ"));
+        }
+    }
+
+    /**
+     * Send report immediately (manual trigger)
+     * POST /api/scheduled-reports/{id}/send-now
+     */
+    @PostMapping("/{id}/send-now")
+    public ResponseEntity<ApiResponse<Void>> sendReportNow(
+            @PathVariable Long id,
+            @RequestHeader("Authorization") String authHeader) {
+
+        try {
+            Long userId = extractUserIdFromToken(authHeader);
+            ScheduledReport report = scheduledReportService.getScheduledReport(id, userId);
+
+            // Check rate limiting (10-second cooldown)
+            if (!report.canSendManually()) {
+                long remainingSeconds = report.getRemainingCooldownSeconds();
+                return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS)
+                        .body(ApiResponse.error(
+                                "Vui lòng đợi " + remainingSeconds + " giây trước khi gửi lại"));
+            }
+
+            // Execute the report immediately and update lastManualSend
+            scheduledReportService.executeReportManually(report);
+
+            return ResponseEntity.ok(ApiResponse.success(
+                    "Báo cáo đã được gửi qua email thành công", null));
+        } catch (Exception e) {
+            log.error("Error sending report now for schedule {}", id, e);
+            return ResponseEntity.internalServerError()
+                    .body(ApiResponse.error("Lỗi khi gửi báo cáo: " + e.getMessage()));
         }
     }
 
@@ -190,5 +235,11 @@ public class ScheduledReportController {
         private ScheduledReport.ReportFormat format;
         private Boolean emailDelivery = true;
         private Boolean isActive = true;
+
+        // Specific time scheduling fields
+        private Integer scheduledHour;      // 0-23, null = use current time
+        private Integer scheduledMinute;    // 0-59
+        private Integer scheduledDayOfWeek; // 1-7 (Monday-Sunday), for WEEKLY
+        private Integer scheduledDayOfMonth; // 1-31, for MONTHLY
     }
 }

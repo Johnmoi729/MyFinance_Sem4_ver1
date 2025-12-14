@@ -7,6 +7,11 @@ import '../../services/budget_service.dart';
 import '../../models/transaction.dart';
 import '../../models/budget.dart';
 import '../../models/category.dart';
+import '../../widgets/personalized_greeting.dart';
+import '../../widgets/financial_health_score.dart';
+import '../../widgets/budget_vs_actual_chart.dart';
+import '../../widgets/category_pie_chart.dart';
+import '../../widgets/monthly_trend_chart.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -25,6 +30,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
   bool _isLoading = true;
   double _totalIncome = 0;
   double _totalExpense = 0;
+  List<CategoryExpenseData> _categoryExpenses = [];
+  List<MonthlyTrendData> _monthlyTrends = [];
 
   @override
   void initState() {
@@ -44,12 +51,65 @@ class _DashboardScreenState extends State<DashboardScreen> {
     // Load all transactions for summary
     final allTransactionsResponse = await _transactionService.getTransactions();
     if (allTransactionsResponse.success && allTransactionsResponse.data != null) {
-      _totalIncome = allTransactionsResponse.data!
+      final allTransactions = allTransactionsResponse.data!;
+
+      _totalIncome = allTransactions
           .where((t) => t.type == TransactionType.INCOME)
           .fold(0.0, (sum, t) => sum + t.amount);
-      _totalExpense = allTransactionsResponse.data!
+      _totalExpense = allTransactions
           .where((t) => t.type == TransactionType.EXPENSE)
           .fold(0.0, (sum, t) => sum + t.amount);
+
+      // Calculate category expenses (top 5)
+      final Map<String, double> categoryMap = {};
+      for (final transaction in allTransactions.where((t) => t.type == TransactionType.EXPENSE)) {
+        final categoryName = transaction.category.name;
+        categoryMap[categoryName] = (categoryMap[categoryName] ?? 0) + transaction.amount;
+      }
+
+      final sortedCategories = categoryMap.entries.toList()
+        ..sort((a, b) => b.value.compareTo(a.value));
+
+      _categoryExpenses = sortedCategories
+          .take(5)
+          .map((entry) => CategoryExpenseData(
+                categoryName: entry.key,
+                amount: entry.value,
+              ))
+          .toList();
+
+      // Calculate monthly trends (last 6 months)
+      final now = DateTime.now();
+      final Map<String, Map<String, double>> monthlyMap = {};
+
+      for (int i = 5; i >= 0; i--) {
+        final month = DateTime(now.year, now.month - i, 1);
+        final monthKey = DateFormat('MM/yyyy').format(month);
+        monthlyMap[monthKey] = {'income': 0.0, 'expense': 0.0};
+      }
+
+      for (final transaction in allTransactions) {
+        final monthKey = DateFormat('MM/yyyy').format(transaction.transactionDate);
+        if (monthlyMap.containsKey(monthKey)) {
+          if (transaction.type == TransactionType.INCOME) {
+            monthlyMap[monthKey]!['income'] =
+                (monthlyMap[monthKey]!['income'] ?? 0) + transaction.amount;
+          } else {
+            monthlyMap[monthKey]!['expense'] =
+                (monthlyMap[monthKey]!['expense'] ?? 0) + transaction.amount;
+          }
+        }
+      }
+
+      _monthlyTrends = monthlyMap.entries.map((entry) {
+        final parts = entry.key.split('/');
+        final monthLabel = 'T${parts[0]}';
+        return MonthlyTrendData(
+          monthLabel: monthLabel,
+          income: entry.value['income'] ?? 0.0,
+          expense: entry.value['expense'] ?? 0.0,
+        );
+      }).toList();
     }
 
     // Load budget usage
@@ -74,13 +134,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
       decimalDigits: 0,
     );
     return formatter.format(amount);
-  }
-
-  String _getGreeting() {
-    final hour = DateTime.now().hour;
-    if (hour < 12) return 'Chào buổi sáng';
-    if (hour < 18) return 'Chào buổi chiều';
-    return 'Chào buổi tối';
   }
 
   void _showBudgetWarningsSheet() {
@@ -320,13 +373,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Greeting
-                    Text(
-                      '${_getGreeting()}, ${user?.fullName ?? 'bạn'}!',
-                      style: const TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                      ),
+                    // Personalized Greeting
+                    PersonalizedGreeting(
+                      userName: user?.fullName ?? '',
                     ),
                     const SizedBox(height: 24),
 
@@ -361,6 +410,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     ),
                     const SizedBox(height: 24),
 
+                    // Financial Health Score
+                    FinancialHealthScore(
+                      totalIncome: _totalIncome,
+                      totalExpense: _totalExpense,
+                      budgetsOnTrack: _budgetUsage.where((b) => b.usagePercentage < 100).length,
+                      totalBudgets: _budgetUsage.length,
+                    ),
+                    const SizedBox(height: 24),
+
                     // Budget usage section
                     if (_budgetUsage.isNotEmpty) ...[
                       const Text(
@@ -372,6 +430,30 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       ),
                       const SizedBox(height: 12),
                       ..._budgetUsage.take(3).map((usage) => _buildBudgetCard(usage)),
+                      const SizedBox(height: 16),
+                      BudgetVsActualChart(
+                        budgets: _budgetUsage.take(5).map((usage) => BudgetComparisonData(
+                          categoryName: usage.categoryName,
+                          budgetAmount: usage.budgetAmount,
+                          actualAmount: usage.actualSpent,
+                        )).toList(),
+                      ),
+                      const SizedBox(height: 24),
+                    ],
+
+                    // Category Pie Chart
+                    if (_categoryExpenses.isNotEmpty) ...[
+                      CategoryPieChart(
+                        expenses: _categoryExpenses,
+                      ),
+                      const SizedBox(height: 24),
+                    ],
+
+                    // Monthly Trend Chart
+                    if (_monthlyTrends.isNotEmpty) ...[
+                      MonthlyTrendChart(
+                        trends: _monthlyTrends,
+                      ),
                       const SizedBox(height: 24),
                     ],
 
@@ -446,6 +528,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         onPressed: () {
           Navigator.pushNamed(context, '/transactions/add');
         },
+        tooltip: 'Thêm giao dịch',
         child: const Icon(Icons.add),
       ),
       bottomNavigationBar: BottomNavigationBar(

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../../services/report_service.dart';
 import '../../models/monthly_report.dart';
+import '../../utils/csv_export_utils.dart';
 
 class MonthlyReportScreen extends StatefulWidget {
   const MonthlyReportScreen({super.key});
@@ -92,15 +93,78 @@ class _MonthlyReportScreenState extends State<MonthlyReportScreen> {
     return formatter.format(amount);
   }
 
+  Future<void> _exportToCsv() async {
+    if (_report == null) return;
+
+    try {
+      await CsvExportUtils.exportMonthlyReportToCsv(_report!);
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Xuất CSV thành công'),
+          backgroundColor: Colors.green,
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Lỗi xuất CSV: ${e.toString()}'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Báo cáo tháng'),
         actions: [
+          if (_report != null)
+            IconButton(
+              icon: const Icon(Icons.download),
+              onPressed: _exportToCsv,
+              tooltip: 'Xuất CSV',
+            ),
           IconButton(
             icon: const Icon(Icons.calendar_today),
             onPressed: _selectMonth,
+          ),
+          PopupMenuButton<String>(
+            icon: const Icon(Icons.more_vert),
+            onSelected: (value) {
+              if (value == 'yearly') {
+                Navigator.pushNamed(context, '/reports/yearly');
+              } else if (value == 'category') {
+                Navigator.pushNamed(context, '/reports/category');
+              }
+            },
+            itemBuilder: (context) => [
+              PopupMenuItem(
+                value: 'yearly',
+                child: Row(
+                  children: const [
+                    Icon(Icons.date_range),
+                    SizedBox(width: 8),
+                    Text('Báo cáo năm'),
+                  ],
+                ),
+              ),
+              PopupMenuItem(
+                value: 'category',
+                child: Row(
+                  children: const [
+                    Icon(Icons.category),
+                    SizedBox(width: 8),
+                    Text('Báo cáo danh mục'),
+                  ],
+                ),
+              ),
+            ],
           ),
         ],
       ),

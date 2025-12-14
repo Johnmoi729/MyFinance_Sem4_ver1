@@ -62,19 +62,11 @@ public class UserPreferencesController {
         return UserPreferencesResponse.builder()
                 .id(preferences.getId())
                 .userId(preferences.getUserId())
-                .language(preferences.getLanguage())
-                .currency(preferences.getCurrency())
-                .dateFormat(preferences.getDateFormat())
-                .timezone(preferences.getTimezone())
-                .theme(preferences.getTheme())
-                .itemsPerPage(preferences.getItemsPerPage())
+                // Display Preferences (1 field)
                 .viewMode(preferences.getViewMode())
+                // Notification Preferences (2 fields)
                 .emailNotifications(preferences.getEmailNotifications())
                 .budgetAlerts(preferences.getBudgetAlerts())
-                .transactionReminders(preferences.getTransactionReminders())
-                .weeklySummary(preferences.getWeeklySummary())
-                .monthlySummary(preferences.getMonthlySummary())
-                .goalReminders(preferences.getGoalReminders())
                 .createdAt(preferences.getCreatedAt())
                 .updatedAt(preferences.getUpdatedAt())
                 .build();
@@ -82,19 +74,11 @@ public class UserPreferencesController {
 
     private UserPreferences mapToEntity(UserPreferencesRequest request) {
         UserPreferences preferences = new UserPreferences();
-        preferences.setLanguage(request.getLanguage());
-        preferences.setCurrency(request.getCurrency());
-        preferences.setDateFormat(request.getDateFormat());
-        preferences.setTimezone(request.getTimezone());
-        preferences.setTheme(request.getTheme());
-        preferences.setItemsPerPage(request.getItemsPerPage());
+        // Display Preferences (1 field)
         preferences.setViewMode(request.getViewMode());
+        // Notification Preferences (2 fields)
         preferences.setEmailNotifications(request.getEmailNotifications());
         preferences.setBudgetAlerts(request.getBudgetAlerts());
-        preferences.setTransactionReminders(request.getTransactionReminders());
-        preferences.setWeeklySummary(request.getWeeklySummary());
-        preferences.setMonthlySummary(request.getMonthlySummary());
-        preferences.setGoalReminders(request.getGoalReminders());
         return preferences;
     }
 }

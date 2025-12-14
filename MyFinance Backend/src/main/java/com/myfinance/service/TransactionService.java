@@ -119,8 +119,18 @@ public class TransactionService {
         Transaction transaction = transactionRepository.findByIdAndUserId(transactionId, userId)
                 .orElseThrow(() -> new ResourceNotFoundException("Giao dịch không tồn tại"));
 
+        // Store category and type before deletion (for budget alert check)
+        Long categoryId = transaction.getCategory().getId();
+        TransactionType type = transaction.getType();
+
         transactionRepository.delete(transaction);
         log.info("Transaction deleted successfully with ID: {}", transactionId);
+
+        // Check budget alert after deletion for EXPENSE transactions
+        // This ensures budget usage is recalculated and user is notified if they're back under threshold
+        if (type == TransactionType.EXPENSE) {
+            budgetService.checkAndSendBudgetAlert(userId, categoryId);
+        }
     }
 
     public List<TransactionResponse> getRecentTransactions(Long userId) {
