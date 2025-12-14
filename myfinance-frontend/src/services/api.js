@@ -77,6 +77,25 @@ class ApiService {
  return { success: true };
  }
 
+ // Handle 503 Service Unavailable (Maintenance Mode)
+ if (response.status === 503) {
+ const data = await response.json();
+
+ // Dispatch custom event for maintenance mode
+ window.dispatchEvent(new CustomEvent('maintenance-mode', {
+ detail: {
+ message: data.message || 'Hệ thống đang bảo trì. Vui lòng quay lại sau.',
+ timestamp: data.timestamp || Date.now()
+ }
+ }));
+
+ return {
+ success: false,
+ message: data.message || 'Hệ thống đang bảo trì',
+ code: 'MAINTENANCE_MODE'
+ };
+ }
+
  const data = await response.json();
  return data;
  } catch (error) {
@@ -796,18 +815,8 @@ class AdminAPI extends ApiService {
  }
  }
 
- // System Configuration CRUD
- async createConfig(configData) {
- try {
- const response = await this.post('/api/admin/config', configData);
- return response;
- } catch (error) {
- return {
- success: false,
- message: 'Không thể tạo cấu hình mới'
- };
- }
- }
+ // System Configuration - Update only (create/delete removed, code-first pattern)
+ // REMOVED: createConfig() method - configs must be defined in code
 
  async updateConfig(configKey, configData) {
  try {
@@ -821,17 +830,7 @@ class AdminAPI extends ApiService {
  }
  }
 
- async deleteConfig(configKey) {
- try {
- const response = await this.delete(`/api/admin/config/${configKey}`);
- return response;
- } catch (error) {
- return {
- success: false,
- message: 'Không thể xóa cấu hình'
- };
- }
- }
+ // REMOVED: deleteConfig() method - prevents accidental deletion of critical configs
 
  // Maintenance Mode
  async getMaintenanceMode() {

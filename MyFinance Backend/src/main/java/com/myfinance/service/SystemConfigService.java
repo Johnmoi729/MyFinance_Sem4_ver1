@@ -185,25 +185,20 @@ public class SystemConfigService {
         setDefaultConfig("MAINTENANCE_MODE", "false", "Chế độ bảo trì hệ thống",
                         SystemConfig.ConfigType.MAINTENANCE, false);
 
-        setDefaultConfig("MAX_LOGIN_ATTEMPTS", "5", "Số lần đăng nhập tối đa",
+        setDefaultConfig("MAX_LOGIN_ATTEMPTS", "5", "Số lần đăng nhập tối đa (Tính năng tương lai - chưa kích hoạt)",
                         SystemConfig.ConfigType.SECURITY, false);
 
         setDefaultConfig("SESSION_TIMEOUT_HOURS", "24", "Thời gian hết hạn phiên (giờ)",
                         SystemConfig.ConfigType.SECURITY, false);
 
-        // Feature flags
-        setDefaultConfig("FEATURE_BUDGET_ANALYTICS", "true", "Tính năng phân tích ngân sách",
-                        SystemConfig.ConfigType.FEATURE, false);
-
-        setDefaultConfig("FEATURE_EXPORT_DATA", "true", "Tính năng xuất dữ liệu",
-                        SystemConfig.ConfigType.FEATURE, false);
+        // Feature flags - REMOVED (core features should always be enabled)
+        // Budget analytics and export are core functionality, not optional features
 
         // Public settings
-        setDefaultConfig("APP_NAME", "MyFinance", "Tên ứng dụng",
+        setDefaultConfig("APP_NAME", "MyFinance", "Tên ứng dụng (Tính năng tương lai - white-labeling)",
                         SystemConfig.ConfigType.APPLICATION, true);
 
-        setDefaultConfig("DEFAULT_CURRENCY", "VND", "Tiền tệ mặc định",
-                        SystemConfig.ConfigType.APPLICATION, true);
+        // DEFAULT_CURRENCY removed - conflicts with VND-only architecture decision
 
         log.info("Default system configurations initialized");
     }
@@ -244,22 +239,8 @@ public class SystemConfigService {
             .orElseThrow(() -> new RuntimeException("Không tìm thấy cấu hình với key: " + configKey));
     }
 
-    @Transactional
-    public SystemConfig createConfig(String configKey, String configValue, String description,
-                                   SystemConfig.ConfigType configType, Boolean isPublic) {
-        if (systemConfigRepository.existsByConfigKey(configKey)) {
-            throw new RuntimeException("Cấu hình với key '" + configKey + "' đã tồn tại");
-        }
-
-        SystemConfig config = new SystemConfig();
-        config.setConfigKey(configKey);
-        config.setConfigValue(configValue);
-        config.setDescription(description);
-        config.setConfigType(configType);
-        config.setIsPublic(isPublic != null ? isPublic : false);
-
-        return systemConfigRepository.save(config);
-    }
+    // REMOVED: createConfig() method - configs are code-first only
+    // New configs must be added in initializeDefaultConfigs() method
 
     @Transactional
     public SystemConfig updateConfig(String configKey, String configValue, String description,
@@ -280,11 +261,8 @@ public class SystemConfigService {
         return systemConfigRepository.save(config);
     }
 
-    @Transactional
-    public void deleteConfigByKey(String configKey) {
-        SystemConfig config = getConfigByKey(configKey);
-        systemConfigRepository.delete(config);
-    }
+    // REMOVED: deleteConfigByKey() method - prevents accidental deletion of critical configs
+    // System configs should persist throughout application lifecycle
 
     @Transactional
     public void setMaintenanceModeAdmin(Boolean enabled) {

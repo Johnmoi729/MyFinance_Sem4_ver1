@@ -49,7 +49,7 @@ const AdminDashboard = () => {
  return (
  <AdminLayout>
  <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
- <strong className="font-bold">Error: </strong>
+ <strong className="font-bold">Lỗi: </strong>
  <span>{error}</span>
  </div>
  </AdminLayout>
@@ -61,8 +61,8 @@ const AdminDashboard = () => {
  <div className="space-y-6">
  {/* Header */}
  <div>
- <h1 className="text-2xl font-bold text-gray-900">Admin Dashboard</h1>
- <p className="text-gray-600">System overview and key metrics</p>
+ <h1 className="text-2xl font-bold text-gray-900">Bảng điều khiển quản trị</h1>
+ <p className="text-gray-600">Tổng quan hệ thống và chỉ số chính</p>
  </div>
 
  {/* Stats Grid */}
@@ -73,7 +73,7 @@ const AdminDashboard = () => {
  <Users className="w-6 h-6 text-indigo-600" />
  </div>
  <div className="ml-4">
- <p className="text-sm font-medium text-gray-600">Total Users</p>
+ <p className="text-sm font-medium text-gray-600">Tổng người dùng</p>
  <p className="text-2xl font-bold text-gray-900">
  {dashboardData?.userStats?.totalUsers || 0}
  </p>
@@ -87,7 +87,7 @@ const AdminDashboard = () => {
  <UserCheck className="w-6 h-6 text-green-600" />
  </div>
  <div className="ml-4">
- <p className="text-sm font-medium text-gray-600">Active Users</p>
+ <p className="text-sm font-medium text-gray-600">Người dùng hoạt động</p>
  <p className="text-2xl font-bold text-gray-900">
  {dashboardData?.userStats?.activeUsers || 0}
  </p>
@@ -101,7 +101,7 @@ const AdminDashboard = () => {
  <BarChart3 className="w-6 h-6 text-yellow-600" />
  </div>
  <div className="ml-4">
- <p className="text-sm font-medium text-gray-600">Total Transactions</p>
+ <p className="text-sm font-medium text-gray-600">Tổng giao dịch</p>
  <p className="text-2xl font-bold text-gray-900">
  {dashboardData?.transactionStats?.totalTransactions || 0}
  </p>
@@ -115,7 +115,7 @@ const AdminDashboard = () => {
  <Zap className="w-6 h-6 text-purple-600" />
  </div>
  <div className="ml-4">
- <p className="text-sm font-medium text-gray-600">System Health</p>
+ <p className="text-sm font-medium text-gray-600">Tình trạng hệ thống</p>
  <p className={`text-2xl font-bold ${
  dashboardData?.systemHealth?.status === 'HEALTHY' ? 'text-green-600' :
  dashboardData?.systemHealth?.status === 'WARNING' ? 'text-yellow-600' :
@@ -138,7 +138,7 @@ const AdminDashboard = () => {
  <TrendingUp className="w-6 h-6 text-indigo-600" />
  </div>
  <div className="ml-4">
- <p className="text-sm font-medium text-gray-600">New Users Today</p>
+ <p className="text-sm font-medium text-gray-600">Người dùng mới hôm nay</p>
  <p className="text-2xl font-bold text-gray-900">
  {dashboardData?.userStats?.newUsersToday || 0}
  </p>
@@ -152,7 +152,7 @@ const AdminDashboard = () => {
  <DollarSign className="w-6 h-6 text-pink-600" />
  </div>
  <div className="ml-4">
- <p className="text-sm font-medium text-gray-600">Total Volume</p>
+ <p className="text-sm font-medium text-gray-600">Tổng giá trị</p>
  <p className="text-2xl font-bold text-gray-900">
  {dashboardData?.transactionStats?.totalVolume ?
  formatCurrency(dashboardData.transactionStats.totalVolume) : '₫0'}
@@ -167,7 +167,7 @@ const AdminDashboard = () => {
  <Activity className="w-6 h-6 text-orange-600" />
  </div>
  <div className="ml-4">
- <p className="text-sm font-medium text-gray-600">Transactions Today</p>
+ <p className="text-sm font-medium text-gray-600">Giao dịch hôm nay</p>
  <p className="text-2xl font-bold text-gray-900">
  {dashboardData?.transactionStats?.transactionsToday || 0}
  </p>
@@ -181,7 +181,7 @@ const AdminDashboard = () => {
  <TrendingUp className="w-6 h-6 text-teal-600" />
  </div>
  <div className="ml-4">
- <p className="text-sm font-medium text-gray-600">Growth Rate</p>
+ <p className="text-sm font-medium text-gray-600">Tỷ lệ tăng trưởng</p>
  <p className={`text-2xl font-bold ${
  (dashboardData?.userStats?.growthPercentage || 0) >= 0 ? 'text-green-600' : 'text-red-600'
  }`}>
@@ -195,7 +195,7 @@ const AdminDashboard = () => {
  {/* Recent Activity */}
  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
  <div className="bg-white p-6 rounded-lg shadow">
- <h3 className="text-lg font-medium text-gray-900 mb-4">Recent User Activity</h3>
+ <h3 className="text-lg font-medium text-gray-900 mb-4">Hoạt động người dùng gần đây</h3>
  <div className="space-y-3">
  {dashboardData?.recentActivities?.slice(0, 5).map((activity, index) => (
  <div key={index} className="flex items-center justify-between py-2 border-b last:border-b-0">
@@ -209,13 +209,13 @@ const AdminDashboard = () => {
  </p>
  </div>
  <span className="px-2 py-1 text-xs font-medium bg-indigo-100 text-indigo-800 rounded-full">
- {activity.action?.includes('CREATE') ? 'Created' :
- activity.action?.includes('UPDATE') ? 'Updated' :
- activity.action?.includes('DELETE') ? 'Deleted' : 'Action'}
+ {activity.action?.includes('CREATE') ? 'Đã tạo' :
+ activity.action?.includes('UPDATE') ? 'Đã cập nhật' :
+ activity.action?.includes('DELETE') ? 'Đã xóa' : 'Hành động'}
  </span>
  </div>
  )) || (
- <p className="text-gray-500 text-sm">No recent activity</p>
+ <p className="text-gray-500 text-sm">Không có hoạt động gần đây</p>
  )}
  </div>
  </div>

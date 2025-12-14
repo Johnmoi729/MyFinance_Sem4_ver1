@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import AdminLayout from '../../components/admin/AdminLayout';
 import { adminAPI } from '../../services/api';
-import { CheckCircle, Settings, Shield } from '../../components/icons';
+import { CheckCircle, Settings, Shield, Info } from '../../components/icons';
 
 const SystemConfig = () => {
  const [configs, setConfigs] = useState([]);
@@ -10,7 +10,7 @@ const SystemConfig = () => {
  const [currentPage, setCurrentPage] = useState(0);
  const [totalPages, setTotalPages] = useState(0);
  const [editingConfig, setEditingConfig] = useState(null);
- const [newConfig, setNewConfig] = useState(false);
+ // REMOVED: newConfig state - configs cannot be created via UI
  const [maintenanceMode, setMaintenanceMode] = useState(false);
  const [migrationNeeded, setMigrationNeeded] = useState(false);
  const [migrationLoading, setMigrationLoading] = useState(false);
@@ -101,17 +101,7 @@ const SystemConfig = () => {
  }));
  };
 
- const openCreateModal = () => {
- setFormData({
- configKey: '',
- configValue: '',
- description: '',
- configType: 'SETTING',
- isPublic: false
- });
- setNewConfig(true);
- setEditingConfig(null);
- };
+ // REMOVED: openCreateModal function - configs cannot be created via UI (code-first pattern)
 
  const openEditModal = (config) => {
  setFormData({
@@ -141,44 +131,22 @@ const SystemConfig = () => {
  e.preventDefault();
 
  try {
- let response;
- if (newConfig) {
- // Create new config
- response = await adminAPI.createConfig(formData);
- } else {
- // Update existing config
- response = await adminAPI.updateConfig(editingConfig.configKey, formData);
- }
+ // Only update existing configs (create removed - code-first pattern)
+ const response = await adminAPI.updateConfig(editingConfig.configKey, formData);
 
  if (response && response.success) {
  closeModal();
  fetchConfigs();
  } else {
- alert(response?.message || 'Thao tác thất bại');
+ alert(response?.message || 'Cập nhật cấu hình thất bại');
  }
  } catch (err) {
  console.error('Config operation error:', err);
- alert('Lỗi khi thực hiện thao tác');
+ alert('Lỗi khi cập nhật cấu hình');
  }
  };
 
- const handleDelete = async (configKey) => {
- if (!window.confirm('Bạn có chắc chắn muốn xóa cấu hình này?')) {
- return;
- }
-
- try {
- const response = await adminAPI.deleteConfig(configKey);
- if (response && response.success) {
- fetchConfigs();
- } else {
- alert(response?.message || 'Xóa cấu hình thất bại');
- }
- } catch (err) {
- console.error('Delete config error:', err);
- alert('Lỗi khi xóa cấu hình');
- }
- };
+ // REMOVED: handleDelete function - configs cannot be deleted (code-first pattern)
 
  const toggleMaintenanceMode = async () => {
  try {
@@ -280,12 +248,7 @@ const SystemConfig = () => {
  >
  {maintenanceMode ? 'Disable Maintenance' : 'Enable Maintenance'}
  </button>
- <button
- onClick={openCreateModal}
- className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors"
- >
- Add Configuration
- </button>
+ {/* REMOVED: Add Configuration button - configs are code-first only */}
  </div>
  </div>
 
@@ -325,7 +288,7 @@ const SystemConfig = () => {
  <div className="ml-4">
  <p className="text-sm font-medium text-gray-600">Active Features</p>
  <p className="text-2xl font-bold text-gray-900">
- {configs.filter(c => c.configType === 'FEATURE_FLAG' && c.configValue === 'true').length}
+ {configs.filter(c => c.configType === 'FEATURE' && c.configValue === 'true').length}
  </p>
  </div>
  </div>
@@ -355,6 +318,21 @@ const SystemConfig = () => {
  <span>{error}</span>
  </div>
  )}
+
+ {/* Info Banner - Explains Config Management */}
+ <div className="bg-blue-50 border-l-4 border-blue-400 p-4 mb-6">
+ <div className="flex">
+ <div className="flex-shrink-0">
+ <Info className="h-5 w-5 text-blue-400" />
+ </div>
+ <div className="ml-3">
+ <p className="text-sm text-blue-700">
+ <strong>Lưu ý:</strong> Cấu hình hệ thống được định nghĩa trong code.
+ Bạn chỉ có thể <strong>chỉnh sửa giá trị</strong>, không thể tạo hoặc xóa cấu hình.
+ </p>
+ </div>
+ </div>
+ </div>
 
  {/* Configurations Table */}
  <div className="bg-white rounded-lg shadow overflow-hidden">
@@ -416,12 +394,7 @@ const SystemConfig = () => {
  >
  Edit
  </button>
- <button
- onClick={() => handleDelete(config.configKey)}
- className="text-red-600 hover:text-red-900"
- >
- Delete
- </button>
+ {/* REMOVED: Delete button - prevents accidental deletion of critical configs */}
  </td>
  </tr>
  ))}
@@ -465,13 +438,13 @@ const SystemConfig = () => {
  </div>
  )}
 
- {/* Create/Edit Modal */}
- {(newConfig || editingConfig) && (
+ {/* Edit Modal (create removed - code-first pattern) */}
+ {editingConfig && (
  <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
  <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
  <div className="mt-3">
  <h3 className="text-lg font-medium text-gray-900 mb-4">
- {newConfig ? 'Create Configuration' : 'Edit Configuration'}
+ Edit Configuration
  </h3>
  <form onSubmit={handleSubmit} className="space-y-4">
  <div>
@@ -482,7 +455,7 @@ const SystemConfig = () => {
  type="text"
  value={formData.configKey}
  onChange={(e) => handleFormChange('configKey', e.target.value)}
- disabled={!newConfig}
+ disabled={true}
  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:bg-gray-100"
  required
  />
@@ -548,7 +521,7 @@ const SystemConfig = () => {
  type="submit"
  className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors"
  >
- {newConfig ? 'Create' : 'Update'}
+ Update
  </button>
  </div>
  </form>

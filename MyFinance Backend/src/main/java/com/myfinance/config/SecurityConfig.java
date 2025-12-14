@@ -82,6 +82,8 @@ public class SecurityConfig {
                 );
 
         http.authenticationProvider(authenticationProvider());
+
+        // MaintenanceFilter will be auto-registered via @Order(1) annotation - runs before JWT filter
         http.addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();

@@ -101,7 +101,7 @@ public class PDFReportGenerator {
 
                 // Data rows
                 for (MonthlyReportResponse.CategorySummary category : report.getIncomeByCategory()) {
-                    incomeTable.addCell(new Cell().add(new Paragraph(category.getCategoryName()).setFont(font)));
+                    incomeTable.addCell(new Cell().add(new Paragraph(romanizeVietnamese(category.getCategoryName())).setFont(font)));
                     incomeTable.addCell(new Cell().add(new Paragraph(formatCurrency(category.getAmount())).setFont(font)));
                     incomeTable.addCell(new Cell().add(new Paragraph(String.format("%.1f%%", category.getPercentage())).setFont(font)));
                     incomeTable.addCell(new Cell().add(new Paragraph(String.valueOf(category.getTransactionCount())).setFont(font)));
@@ -127,7 +127,7 @@ public class PDFReportGenerator {
 
                 // Data rows
                 for (MonthlyReportResponse.CategorySummary category : report.getExpenseByCategory()) {
-                    expenseTable.addCell(new Cell().add(new Paragraph(category.getCategoryName()).setFont(font)));
+                    expenseTable.addCell(new Cell().add(new Paragraph(romanizeVietnamese(category.getCategoryName())).setFont(font)));
                     expenseTable.addCell(new Cell().add(new Paragraph(formatCurrency(category.getAmount())).setFont(font)));
                     expenseTable.addCell(new Cell().add(new Paragraph(String.format("%.1f", category.getPercentage())).setFont(font)));
                     expenseTable.addCell(new Cell().add(new Paragraph(String.valueOf(category.getTransactionCount())).setFont(font)));
@@ -161,7 +161,7 @@ public class PDFReportGenerator {
                 int rank = 1;
                 for (MonthlyReportResponse.CategorySummary category : report.getTopExpenseCategories()) {
                     topTable.addCell(new Cell().add(new Paragraph(String.valueOf(rank++)).setFont(font)));
-                    topTable.addCell(new Cell().add(new Paragraph(category.getCategoryName()).setFont(font)));
+                    topTable.addCell(new Cell().add(new Paragraph(romanizeVietnamese(category.getCategoryName())).setFont(font)));
                     topTable.addCell(new Cell().add(new Paragraph(formatCurrency(category.getAmount())).setFont(font)));
                 }
 
@@ -279,7 +279,7 @@ public class PDFReportGenerator {
                 int rank = 1;
                 for (MonthlyReportResponse.CategorySummary category : report.getTopExpenseCategories()) {
                     topTable.addCell(new Cell().add(new Paragraph(String.valueOf(rank++)).setFont(font)));
-                    topTable.addCell(new Cell().add(new Paragraph(category.getCategoryName()).setFont(font)));
+                    topTable.addCell(new Cell().add(new Paragraph(romanizeVietnamese(category.getCategoryName())).setFont(font)));
                     topTable.addCell(new Cell().add(new Paragraph(formatCurrency(category.getAmount())).setFont(font)));
                 }
 
@@ -343,5 +343,54 @@ public class PDFReportGenerator {
             "T7", "T8", "T9", "T10", "T11", "T12"
         };
         return months[month - 1];
+    }
+
+    /**
+     * Romanize Vietnamese text by removing diacritics
+     * Converts Vietnamese characters to ASCII equivalents for PDF compatibility
+     * This is necessary because Helvetica font (default in PDF) doesn't support Vietnamese Unicode
+     */
+    private String romanizeVietnamese(String text) {
+        if (text == null) return null;
+
+        // Vietnamese character mappings to ASCII
+        String[][] replacements = {
+            // Lowercase vowels with tones
+            {"á", "a"}, {"à", "a"}, {"ả", "a"}, {"ã", "a"}, {"ạ", "a"},
+            {"ă", "a"}, {"ắ", "a"}, {"ằ", "a"}, {"ẳ", "a"}, {"ẵ", "a"}, {"ặ", "a"},
+            {"â", "a"}, {"ấ", "a"}, {"ầ", "a"}, {"ẩ", "a"}, {"ẫ", "a"}, {"ậ", "a"},
+            {"é", "e"}, {"è", "e"}, {"ẻ", "e"}, {"ẽ", "e"}, {"ẹ", "e"},
+            {"ê", "e"}, {"ế", "e"}, {"ề", "e"}, {"ể", "e"}, {"ễ", "e"}, {"ệ", "e"},
+            {"í", "i"}, {"ì", "i"}, {"ỉ", "i"}, {"ĩ", "i"}, {"ị", "i"},
+            {"ó", "o"}, {"ò", "o"}, {"ỏ", "o"}, {"õ", "o"}, {"ọ", "o"},
+            {"ô", "o"}, {"ố", "o"}, {"ồ", "o"}, {"ổ", "o"}, {"ỗ", "o"}, {"ộ", "o"},
+            {"ơ", "o"}, {"ớ", "o"}, {"ờ", "o"}, {"ở", "o"}, {"ỡ", "o"}, {"ợ", "o"},
+            {"ú", "u"}, {"ù", "u"}, {"ủ", "u"}, {"ũ", "u"}, {"ụ", "u"},
+            {"ư", "u"}, {"ứ", "u"}, {"ừ", "u"}, {"ử", "u"}, {"ữ", "u"}, {"ự", "u"},
+            {"ý", "y"}, {"ỳ", "y"}, {"ỷ", "y"}, {"ỹ", "y"}, {"ỵ", "y"},
+            {"đ", "d"},
+
+            // Uppercase vowels with tones
+            {"Á", "A"}, {"À", "A"}, {"Ả", "A"}, {"Ã", "A"}, {"Ạ", "A"},
+            {"Ă", "A"}, {"Ắ", "A"}, {"Ằ", "A"}, {"Ẳ", "A"}, {"Ẵ", "A"}, {"Ặ", "A"},
+            {"Â", "A"}, {"Ấ", "A"}, {"Ầ", "A"}, {"Ẩ", "A"}, {"Ẫ", "A"}, {"Ậ", "A"},
+            {"É", "E"}, {"È", "E"}, {"Ẻ", "E"}, {"Ẽ", "E"}, {"Ẹ", "E"},
+            {"Ê", "E"}, {"Ế", "E"}, {"Ề", "E"}, {"Ể", "E"}, {"Ễ", "E"}, {"Ệ", "E"},
+            {"Í", "I"}, {"Ì", "I"}, {"Ỉ", "I"}, {"Ĩ", "I"}, {"Ị", "I"},
+            {"Ó", "O"}, {"Ò", "O"}, {"Ỏ", "O"}, {"Õ", "O"}, {"Ọ", "O"},
+            {"Ô", "O"}, {"Ố", "O"}, {"Ồ", "O"}, {"Ổ", "O"}, {"Ỗ", "O"}, {"Ộ", "O"},
+            {"Ơ", "O"}, {"Ớ", "O"}, {"Ờ", "O"}, {"Ở", "O"}, {"Ỡ", "O"}, {"Ợ", "O"},
+            {"Ú", "U"}, {"Ù", "U"}, {"Ủ", "U"}, {"Ũ", "U"}, {"Ụ", "U"},
+            {"Ư", "U"}, {"Ứ", "U"}, {"Ừ", "U"}, {"Ử", "U"}, {"Ữ", "U"}, {"Ự", "U"},
+            {"Ý", "Y"}, {"Ỳ", "Y"}, {"Ỷ", "Y"}, {"Ỹ", "Y"}, {"Ỵ", "Y"},
+            {"Đ", "D"}
+        };
+
+        String result = text;
+        for (String[] pair : replacements) {
+            result = result.replace(pair[0], pair[1]);
+        }
+
+        return result;
     }
 }

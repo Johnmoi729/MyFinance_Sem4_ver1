@@ -114,7 +114,8 @@ export {
  Settings,
  Sliders,
  Filter,
- SlidersHorizontal
+ SlidersHorizontal,
+ Wrench
 } from 'lucide-react';
 
 // Calendar & Time

@@ -148,7 +148,7 @@ const DashboardPage = () => {
  <div className="flex-1 min-w-0">
  <p className="text-sm font-medium text-green-700 mb-2">Thu nhập</p>
  <p className="text-2xl lg:text-3xl font-bold text-green-600 break-words">{formatCurrency(stats.totalIncome)}</p>
- <p className="text-xs text-green-600 mt-2">↗ Tháng này</p>
+ <p className="text-xs text-green-600 mt-2">↗ Tổng cộng</p>
  </div>
  <div className="flex-shrink-0 p-3 bg-green-200 rounded-2xl">
  <Plus className="w-6 h-6 text-green-600" />
@@ -161,7 +161,7 @@ const DashboardPage = () => {
  <div className="flex-1 min-w-0">
  <p className="text-sm font-medium text-red-700 mb-2">Chi tiêu</p>
  <p className="text-2xl lg:text-3xl font-bold text-red-600 break-words">{formatCurrency(stats.totalExpense)}</p>
- <p className="text-xs text-red-600 mt-2">↘ Tháng này</p>
+ <p className="text-xs text-red-600 mt-2">↘ Tổng cộng</p>
  </div>
  <div className="flex-shrink-0 p-3 bg-red-200 rounded-2xl">
  <Minus className="w-6 h-6 text-red-600" />

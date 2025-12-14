@@ -302,18 +302,13 @@ INSERT IGNORE INTO roles (role_name, description) VALUES
 ('ADMIN', 'Quản trị viên'),
 ('SUPER_ADMIN', 'Quản trị viên cấp cao');
 
--- Insert default system configurations
+-- Insert default system configurations (updated to match SystemConfigService.java - December 14, 2025)
+-- Only configs actively used by the application are defined here
 INSERT IGNORE INTO system_config (config_key, config_value, description, config_type, is_public) VALUES
 ('MAINTENANCE_MODE', 'false', 'Chế độ bảo trì hệ thống', 'MAINTENANCE', false),
-('MAX_LOGIN_ATTEMPTS', '5', 'Số lần đăng nhập tối đa', 'SECURITY', false),
+('MAX_LOGIN_ATTEMPTS', '5', 'Số lần đăng nhập tối đa (Tính năng tương lai - chưa kích hoạt)', 'SECURITY', false),
 ('SESSION_TIMEOUT_HOURS', '24', 'Thời gian hết hạn phiên (giờ)', 'SECURITY', false),
-('FEATURE_BUDGET_ANALYTICS', 'true', 'Tính năng phân tích ngân sách', 'FEATURE', false),
-('FEATURE_EXPORT_DATA', 'true', 'Tính năng xuất dữ liệu', 'FEATURE', false),
-('APP_NAME', 'MyFinance', 'Tên ứng dụng', 'APPLICATION', true),
-('DEFAULT_CURRENCY', 'VND', 'Tiền tệ mặc định', 'APPLICATION', true),
-('UI_THEME', 'light', 'Giao diện mặc định', 'UI', true),
-('MAX_TRANSACTION_AMOUNT', '999999999', 'Số tiền giao dịch tối đa', 'PERFORMANCE', false),
-('AUDIT_LOG_RETENTION_DAYS', '365', 'Số ngày lưu trữ audit log', 'LOGGING', false);
+('APP_NAME', 'MyFinance', 'Tên ứng dụng (Tính năng tương lai - white-labeling)', 'APPLICATION', true);
 
 -- Assign USER role to all existing users who don't have it
 INSERT IGNORE INTO user_roles (user_id, role_id, is_active)

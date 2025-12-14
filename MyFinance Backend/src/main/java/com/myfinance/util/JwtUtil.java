@@ -1,7 +1,9 @@
 package com.myfinance.util;
 
+import com.myfinance.service.SystemConfigService;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -12,6 +14,7 @@ import java.util.function.Function;
 
 @Component
 @Slf4j
+@RequiredArgsConstructor
 public class JwtUtil {
 
     @Value("${jwt.secret}")
@@ -19,6 +22,8 @@ public class JwtUtil {
 
     @Value("${jwt.expiration}")
     private Long jwtExpiration;
+
+    private final SystemConfigService systemConfigService;
 
     // Generate secret key
     private SecretKey getSigningKey() {
@@ -147,11 +152,15 @@ public class JwtUtil {
 
     // Create token with claims
     private String createToken(Map<String, Object> claims, String subject) {
+        // Read session timeout from config (hours), fallback to application.properties (24 hours)
+        int sessionTimeoutHours = systemConfigService.getIntConfig("SESSION_TIMEOUT_HOURS", 24);
+        long expirationMs = sessionTimeoutHours * 60L * 60L * 1000L; // Convert hours to milliseconds
+
         return Jwts.builder()
                 .setClaims(claims)
                 .setSubject(subject)
                 .setIssuedAt(new Date(System.currentTimeMillis()))
-                .setExpiration(new Date(System.currentTimeMillis() + jwtExpiration))
+                .setExpiration(new Date(System.currentTimeMillis() + expirationMs))
                 .signWith(getSigningKey(), SignatureAlgorithm.HS512)
                 .compact();
     }

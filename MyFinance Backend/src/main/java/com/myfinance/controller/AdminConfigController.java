@@ -78,44 +78,8 @@ public class AdminConfigController {
         }
     }
 
-    @PostMapping
-    public ResponseEntity<ApiResponse<SystemConfig>> createConfig(
-            @Valid @RequestBody SystemConfigRequest request,
-            Authentication authentication,
-            HttpServletRequest httpRequest) {
-
-        try {
-            SystemConfig config = systemConfigService.createConfig(
-                request.getConfigKey(),
-                request.getConfigValue(),
-                request.getDescription(),
-                request.getConfigType(),
-                request.getIsPublic()
-            );
-
-            auditService.logAdminAction(
-                authentication.getName(),
-                "CONFIG_CREATE",
-                "SystemConfig",
-                null,
-                "Tạo cấu hình mới: " + request.getConfigKey(),
-                null,
-                request.getConfigValue(),
-                httpRequest.getRemoteAddr(),
-                httpRequest.getHeader("User-Agent")
-            );
-
-            return ResponseEntity.ok(ApiResponse.success("Tạo cấu hình thành công", config));
-        } catch (RuntimeException e) {
-            log.error("Lỗi khi tạo cấu hình", e);
-            return ResponseEntity.badRequest()
-                .body(ApiResponse.error(e.getMessage()));
-        } catch (Exception e) {
-            log.error("Lỗi hệ thống khi tạo cấu hình", e);
-            return ResponseEntity.internalServerError()
-                .body(ApiResponse.error("Lỗi hệ thống khi tạo cấu hình"));
-        }
-    }
+    // REMOVED: createConfig() method - configs must be defined in code first (code-first pattern)
+    // Admins can only update values of existing configs, not create new ones
 
     @PutMapping("/{configKey}")
     public ResponseEntity<ApiResponse<SystemConfig>> updateConfig(
@@ -158,39 +122,8 @@ public class AdminConfigController {
         }
     }
 
-    @DeleteMapping("/{configKey}")
-    public ResponseEntity<ApiResponse<String>> deleteConfig(
-            @PathVariable String configKey,
-            Authentication authentication,
-            HttpServletRequest request) {
-
-        try {
-            String oldValue = systemConfigService.getConfigValueRequired(configKey);
-            systemConfigService.deleteConfigByKey(configKey);
-
-            auditService.logAdminAction(
-                authentication.getName(),
-                "CONFIG_DELETE",
-                "SystemConfig",
-                null,
-                "Xóa cấu hình: " + configKey,
-                oldValue,
-                null,
-                request.getRemoteAddr(),
-                request.getHeader("User-Agent")
-            );
-
-            return ResponseEntity.ok(ApiResponse.success("Xóa cấu hình thành công", null));
-        } catch (RuntimeException e) {
-            log.error("Lỗi khi xóa cấu hình với key: {}", configKey, e);
-            return ResponseEntity.badRequest()
-                .body(ApiResponse.error(e.getMessage()));
-        } catch (Exception e) {
-            log.error("Lỗi hệ thống khi xóa cấu hình", e);
-            return ResponseEntity.internalServerError()
-                .body(ApiResponse.error("Lỗi hệ thống khi xóa cấu hình"));
-        }
-    }
+    // REMOVED: deleteConfig() method - prevents accidental deletion of system-critical configs
+    // Configs are code-first and should not be deleted via admin UI
 
     @GetMapping("/maintenance-mode")
     public ResponseEntity<ApiResponse<Boolean>> getMaintenanceMode(

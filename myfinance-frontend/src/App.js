@@ -10,6 +10,7 @@ import PublicRoute from './components/common/PublicRoute';
 import AdminRoute from './components/common/AdminRoute';
 import Header from './components/common/Header';
 import Footer from './components/common/Footer';
+import MaintenanceModal from './components/common/MaintenanceModal';
 
 // Pages
 import LoginPage from './pages/auth/LoginPage';
@@ -238,6 +239,9 @@ function App() {
  </Routes>
  </main>
  <Footer />
+
+ {/* Maintenance Mode Modal - Shows when backend returns 503 */}
+ <MaintenanceModal />
  </div>
  </Router>
  </IntegratedProviders>
