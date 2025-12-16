@@ -140,7 +140,7 @@ const GettingStartedPage = () => {
  <Link to="/faq" className="btn-secondary bg-white text-indigo-600 hover:bg-indigo-100 hover:scale-105 border-0 transition-all">
  Câu hỏi thường gặp
  </Link>
- <Link to="/about" className="btn-secondary border-white text-white hover:bg-white/30 hover:scale-105 transition-all">
+ <Link to="/about" className="btn-secondary border-white text-indigo-600 hover:text-white hover:bg-white/30 hover:scale-105 transition-all">
  Về MyFinance
  </Link>
  </div>

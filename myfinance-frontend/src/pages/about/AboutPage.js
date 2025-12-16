@@ -132,7 +132,7 @@ const AboutPage = () => {
  Đăng ký miễn phí
  <ArrowRight className="w-5 h-5 ml-2" />
  </Link>
- <Link to="/getting-started" className="btn-secondary border-white text-white hover:bg-white/30 hover:scale-105 transition-all">
+ <Link to="/getting-started" className="btn-secondary border-white text-indigo-600 hover:text-white hover:bg-white/30 hover:scale-105 transition-all">
  Tìm hiểu thêm
  </Link>
  </div>

@@ -4,6 +4,7 @@ import { useCurrencyFormatter } from '../../utils/currencyFormatter';
 import { exportMonthlyReportToCSV } from '../../utils/exportUtils';
 import { exportMonthlyReportToPDF } from '../../utils/pdfExportUtils';
 import { exportMonthlyReportToExcel } from '../../utils/excelExportUtils';
+import { getIconComponent } from '../../utils/iconMapper';
 import CategoryPieChart from '../../components/charts/CategoryPieChart';
 import FinancialHealthScore from '../../components/reports/FinancialHealthScore';
 import BudgetVsActual from '../../components/reports/BudgetVsActual';
@@ -333,7 +334,7 @@ const MonthlyReport = () => {
  <div className="flex items-center gap-3">
  <span className="text-2xl font-bold text-gray-400">#{index + 1}</span>
  <div className="flex items-center gap-2">
- <span style={{ color: category.categoryColor || '#6B7280' }}>{category.categoryIcon || '📁'}</span>
+ {getIconComponent(category.categoryIcon, 'w-5 h-5', { style: { color: category.categoryColor || '#6B7280' } })}
  <span className="font-medium text-gray-900">{category.categoryName}</span>
  </div>
  </div>
@@ -357,7 +358,7 @@ const MonthlyReport = () => {
  <div className="flex items-center gap-3">
  <span className="text-2xl font-bold text-gray-400">#{index + 1}</span>
  <div className="flex items-center gap-2">
- <span style={{ color: category.categoryColor || '#6B7280' }}>{category.categoryIcon || '📁'}</span>
+ {getIconComponent(category.categoryIcon, 'w-5 h-5', { style: { color: category.categoryColor || '#6B7280' } })}
  <span className="font-medium text-gray-900">{category.categoryName}</span>
  </div>
  </div>
@@ -390,7 +391,7 @@ const MonthlyReport = () => {
  <tr key={category.categoryId} className="hover:bg-gray-50">
  <td className="px-4 py-3">
  <div className="flex items-center gap-2">
- <span style={{ color: category.categoryColor || '#6B7280' }}>{category.categoryIcon || '📁'}</span>
+ {getIconComponent(category.categoryIcon, 'w-5 h-5', { style: { color: category.categoryColor || '#6B7280' } })}
  <span className="font-medium text-gray-900">{category.categoryName}</span>
  </div>
  </td>
@@ -430,7 +431,7 @@ const MonthlyReport = () => {
  <tr key={category.categoryId} className="hover:bg-gray-50">
  <td className="px-4 py-3">
  <div className="flex items-center gap-2">
- <span style={{ color: category.categoryColor || '#6B7280' }}>{category.categoryIcon || '📁'}</span>
+ {getIconComponent(category.categoryIcon, 'w-5 h-5', { style: { color: category.categoryColor || '#6B7280' } })}
  <span className="font-medium text-gray-900">{category.categoryName}</span>
  </div>
  </td>

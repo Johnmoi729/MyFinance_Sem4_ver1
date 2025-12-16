@@ -9,8 +9,6 @@ const SystemConfig = () => {
  const [error, setError] = useState(null);
  const [currentPage, setCurrentPage] = useState(0);
  const [totalPages, setTotalPages] = useState(0);
- const [editingConfig, setEditingConfig] = useState(null);
- // REMOVED: newConfig state - configs cannot be created via UI
  const [maintenanceMode, setMaintenanceMode] = useState(false);
  const [migrationNeeded, setMigrationNeeded] = useState(false);
  const [migrationLoading, setMigrationLoading] = useState(false);
@@ -21,14 +19,7 @@ const SystemConfig = () => {
  isPublic: ''
  });
 
- // Form state for create/edit
- const [formData, setFormData] = useState({
- configKey: '',
- configValue: '',
- description: '',
- configType: 'APPLICATION',
- isPublic: false
- });
+ // REMOVED: editingConfig, newConfig, formData states - edit functionality removed
 
  const configTypes = [
  'APPLICATION', 'SECURITY', 'FEATURE', 'UI', 'DATABASE',
@@ -94,57 +85,8 @@ const SystemConfig = () => {
  setCurrentPage(0);
  };
 
- const handleFormChange = (key, value) => {
- setFormData(prev => ({
- ...prev,
- [key]: value
- }));
- };
-
- // REMOVED: openCreateModal function - configs cannot be created via UI (code-first pattern)
-
- const openEditModal = (config) => {
- setFormData({
- configKey: config.configKey,
- configValue: config.configValue,
- description: config.description || '',
- configType: config.configType,
- isPublic: config.isPublic || false
- });
- setEditingConfig(config);
- setNewConfig(false);
- };
-
- const closeModal = () => {
- setEditingConfig(null);
- setNewConfig(false);
- setFormData({
- configKey: '',
- configValue: '',
- description: '',
- configType: 'SETTING',
- isPublic: false
- });
- };
-
- const handleSubmit = async (e) => {
- e.preventDefault();
-
- try {
- // Only update existing configs (create removed - code-first pattern)
- const response = await adminAPI.updateConfig(editingConfig.configKey, formData);
-
- if (response && response.success) {
- closeModal();
- fetchConfigs();
- } else {
- alert(response?.message || 'Cập nhật cấu hình thất bại');
- }
- } catch (err) {
- console.error('Config operation error:', err);
- alert('Lỗi khi cập nhật cấu hình');
- }
- };
+ // REMOVED: Edit functionality (openEditModal, closeModal, handleSubmit, handleFormChange)
+ // All config editing is now done in code to prevent production-breaking changes
 
  // REMOVED: handleDelete function - configs cannot be deleted (code-first pattern)
 
@@ -225,8 +167,8 @@ const SystemConfig = () => {
  {/* Header */}
  <div className="flex justify-between items-center">
  <div>
- <h1 className="text-2xl font-bold text-gray-900">System Configuration</h1>
- <p className="text-gray-600">Manage system settings, feature flags, and configuration</p>
+ <h1 className="text-2xl font-bold text-gray-900">Cấu hình hệ thống</h1>
+ <p className="text-gray-600">Quản lý cài đặt hệ thống, cờ tính năng và cấu hình</p>
  </div>
  <div className="flex space-x-4">
  {migrationNeeded && (
@@ -235,7 +177,7 @@ const SystemConfig = () => {
  disabled={migrationLoading}
  className="px-4 py-2 bg-orange-600 hover:bg-orange-700 text-white rounded-md transition-colors disabled:opacity-50"
  >
- {migrationLoading ? 'Running...' : 'Run Migration'}
+ {migrationLoading ? 'Đang chạy...' : 'Chạy di chuyển'}
  </button>
  )}
  <button
@@ -246,7 +188,7 @@ const SystemConfig = () => {
  : 'bg-gray-600 hover:bg-gray-700 text-white'
  }`}
  >
- {maintenanceMode ? 'Disable Maintenance' : 'Enable Maintenance'}
+ {maintenanceMode ? 'Tắt bảo trì' : 'Bật bảo trì'}
  </button>
  {/* REMOVED: Add Configuration button - configs are code-first only */}
  </div>
@@ -274,7 +216,7 @@ const SystemConfig = () => {
  <Settings className="w-6 h-6 text-indigo-600" />
  </div>
  <div className="ml-4">
- <p className="text-sm font-medium text-gray-600">Total Configs</p>
+ <p className="text-sm font-medium text-gray-600">Tổng cấu hình</p>
  <p className="text-2xl font-bold text-gray-900">{configs.length}</p>
  </div>
  </div>
@@ -286,7 +228,7 @@ const SystemConfig = () => {
  <Shield className="w-6 h-6 text-green-600" />
  </div>
  <div className="ml-4">
- <p className="text-sm font-medium text-gray-600">Active Features</p>
+ <p className="text-sm font-medium text-gray-600">Tính năng hoạt động</p>
  <p className="text-2xl font-bold text-gray-900">
  {configs.filter(c => c.configType === 'FEATURE' && c.configValue === 'true').length}
  </p>
@@ -320,15 +262,16 @@ const SystemConfig = () => {
  )}
 
  {/* Info Banner - Explains Config Management */}
- <div className="bg-blue-50 border-l-4 border-blue-400 p-4 mb-6">
+ <div className="bg-amber-50 border-l-4 border-amber-400 p-4 mb-6">
  <div className="flex">
  <div className="flex-shrink-0">
- <Info className="h-5 w-5 text-blue-400" />
+ <Info className="h-5 w-5 text-amber-400" />
  </div>
  <div className="ml-3">
- <p className="text-sm text-blue-700">
- <strong>Lưu ý:</strong> Cấu hình hệ thống được định nghĩa trong code.
- Bạn chỉ có thể <strong>chỉnh sửa giá trị</strong>, không thể tạo hoặc xóa cấu hình.
+ <p className="text-sm text-amber-700">
+ <strong>Lưu ý:</strong> Cấu hình hệ thống được quản lý trong code để đảm bảo ổn định.
+ Để thay đổi cấu hình, vui lòng cập nhật trong source code và triển khai lại hệ thống.
+ Chức năng chỉnh sửa qua UI đã bị vô hiệu hóa để tránh lỗi nghiêm trọng.
  </p>
  </div>
  </div>
@@ -340,22 +283,22 @@ const SystemConfig = () => {
  <thead className="bg-gray-50">
  <tr>
  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
- Key
+ Khoá
  </th>
  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
- Value
+ Giá trị
  </th>
  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
- Type
+ Loại
  </th>
  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
- Description
+ Mô tả
  </th>
  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
- Visibility
+ Hiển thị
  </th>
  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
- Actions
+ Hoạt động
  </th>
  </tr>
  </thead>
@@ -377,24 +320,19 @@ const SystemConfig = () => {
  </td>
  <td className="px-6 py-4 text-sm text-gray-900 max-w-xs">
  <div className="truncate" title={config.description}>
- {config.description || 'No description'}
+ {config.description || 'Không có mô tả'}
  </div>
  </td>
  <td className="px-6 py-4 whitespace-nowrap">
  <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
  config.isPublic ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
  }`}>
- {config.isPublic ? 'Public' : 'Private'}
+ {config.isPublic ? 'Công khai' : 'Riêng tư'}
  </span>
  </td>
  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
- <button
- onClick={() => openEditModal(config)}
- className="text-indigo-600 hover:text-indigo-900"
- >
- Edit
- </button>
- {/* REMOVED: Delete button - prevents accidental deletion of critical configs */}
+ <span className="text-gray-400 text-xs italic">Chỉ xem</span>
+ {/* Edit and delete functionality removed to prevent production-breaking changes */}
  </td>
  </tr>
  ))}
@@ -403,7 +341,7 @@ const SystemConfig = () => {
 
  {configs.length === 0 && !loading && (
  <div className="text-center py-8">
- <p className="text-gray-500">No configurations found</p>
+ <p className="text-gray-500">Không tìm thấy cấu hình</p>
  </div>
  )}
  </div>
@@ -433,98 +371,6 @@ const SystemConfig = () => {
  Showing page <span className="font-medium">{currentPage + 1}</span> of{' '}
  <span className="font-medium">{totalPages}</span>
  </p>
- </div>
- </div>
- </div>
- )}
-
- {/* Edit Modal (create removed - code-first pattern) */}
- {editingConfig && (
- <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
- <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
- <div className="mt-3">
- <h3 className="text-lg font-medium text-gray-900 mb-4">
- Edit Configuration
- </h3>
- <form onSubmit={handleSubmit} className="space-y-4">
- <div>
- <label className="block text-sm font-medium text-gray-700 mb-2">
- Config Key *
- </label>
- <input
- type="text"
- value={formData.configKey}
- onChange={(e) => handleFormChange('configKey', e.target.value)}
- disabled={true}
- className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:bg-gray-100"
- required
- />
- </div>
- <div>
- <label className="block text-sm font-medium text-gray-700 mb-2">
- Config Value *
- </label>
- <textarea
- value={formData.configValue}
- onChange={(e) => handleFormChange('configValue', e.target.value)}
- className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
- rows={3}
- required
- />
- </div>
- <div>
- <label className="block text-sm font-medium text-gray-700 mb-2">
- Type
- </label>
- <select
- value={formData.configType}
- onChange={(e) => handleFormChange('configType', e.target.value)}
- className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
- >
- {configTypes.map(type => (
- <option key={type} value={type}>{type}</option>
- ))}
- </select>
- </div>
- <div>
- <label className="block text-sm font-medium text-gray-700 mb-2">
- Description
- </label>
- <textarea
- value={formData.description}
- onChange={(e) => handleFormChange('description', e.target.value)}
- className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
- rows={2}
- />
- </div>
- <div className="flex items-center">
- <input
- type="checkbox"
- id="isPublic"
- checked={formData.isPublic}
- onChange={(e) => handleFormChange('isPublic', e.target.checked)}
- className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
- />
- <label htmlFor="isPublic" className="ml-2 block text-sm text-gray-900">
- Public configuration
- </label>
- </div>
- <div className="flex justify-end space-x-4 pt-4">
- <button
- type="button"
- onClick={closeModal}
- className="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400 transition-colors"
- >
- Cancel
- </button>
- <button
- type="submit"
- className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors"
- >
- Update
- </button>
- </div>
- </form>
  </div>
  </div>
  </div>

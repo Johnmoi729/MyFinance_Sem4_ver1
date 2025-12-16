@@ -4,6 +4,7 @@ import { useCurrencyFormatter } from '../../utils/currencyFormatter';
 import { exportYearlyReportToCSV } from '../../utils/exportUtils';
 import { exportYearlyReportToPDF } from '../../utils/pdfExportUtils';
 import { exportYearlyReportToExcel } from '../../utils/excelExportUtils';
+import { getIconComponent } from '../../utils/iconMapper';
 import CategoryPieChart from '../../components/charts/CategoryPieChart';
 import MonthlyTrendChart from '../../components/charts/MonthlyTrendChart';
 import FinancialHealthScore from '../../components/reports/FinancialHealthScore';
@@ -382,7 +383,7 @@ const YearlyReport = () => {
  <tr key={category.categoryId} className="hover:bg-gray-50">
  <td className="px-4 py-3">
  <div className="flex items-center gap-2">
- <span style={{ color: category.categoryColor || '#6B7280' }}>{category.categoryIcon || '📁'}</span>
+ {getIconComponent(category.categoryIcon, 'w-5 h-5', { style: { color: category.categoryColor || '#6B7280' } })}
  <span className="font-medium text-gray-900">{category.categoryName}</span>
  </div>
  </td>
@@ -422,7 +423,7 @@ const YearlyReport = () => {
  <tr key={category.categoryId} className="hover:bg-gray-50">
  <td className="px-4 py-3">
  <div className="flex items-center gap-2">
- <span style={{ color: category.categoryColor || '#6B7280' }}>{category.categoryIcon || '📁'}</span>
+ {getIconComponent(category.categoryIcon, 'w-5 h-5', { style: { color: category.categoryColor || '#6B7280' } })}
  <span className="font-medium text-gray-900">{category.categoryName}</span>
  </div>
  </td>

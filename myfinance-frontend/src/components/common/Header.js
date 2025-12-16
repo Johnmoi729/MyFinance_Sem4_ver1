@@ -293,7 +293,7 @@ const Header = () => {
  >
  <div className="flex items-center">
  <Shield className="w-4 h-4 mr-3" />
- Admin Panel
+ Bảng quản trị
  </div>
  </Link>
  </>

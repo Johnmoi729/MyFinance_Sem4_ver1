@@ -35,30 +35,26 @@ const DashboardPage = () => {
  try {
  setLoading(true);
 
- // Fetch recent transactions and budget warnings in parallel
- const [recentResponse, warningsResponse] = await Promise.all([
+ // Fetch stats, recent transactions, and budget warnings in parallel
+ const [statsResponse, recentResponse, warningsResponse] = await Promise.all([
+ transactionAPI.getTransactionStats(), // NEW: Get stats from ALL transactions
  transactionAPI.getRecentTransactions(),
  budgetAPI.getBudgetWarnings()
  ]);
 
+ // Set stats from dedicated stats endpoint (calculates from ALL transactions)
+ if (statsResponse.success && statsResponse.data) {
+ setStats({
+ totalIncome: statsResponse.data.totalIncome || 0,
+ totalExpense: statsResponse.data.totalExpense || 0,
+ balance: statsResponse.data.balance || 0,
+ transactionCount: statsResponse.data.transactionCount || 0
+ });
+ }
+
+ // Set recent transactions for display
  if (recentResponse.success) {
  setRecentTransactions(recentResponse.data);
-
- // Calculate stats from recent transactions
- const totalIncome = recentResponse.data
- .filter(t => t.type === 'INCOME')
- .reduce((sum, t) => sum + t.amount, 0);
-
- const totalExpense = recentResponse.data
- .filter(t => t.type === 'EXPENSE')
- .reduce((sum, t) => sum + t.amount, 0);
-
- setStats({
- totalIncome,
- totalExpense,
- balance: totalIncome - totalExpense,
- transactionCount: recentResponse.data.length
- });
  }
 
  // Check for budget alerts

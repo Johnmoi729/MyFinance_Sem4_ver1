@@ -5,6 +5,7 @@ import { useTransaction } from '../../context/TransactionContext';
 import { useBudget } from '../../context/BudgetContext';
 import { useCategory } from '../../context/CategoryContext';
 import { userAPI } from '../../services/api';
+import { getIconComponent } from '../../utils/iconMapper';
 import { Receipt, Wallet, Tag, TrendingUp, TrendingDown, ClipboardList, Lock, Eye, EyeOff, User, Calendar, MapPin, Upload, Camera } from 'lucide-react';
 
 const ProfilePage = () => {
@@ -765,7 +766,7 @@ const ProfilePage = () => {
  <div key={category.id}>
  <div className="flex items-center justify-between mb-2">
  <div className="flex items-center gap-2">
- <span className="text-2xl">{category.icon || '📁'}</span>
+ {getIconComponent(category.icon, 'w-6 h-6 text-gray-600')}
  <span className="font-medium text-gray-900">{category.name}</span>
  </div>
  <div className="text-right">

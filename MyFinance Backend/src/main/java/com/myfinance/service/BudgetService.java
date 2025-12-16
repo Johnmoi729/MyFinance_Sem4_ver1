@@ -128,6 +128,9 @@ public class BudgetService {
         Budget savedBudget = budgetRepository.save(budget);
         log.info("Budget created successfully with ID: {}", savedBudget.getId());
 
+        // NEW: Check if newly created budget is already exceeded by existing transactions
+        checkAndSendBudgetAlert(userId, savedBudget.getCategory().getId());
+
         return mapToBudgetResponse(savedBudget);
     }
 
@@ -164,6 +167,9 @@ public class BudgetService {
 
         Budget updatedBudget = budgetRepository.save(budget);
         log.info("Budget updated successfully with ID: {}", budgetId);
+
+        // NEW: Check if updated budget thresholds are now exceeded by existing transactions
+        checkAndSendBudgetAlert(userId, updatedBudget.getCategory().getId());
 
         return mapToBudgetResponse(updatedBudget);
     }

@@ -2,6 +2,7 @@ package com.myfinance.service;
 
 import com.myfinance.dto.request.TransactionRequest;
 import com.myfinance.dto.response.TransactionResponse;
+import com.myfinance.dto.response.TransactionStatsResponse;
 import com.myfinance.dto.response.CategoryResponse;
 import com.myfinance.entity.Transaction;
 import com.myfinance.entity.Category;
@@ -15,6 +16,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -187,6 +189,38 @@ public class TransactionService {
                 .color(category.getColor())
                 .icon(category.getIcon())
                 .isDefault(category.getIsDefault())
+                .build();
+    }
+
+    // Dashboard stats - calculates from ALL transactions (not just recent 10)
+    @Transactional(readOnly = true)
+    public TransactionStatsResponse getUserTransactionStats(Long userId) {
+        log.debug("Calculating transaction stats for user: {}", userId);
+
+        // Use existing repository method that gets all user transactions
+        List<Transaction> allTransactions = transactionRepository.findByUserIdOrderByTransactionDateDesc(userId);
+
+        BigDecimal totalIncome = allTransactions.stream()
+                .filter(t -> t.getType() == TransactionType.INCOME)
+                .map(Transaction::getAmount)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        BigDecimal totalExpense = allTransactions.stream()
+                .filter(t -> t.getType() == TransactionType.EXPENSE)
+                .map(Transaction::getAmount)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        BigDecimal balance = totalIncome.subtract(totalExpense);
+        Long transactionCount = (long) allTransactions.size();
+
+        log.debug("Stats for user {}: Income={}, Expense={}, Balance={}, Count={}",
+                  userId, totalIncome, totalExpense, balance, transactionCount);
+
+        return TransactionStatsResponse.builder()
+                .totalIncome(totalIncome)
+                .totalExpense(totalExpense)
+                .balance(balance)
+                .transactionCount(transactionCount)
                 .build();
     }
 

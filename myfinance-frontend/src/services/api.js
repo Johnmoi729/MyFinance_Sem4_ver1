@@ -347,6 +347,20 @@ class TransactionAPI extends ApiService {
  }
  }
 
+ // Get transaction statistics (for dashboard - calculates from ALL transactions)
+ async getTransactionStats() {
+ try {
+ const response = await this.get('/api/transactions/stats');
+ return response;
+ } catch (error) {
+ return {
+ success: false,
+ message: 'Không thể tải thống kê giao dịch',
+ data: null
+ };
+ }
+ }
+
  // Update transaction
  async updateTransaction(id, transactionData) {
  try {

@@ -5,6 +5,7 @@ import { useCategory } from '../../context/CategoryContext';
 import { exportCategoryReportToCSV } from '../../utils/exportUtils';
 import { exportCategoryReportToPDF } from '../../utils/pdfExportUtils';
 import { exportCategoryReportToExcel } from '../../utils/excelExportUtils';
+import { getIconComponent } from '../../utils/iconMapper';
 import SpendingLineChart from '../../components/charts/SpendingLineChart';
 
 const CategoryReport = () => {
@@ -263,8 +264,8 @@ const CategoryReport = () => {
  {/* Category Info Header */}
  <div className="bg-white rounded-lg shadow-md p-6">
  <div className="flex items-center gap-4">
- <div className="text-6xl" style={{ color: report.categoryColor || '#6B7280' }}>
- {report.categoryIcon || '📁'}
+ <div>
+ {getIconComponent(report.categoryIcon, 'w-16 h-16', { style: { color: report.categoryColor || '#6B7280' } })}
  </div>
  <div>
  <h2 className="text-2xl font-bold text-gray-900">{report.categoryName}</h2>

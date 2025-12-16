@@ -1,10 +1,12 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import AdminLayout from '../../components/admin/AdminLayout';
 import { adminAPI } from '../../services/api';
+import { useAuth } from '../../context/AuthContext';
 import SearchFilter from '../../components/common/SearchFilter';
 import { Users, UserCheck, UserX } from '../../components/icons';
 
 const UserManagement = () => {
+ const { user: currentUser } = useAuth();
  const [users, setUsers] = useState([]);
  const [loading, setLoading] = useState(true);
  const [error, setError] = useState(null);
@@ -49,6 +51,12 @@ const UserManagement = () => {
  }, [fetchUsers]);
 
  const handleUserStatusChange = async (userId, isActive) => {
+ // SECURITY: Prevent admin from deactivating their own account
+ if (currentUser && userId === currentUser.id && isActive) {
+ alert('Bạn không thể tự vô hiệu hóa tài khoản của mình! Vui lòng liên hệ quản trị viên khác.');
+ return;
+ }
+
  try {
  const statusData = {
  isActive: !isActive,
@@ -108,7 +116,7 @@ const UserManagement = () => {
 
  {error && (
  <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
- <strong className="font-bold">Error: </strong>
+ <strong className="font-bold">Lỗi: </strong>
  <span>{error}</span>
  </div>
  )}
@@ -119,19 +127,19 @@ const UserManagement = () => {
  <thead className="bg-gray-50">
  <tr>
  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
- User
+ Người Dùng
  </th>
  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
  Email
  </th>
  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
- Status
+ Trạng Thái
  </th>
  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
- Created Date
+ Ngày Tạo
  </th>
  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
- Actions
+ Hành Động
  </th>
  </tr>
  </thead>
@@ -145,7 +153,7 @@ const UserManagement = () => {
  </div>
  <div className="ml-4">
  <div className="text-sm font-medium text-gray-900">
- {user.fullName || 'No Name'}
+ {user.fullName || 'Không có tên'}
  </div>
  <div className="text-sm text-gray-500">
  ID: {user.id}
@@ -157,7 +165,7 @@ const UserManagement = () => {
  <div className="text-sm text-gray-900">{user.email}</div>
  {user.isEmailVerified && (
  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
- Verified
+ Đã xác minh
  </span>
  )}
  </td>
@@ -167,7 +175,7 @@ const UserManagement = () => {
  ? 'bg-green-100 text-green-800'
  : 'bg-red-100 text-red-800'
  }`}>
- {user.isActive ? 'Active' : 'Inactive'}
+ {user.isActive ? 'Hoạt Động' : 'Không Hoạt Động'}
  </span>
  </td>
  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
@@ -182,7 +190,7 @@ const UserManagement = () => {
  : 'bg-green-100 text-green-700 hover:bg-green-200'
  } transition-colors`}
  >
- {user.isActive ? 'Deactivate' : 'Activate'}
+ {user.isActive ? 'Vô Hiệu Hoá' : 'Kích Hoạt'}
  </button>
  </td>
  </tr>
@@ -192,7 +200,7 @@ const UserManagement = () => {
 
  {users.length === 0 && !loading && (
  <div className="text-center py-8">
- <p className="text-gray-500">No users found</p>
+ <p className="text-gray-500">Không tìm thấy người</p>
  </div>
  )}
  </div>
@@ -206,20 +214,20 @@ const UserManagement = () => {
  disabled={currentPage === 0}
  className="relative inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50"
  >
- Previous
+ Trước
  </button>
  <button
  onClick={() => setCurrentPage(Math.min(totalPages - 1, currentPage + 1))}
  disabled={currentPage >= totalPages - 1}
  className="relative ml-3 inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50"
  >
- Next
+ Tiếp
  </button>
  </div>
  <div className="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
  <div>
  <p className="text-sm text-gray-700">
- Showing page <span className="font-medium">{currentPage + 1}</span> of{' '}
+ Hiển thị trang <span className="font-medium">{currentPage + 1}</span> trên{' '}
  <span className="font-medium">{totalPages}</span>
  </p>
  </div>
@@ -230,14 +238,14 @@ const UserManagement = () => {
  disabled={currentPage === 0}
  className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50"
  >
- Previous
+Trước
  </button>
  <button
  onClick={() => setCurrentPage(Math.min(totalPages - 1, currentPage + 1))}
  disabled={currentPage >= totalPages - 1}
  className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50"
  >
- Next
+Tiếp
  </button>
  </nav>
  </div>

@@ -3,6 +3,7 @@ package com.myfinance.controller;
 import com.myfinance.dto.request.TransactionRequest;
 import com.myfinance.dto.response.ApiResponse;
 import com.myfinance.dto.response.TransactionResponse;
+import com.myfinance.dto.response.TransactionStatsResponse;
 import com.myfinance.dto.response.CategoryResponse;
 import com.myfinance.entity.TransactionType;
 import com.myfinance.service.TransactionService;
@@ -118,6 +119,16 @@ public class TransactionController {
         List<TransactionResponse> transactions = transactionService.getRecentTransactions(userId);
 
         return ResponseEntity.ok(ApiResponse.success(transactions));
+    }
+
+    @GetMapping("/stats")
+    public ResponseEntity<ApiResponse<TransactionStatsResponse>> getTransactionStats(
+            @RequestHeader("Authorization") String authHeader) {
+
+        Long userId = extractUserIdFromToken(authHeader);
+        TransactionStatsResponse stats = transactionService.getUserTransactionStats(userId);
+
+        return ResponseEntity.ok(ApiResponse.success("Thống kê giao dịch", stats));
     }
 
     @PutMapping("/{id}")

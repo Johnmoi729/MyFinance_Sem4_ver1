@@ -58,16 +58,24 @@ public class UserService {
     }
 
     @Transactional
-    public void updateUserStatus(Long userId, Boolean isActive, String reason) {
-        User user = userRepository.findById(userId)
+    public void updateUserStatus(Long userId, Boolean isActive, String reason, String currentUserEmail) {
+        User targetUser = userRepository.findById(userId)
             .orElseThrow(() -> new RuntimeException("Không tìm thấy người dùng với ID: " + userId));
 
-        user.setIsActive(isActive);
-        user.setUpdatedAt(LocalDateTime.now());
-        userRepository.save(user);
+        // SECURITY: Prevent admin from deactivating their own account
+        if (currentUserEmail != null) {
+            User currentUser = userRepository.findByEmail(currentUserEmail).orElse(null);
+            if (currentUser != null && currentUser.getId().equals(userId) && !isActive) {
+                throw new RuntimeException("Bạn không thể tự vô hiệu hóa tài khoản của mình. Vui lòng liên hệ quản trị viên khác.");
+            }
+        }
+
+        targetUser.setIsActive(isActive);
+        targetUser.setUpdatedAt(LocalDateTime.now());
+        userRepository.save(targetUser);
 
         log.info("Cập nhật trạng thái người dùng {} thành {}: {}",
-                 user.getEmail(), isActive ? "ACTIVE" : "INACTIVE", reason);
+                 targetUser.getEmail(), isActive ? "ACTIVE" : "INACTIVE", reason);
     }
 
     @Transactional(readOnly = true)

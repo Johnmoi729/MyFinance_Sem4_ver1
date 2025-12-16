@@ -85,7 +85,8 @@ public class AdminUserController {
 
         try {
             String oldStatus = userService.getUserStatus(userId);
-            userService.updateUserStatus(userId, request.getIsActive(), request.getReason());
+            // Pass current user's email for self-deactivation check
+            userService.updateUserStatus(userId, request.getIsActive(), request.getReason(), authentication.getName());
 
             String action = request.getIsActive() ? "USER_ACTIVATE" : "USER_DEACTIVATE";
             String description = request.getIsActive()

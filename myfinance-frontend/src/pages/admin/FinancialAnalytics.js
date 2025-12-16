@@ -85,34 +85,34 @@ const FinancialAnalytics = () => {
  <div className="space-y-6">
  {/* Header */}
  <div>
- <h1 className="text-2xl font-bold text-gray-900">Financial Analytics</h1>
+ <h1 className="text-2xl font-bold text-gray-900">Phân tích tài chính</h1>
  <p className="text-gray-600">
- Comprehensive financial insights and trends analysis
+ Phân tích chi tiết về thông tin tài chính và xu hướng
  </p>
  </div>
 
  {/* Time Frame Controls */}
  <div className="bg-white p-6 rounded-lg shadow">
- <h3 className="text-lg font-medium text-gray-900 mb-4">Time Period Selection</h3>
+ <h3 className="text-lg font-medium text-gray-900 mb-4">Chọn khoảng thời gian</h3>
 
  <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
  {/* Time Frame Toggle */}
  <div>
- <label className="block text-sm font-medium text-gray-700 mb-2">Time Frame</label>
+ <label className="block text-sm font-medium text-gray-700 mb-2">Khung thời gian</label>
  <select
  value={timeFrame}
  onChange={(e) => handleTimeFrameChange(e.target.value)}
  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
  >
- <option value="month">Monthly</option>
- <option value="quarter">Quarterly</option>
- <option value="year">Yearly</option>
+ <option value="month">Theo tháng</option>
+ <option value="quarter">Theo quý</option>
+ <option value="year">Theo năm</option>
  </select>
  </div>
 
  {/* Year Selection */}
  <div>
- <label className="block text-sm font-medium text-gray-700 mb-2">Year</label>
+ <label className="block text-sm font-medium text-gray-700 mb-2">Năm</label>
  <select
  value={selectedPeriod.year}
  onChange={(e) => handlePeriodChange('year', e.target.value)}
@@ -127,7 +127,7 @@ const FinancialAnalytics = () => {
  {/* Month/Quarter Selection */}
  {timeFrame === 'month' && (
  <div>
- <label className="block text-sm font-medium text-gray-700 mb-2">Month</label>
+ <label className="block text-sm font-medium text-gray-700 mb-2">tháng</label>
  <select
  value={selectedPeriod.month}
  onChange={(e) => handlePeriodChange('month', e.target.value)}
@@ -144,16 +144,16 @@ const FinancialAnalytics = () => {
 
  {timeFrame === 'quarter' && (
  <div>
- <label className="block text-sm font-medium text-gray-700 mb-2">Quarter</label>
+ <label className="block text-sm font-medium text-gray-700 mb-2">Quý</label>
  <select
  value={selectedPeriod.quarter}
  onChange={(e) => handlePeriodChange('quarter', e.target.value)}
  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
  >
- <option value={1}>Q1 (Jan-Mar)</option>
- <option value={2}>Q2 (Apr-Jun)</option>
- <option value={3}>Q3 (Jul-Sep)</option>
- <option value={4}>Q4 (Oct-Dec)</option>
+ <option value={1}>Q1 (Thg 1-3)</option>
+ <option value={2}>Q2 (Thg 4-6)</option>
+ <option value={3}>Q3 (Thg 7-9)</option>
+ <option value={4}>Q4 (Thg 10-12)</option>
  </select>
  </div>
  )}
@@ -162,7 +162,7 @@ const FinancialAnalytics = () => {
 
  {error && (
  <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
- <strong className="font-bold">Error: </strong>
+ <strong className="font-bold">Lỗi: </strong>
  <span>{error}</span>
  </div>
  )}
@@ -172,12 +172,12 @@ const FinancialAnalytics = () => {
  <div className="bg-white p-6 rounded-lg shadow">
  <div className="flex items-center justify-between">
  <div>
- <p className="text-sm font-medium text-gray-600">Total Revenue</p>
+ <p className="text-sm font-medium text-gray-600">Tổng doanh thu</p>
  <p className="text-2xl font-bold text-gray-900">
  {analyticsData?.totalRevenue ? formatCurrency(analyticsData.totalRevenue) : '₫0'}
  </p>
  <p className={`text-sm ${getGrowthColor(analyticsData?.revenueGrowth || 0)}`}>
- {formatGrowthRate(analyticsData?.revenueGrowth || 0)} vs previous period
+ {formatGrowthRate(analyticsData?.revenueGrowth || 0)} So với kỳ trước
  </p>
  </div>
  <div className="p-2 bg-green-100 rounded-lg">
@@ -189,12 +189,12 @@ const FinancialAnalytics = () => {
  <div className="bg-white p-6 rounded-lg shadow">
  <div className="flex items-center justify-between">
  <div>
- <p className="text-sm font-medium text-gray-600">Total Expenses</p>
+ <p className="text-sm font-medium text-gray-600">Tổng chi phí</p>
  <p className="text-2xl font-bold text-gray-900">
  {analyticsData?.totalExpenses ? formatCurrency(analyticsData.totalExpenses) : '₫0'}
  </p>
  <p className={`text-sm ${getGrowthColor(-(analyticsData?.expenseGrowth || 0))}`}>
- {formatGrowthRate(analyticsData?.expenseGrowth || 0)} vs previous period
+ {formatGrowthRate(analyticsData?.expenseGrowth || 0)} so với kỳ trước
  </p>
  </div>
  <div className="p-2 bg-red-100 rounded-lg">
@@ -206,12 +206,12 @@ const FinancialAnalytics = () => {
  <div className="bg-white p-6 rounded-lg shadow">
  <div className="flex items-center justify-between">
  <div>
- <p className="text-sm font-medium text-gray-600">Net Profit</p>
+ <p className="text-sm font-medium text-gray-600">Lợi nhuận ròng</p>
  <p className="text-2xl font-bold text-gray-900">
  {analyticsData?.netProfit ? formatCurrency(analyticsData.netProfit) : '₫0'}
  </p>
  <p className={`text-sm ${getGrowthColor(analyticsData?.profitGrowth || 0)}`}>
- {formatGrowthRate(analyticsData?.profitGrowth || 0)} vs previous period
+ {formatGrowthRate(analyticsData?.profitGrowth || 0)} so với kỳ trước
  </p>
  </div>
  <div className="p-2 bg-indigo-100 rounded-lg">
@@ -223,12 +223,12 @@ const FinancialAnalytics = () => {
  <div className="bg-white p-6 rounded-lg shadow">
  <div className="flex items-center justify-between">
  <div>
- <p className="text-sm font-medium text-gray-600">Active Users</p>
+ <p className="text-sm font-medium text-gray-600">Người dùng hoạt động</p>
  <p className="text-2xl font-bold text-gray-900">
  {analyticsData?.activeUsers || 0}
  </p>
  <p className={`text-sm ${getGrowthColor(analyticsData?.userGrowth || 0)}`}>
- {formatGrowthRate(analyticsData?.userGrowth || 0)} vs previous period
+ {formatGrowthRate(analyticsData?.userGrowth || 0)} so với kỳ trước
  </p>
  </div>
  <div className="p-2 bg-purple-100 rounded-lg">
@@ -241,7 +241,7 @@ const FinancialAnalytics = () => {
  {/* Category Breakdown */}
  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
  <div className="bg-white p-6 rounded-lg shadow">
- <h3 className="text-lg font-medium text-gray-900 mb-4">Top Expense Categories</h3>
+ <h3 className="text-lg font-medium text-gray-900 mb-4">Danh mục chi phí hàng đầu</h3>
  <div className="space-y-4">
  {analyticsData?.topExpenseCategories?.slice(0, 5).map((category, index) => (
  <div key={index} className="flex items-center justify-between">
@@ -259,13 +259,13 @@ const FinancialAnalytics = () => {
  </div>
  </div>
  )) || (
- <p className="text-gray-500 text-sm">No expense data available</p>
+ <p className="text-gray-500 text-sm">Không có dữ liệu chi phí</p>
  )}
  </div>
  </div>
 
  <div className="bg-white p-6 rounded-lg shadow">
- <h3 className="text-lg font-medium text-gray-900 mb-4">Top Income Categories</h3>
+ <h3 className="text-lg font-medium text-gray-900 mb-4">Danh mục thu nhập hàng đầu</h3>
  <div className="space-y-4">
  {analyticsData?.topIncomeCategories?.slice(0, 5).map((category, index) => (
  <div key={index} className="flex items-center justify-between">
@@ -283,7 +283,7 @@ const FinancialAnalytics = () => {
  </div>
  </div>
  )) || (
- <p className="text-gray-500 text-sm">No income data available</p>
+ <p className="text-gray-500 text-sm">Không có dữ liệu</p>
  )}
  </div>
  </div>
@@ -291,13 +291,13 @@ const FinancialAnalytics = () => {
 
  {/* User Activity Analysis */}
  <div className="bg-white p-6 rounded-lg shadow">
- <h3 className="text-lg font-medium text-gray-900 mb-4">User Engagement Metrics</h3>
+ <h3 className="text-lg font-medium text-gray-900 mb-4">Chỉ số tương tác người dùng</h3>
  <div className="grid grid-cols-1 gap-6">
  <div className="text-center">
  <p className="text-3xl font-bold text-indigo-600">
  {analyticsData?.avgTransactionsPerUser?.toFixed(1) || '0.0'}
  </p>
- <p className="text-sm text-gray-600">Avg Transactions per User</p>
+ <p className="text-sm text-gray-600">Trung bình giao dịch/người dùng</p>
  </div>
  </div>
  </div>
