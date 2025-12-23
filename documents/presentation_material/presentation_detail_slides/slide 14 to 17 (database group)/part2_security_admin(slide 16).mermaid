@@ -1,0 +1,52 @@
+%%{init: {'theme':'base', 'themeVariables': {'primaryColor':'#FEF3C7','primaryTextColor':'#D97706','primaryBorderColor':'#D97706','lineColor':'#F59E0B','secondaryColor':'#FEF3C7','tertiaryColor':'#FEF3C7','fontSize':'16px'}}}%%
+
+erDiagram
+    users ||--o{ user_roles : "has"
+    roles ||--o{ user_roles : "assigned_to"
+    users ||--o{ audit_logs : "tracked_by"
+
+    users {
+        bigint id PK
+        varchar email UK
+        varchar password
+        varchar full_name
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    roles {
+        bigint id PK
+        varchar name UK "USER/ADMIN/SUPER_ADMIN"
+        text description
+        timestamp created_at
+    }
+
+    user_roles {
+        bigint id PK
+        bigint user_id FK
+        bigint role_id FK
+        timestamp created_at
+    }
+
+    audit_logs {
+        bigint id PK
+        bigint admin_user_id FK
+        varchar action
+        varchar entity_type
+        bigint entity_id
+        text old_value
+        text new_value
+        varchar ip_address
+        timestamp timestamp
+    }
+
+    system_config {
+        bigint id PK
+        varchar config_key UK
+        text config_value
+        enum config_type "FEATURE_FLAG/SYSTEM_SETTING/INTEGRATION/MAINTENANCE"
+        text description
+        boolean is_active
+        timestamp created_at
+        timestamp updated_at
+    }

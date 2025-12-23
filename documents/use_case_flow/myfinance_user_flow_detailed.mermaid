@@ -1,0 +1,57 @@
+%%{init: {'theme':'base', 'themeVariables': { 'primaryColor':'#4F46E5','primaryTextColor':'#fff','primaryBorderColor':'#4338CA','lineColor':'#6366F1','secondaryColor':'#22C55E','tertiaryColor':'#FB923C','noteBkgColor':'#FEE2E2'}}}%%
+
+flowchart TD
+    Start([START]) --> Register["1. ĐĂNG KÝ TÀI KHOẢN<br/>• Điền email, password<br/>• Xác thực thông tin"]
+    
+    Register --> Welcome["📧 Nhận Email Chào Mừng<br/>(Tự động gửi ngay)"]
+    
+    Welcome --> Onboarding["2. ONBOARDING WIZARD<br/>4 bước hướng dẫn:<br/>① Hoàn thiện profile<br/>② Thêm giao dịch đầu tiên<br/>③ Tạo ngân sách đầu tiên<br/>④ Xem báo cáo đầu tiên"]
+    
+    Onboarding --> Transaction["3. GHI NHẬN GIAO DỊCH<br/>• Thêm thu/chi hàng ngày<br/>• Chọn danh mục<br/>• Nhập số tiền, ghi chú"]
+    
+    Transaction --> Dashboard["📊 Xem Dashboard Realtime<br/>• Số dư hiện tại<br/>• Giao dịch gần đây<br/>• Thống kê nhanh"]
+    
+    Dashboard --> Budget["4. LẬP NGÂN SÁCH<br/>• Chọn danh mục chi<br/>• Đặt giới hạn tiền<br/>• Chọn tháng/năm"]
+    
+    Budget --> Monitor["⚡ Hệ thống Theo dõi<br/>• Tính % chi tiêu realtime<br/>• Hiển thị progress bar<br/>• Đổi màu: xanh/vàng/đỏ"]
+    
+    Monitor --> Check{Chi tiêu<br/>vượt 75%?}
+    
+    Check -->|YES| Alert["📧 EMAIL CẢNH BÁO<br/>'Bạn đã chi 75% ngân sách'"]
+    Check -->|NO| Report
+    Alert --> Report
+    
+    Report["5. XEM BÁO CÁO & PHÂN TÍCH<br/>• Báo cáo tháng/năm<br/>• Biểu đồ trực quan<br/>• Điểm sức khỏe tài chính"]
+    
+    Report --> Export{Cần xuất<br/>file?}
+    
+    Export -->|YES| ExportFile["Xuất PDF/Excel/CSV"]
+    Export -->|NO| Schedule
+    ExportFile --> Schedule
+    
+    Schedule["6. LẬP LỊCH BÁO CÁO<br/>• Chọn loại báo cáo<br/>• Tần suất: daily/weekly/monthly<br/>• Format: PDF/CSV/Both"]
+    
+    Schedule --> Periodic["📧 NHẬN EMAIL ĐỊNH KỲ<br/>• Báo cáo theo lịch<br/>• Tóm tắt tháng<br/>• Cảnh báo vượt ngân sách"]
+    
+    Periodic --> Continue{Tiếp tục<br/>sử dụng?}
+    
+    Continue -->|YES| Transaction
+    Continue -->|NO| End([END/LOGOUT])
+    
+    style Start fill:#4F46E5,stroke:#4338CA,stroke-width:3px,color:#fff
+    style Register fill:#4F46E5,stroke:#4338CA,stroke-width:2px,color:#fff
+    style Welcome fill:#22C55E,stroke:#16A34A,stroke-width:2px,color:#fff
+    style Onboarding fill:#4F46E5,stroke:#4338CA,stroke-width:2px,color:#fff
+    style Transaction fill:#4F46E5,stroke:#4338CA,stroke-width:2px,color:#fff
+    style Dashboard fill:#F3F4F6,stroke:#9CA3AF,stroke-width:2px,color:#1F2937
+    style Budget fill:#4F46E5,stroke:#4338CA,stroke-width:2px,color:#fff
+    style Monitor fill:#F3F4F6,stroke:#9CA3AF,stroke-width:2px,color:#1F2937
+    style Check fill:#FB923C,stroke:#EA580C,stroke-width:2px,color:#fff
+    style Alert fill:#FEE2E2,stroke:#EF4444,stroke-width:2px,color:#991B1B
+    style Report fill:#4F46E5,stroke:#4338CA,stroke-width:2px,color:#fff
+    style Export fill:#FB923C,stroke:#EA580C,stroke-width:2px,color:#fff
+    style ExportFile fill:#F3F4F6,stroke:#9CA3AF,stroke-width:2px,color:#1F2937
+    style Schedule fill:#4F46E5,stroke:#4338CA,stroke-width:2px,color:#fff
+    style Periodic fill:#22C55E,stroke:#16A34A,stroke-width:2px,color:#fff
+    style Continue fill:#FB923C,stroke:#EA580C,stroke-width:2px,color:#fff
+    style End fill:#6B7280,stroke:#4B5563,stroke-width:3px,color:#fff

@@ -1,0 +1,48 @@
+%%{init: {'theme':'base', 'themeVariables': {'primaryColor':'#F3F4F6','primaryTextColor':'#1F2937','primaryBorderColor':'#6B7280','lineColor':'#9CA3AF','fontSize':'16px'}}}%%
+
+flowchart TB
+    TITLE["<b>MYFINANCE DATABASE SCHEMA</b><br/>12 Tables - 3 Functional Groups"]
+    
+    TITLE --> GROUP1
+    TITLE --> GROUP2
+    TITLE --> GROUP3
+    
+    GROUP1["<b>🎯 NHÓM 1: CORE DATA</b><br/>Dữ liệu nghiệp vụ chính"]
+    GROUP2["<b>🔒 NHÓM 2: SECURITY & ADMIN</b><br/>Bảo mật & Quản trị"]
+    GROUP3["<b>⚡ NHÓM 3: FEATURES</b><br/>Tính năng nâng cao"]
+    
+    GROUP1 --> T1["📋 users<br/><i>Thông tin người dùng</i>"]
+    GROUP1 --> T2["📁 categories<br/><i>14 danh mục mặc định</i>"]
+    GROUP1 --> T3["💰 transactions<br/><i>Giao dịch VND realtime</i>"]
+    GROUP1 --> T4["💵 budgets<br/><i>Ngân sách theo tháng</i>"]
+    
+    GROUP2 --> T5["🔐 roles<br/><i>USER / ADMIN roles</i>"]
+    GROUP2 --> T6["🔗 user_roles<br/><i>Gán vai trò cho users</i>"]
+    GROUP2 --> T7["📝 audit_logs<br/><i>Nhật ký admin 90%↓</i>"]
+    GROUP2 --> T8["⚙️ system_config<br/><i>Cấu hình hệ thống</i>"]
+    
+    GROUP3 --> T9["⚡ user_budget_settings<br/><i>Cảnh báo 75% / 90%</i>"]
+    GROUP3 --> T10["📅 scheduled_reports<br/><i>Báo cáo tự động</i>"]
+    GROUP3 --> T11["🎯 user_preferences<br/><i>3 tùy chọn active</i>"]
+    GROUP3 --> T12["📚 onboarding_progress<br/><i>Wizard 4 bước</i>"]
+    
+    style TITLE fill:#1F2937,stroke:#374151,stroke-width:3px,color:#fff,font-size:20px
+    
+    style GROUP1 fill:#4F46E5,stroke:#4338CA,stroke-width:3px,color:#fff,font-size:18px
+    style GROUP2 fill:#D97706,stroke:#B45309,stroke-width:3px,color:#fff,font-size:18px
+    style GROUP3 fill:#059669,stroke:#047857,stroke-width:3px,color:#fff,font-size:18px
+    
+    style T1 fill:#818CF8,stroke:#6366F1,stroke-width:2px,color:#fff
+    style T2 fill:#A5B4FC,stroke:#818CF8,stroke-width:2px,color:#1E293B
+    style T3 fill:#A5B4FC,stroke:#818CF8,stroke-width:2px,color:#1E293B
+    style T4 fill:#A5B4FC,stroke:#818CF8,stroke-width:2px,color:#1E293B
+    
+    style T5 fill:#FCD34D,stroke:#FBBF24,stroke-width:2px,color:#1E293B
+    style T6 fill:#FDE68A,stroke:#FCD34D,stroke-width:2px,color:#1E293B
+    style T7 fill:#FDE68A,stroke:#FCD34D,stroke-width:2px,color:#1E293B
+    style T8 fill:#FDE68A,stroke:#FCD34D,stroke-width:2px,color:#1E293B
+    
+    style T9 fill:#34D399,stroke:#10B981,stroke-width:2px,color:#fff
+    style T10 fill:#6EE7B7,stroke:#34D399,stroke-width:2px,color:#1E293B
+    style T11 fill:#6EE7B7,stroke:#34D399,stroke-width:2px,color:#1E293B
+    style T12 fill:#6EE7B7,stroke:#34D399,stroke-width:2px,color:#1E293B

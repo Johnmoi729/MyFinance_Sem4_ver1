@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Slide 16: Quyết Định Thiết Kế</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 40px;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        .title {
+            text-align: center;
+            color: white;
+            font-size: 48px;
+            font-weight: bold;
+            margin-bottom: 50px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .decisions-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 30px;
+        }
+        
+        .decision-card {
+            background: white;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            transition: transform 0.3s ease;
+        }
+        
+        .decision-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .decision-header {
+            padding: 30px;
+            color: white;
+            text-align: center;
+        }
+        
+        .decision-card:nth-child(1) .decision-header {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+        
+        .decision-card:nth-child(2) .decision-header {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+        
+        .decision-card:nth-child(3) .decision-header {
+            background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+        }
+        
+        .decision-icon {
+            font-size: 56px;
+            margin-bottom: 15px;
+        }
+        
+        .decision-title {
+            font-size: 28px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        
+        .decision-subtitle {
+            font-size: 18px;
+            opacity: 0.9;
+        }
+        
+        .decision-body {
+            padding: 30px;
+        }
+        
+        .decision-section {
+            margin-bottom: 25px;
+        }
+        
+        .section-label {
+            font-size: 16px;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .section-content {
+            font-size: 16px;
+            color: #333;
+            line-height: 1.6;
+            padding-left: 10px;
+        }
+        
+        .benefits-list {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .benefits-list li {
+            padding: 10px 0;
+            padding-left: 30px;
+            position: relative;
+            font-size: 15px;
+            color: #333;
+            line-height: 1.5;
+        }
+        
+        .benefits-list li:before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: #43e97b;
+            font-weight: bold;
+            font-size: 18px;
+        }
+        
+        .comparison-tag {
+            display: inline-block;
+            background: #f0f0f0;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            color: #666;
+            margin-top: 5px;
+        }
+        
+        .vs-separator {
+            text-align: center;
+            color: #999;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="title">🎯 QUYẾT ĐỊNH THIẾT KẾ QUAN TRỌNG</h1>
+        
+        <div class="decisions-grid">
+            <!-- Decision 1: Multi-Currency -->
+            <div class="decision-card">
+                <div class="decision-header">
+                    <div class="decision-icon">✂️</div>
+                    <div class="decision-title">Loại Bỏ Multi-Currency</div>
+                    <div class="decision-subtitle">VND Only</div>
+                </div>
+                <div class="decision-body">
+                    <div class="decision-section">
+                        <div class="section-label">⚡ Lý Do</div>
+                        <div class="section-content">
+                            Tập trung thị trường Việt Nam
+                        </div>
+                    </div>
+                    
+                    <div class="decision-section">
+                        <div class="section-label">✨ Lợi Ích</div>
+                        <ul class="benefits-list">
+                            <li>Giảm complexity hệ thống</li>
+                            <li>Tiết kiệm 2-3 tuần testing</li>
+                            <li>UX đơn giản cho người Việt</li>
+                            <li>Tránh lỗi conversion rates</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="comparison-tag">❌ Multi-Currency</div>
+                    <div class="vs-separator">vs</div>
+                    <div class="comparison-tag" style="background: #43e97b; color: white;">✅ VND Only</div>
+                </div>
+            </div>
+            
+            <!-- Decision 2: Context API -->
+            <div class="decision-card">
+                <div class="decision-header">
+                    <div class="decision-icon">🎨</div>
+                    <div class="decision-title">Context API</div>
+                    <div class="decision-subtitle">Thay vì Redux</div>
+                </div>
+                <div class="decision-body">
+                    <div class="decision-section">
+                        <div class="section-label">⚡ Lý Do</div>
+                        <div class="section-content">
+                            Phù hợp với quy mô dự án
+                        </div>
+                    </div>
+                    
+                    <div class="decision-section">
+                        <div class="section-label">✨ Lợi Ích</div>
+                        <ul class="benefits-list">
+                            <li>Ít boilerplate code</li>
+                            <li>Dễ học, dễ maintain</li>
+                            <li>React 19 optimize performance</li>
+                            <li>Đủ mạnh cho mid-size app</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="comparison-tag">❌ Redux (Complex)</div>
+                    <div class="vs-separator">vs</div>
+                    <div class="comparison-tag" style="background: #4facfe; color: white;">✅ Context API</div>
+                </div>
+            </div>
+            
+            <!-- Decision 3: Flutter -->
+            <div class="decision-card">
+                <div class="decision-header">
+                    <div class="decision-icon">📱</div>
+                    <div class="decision-title">Flutter</div>
+                    <div class="decision-subtitle">Cross-Platform</div>
+                </div>
+                <div class="decision-body">
+                    <div class="decision-section">
+                        <div class="section-label">⚡ Lý Do</div>
+                        <div class="section-content">
+                            Cross-platform development
+                        </div>
+                    </div>
+                    
+                    <div class="decision-section">
+                        <div class="section-label">✨ Lợi Ích</div>
+                        <ul class="benefits-list">
+                            <li>Một codebase cho Android & iOS</li>
+                            <li>Performance gần native</li>
+                            <li>Rich UI components</li>
+                            <li>Tiết kiệm thời gian 50%</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="comparison-tag">❌ Native (2x effort)</div>
+                    <div class="vs-separator">vs</div>
+                    <div class="comparison-tag" style="background: #43e97b; color: white;">✅ Flutter</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,58 @@
+%%{init: {'theme':'base', 'themeVariables': {'primaryColor':'#EEF2FF','primaryTextColor':'#4F46E5','primaryBorderColor':'#4F46E5','lineColor':'#6366F1','secondaryColor':'#EEF2FF','tertiaryColor':'#EEF2FF','fontSize':'16px'}}}%%
+
+erDiagram
+    users ||--o{ categories : "owns"
+    users ||--o{ transactions : "records"
+    users ||--o{ budgets : "manages"
+    categories ||--o{ transactions : "categorizes"
+    categories ||--o{ budgets : "limits"
+
+    users {
+        bigint id PK
+        varchar email UK
+        varchar password
+        varchar full_name
+        varchar phone_number
+        text address
+        date date_of_birth
+        text avatar "Base64, 16MB max"
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    categories {
+        bigint id PK
+        bigint user_id FK
+        varchar name
+        enum type "INCOME/EXPENSE"
+        varchar color "HEX"
+        varchar icon
+        boolean is_default
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    transactions {
+        bigint id PK
+        bigint user_id FK
+        bigint category_id FK
+        decimal amount "VND only"
+        enum type "INCOME/EXPENSE"
+        text description
+        date transaction_date
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    budgets {
+        bigint id PK
+        bigint user_id FK
+        bigint category_id FK "EXPENSE only"
+        decimal budget_amount "VND"
+        int budget_year
+        int budget_month "1-12"
+        text description
+        boolean is_active
+        timestamp created_at
+        timestamp updated_at
+    }

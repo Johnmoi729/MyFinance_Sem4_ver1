@@ -150,12 +150,20 @@ class AuthService {
   }
 
   String _getErrorMessage(dynamic error) {
-    if (error.toString().contains('SocketException')) {
-      return 'Không thể kết nối đến máy chủ';
+    // This method is now a fallback - most errors should be handled by ApiService
+    final errorString = error.toString();
+
+    if (errorString.contains('SocketException') || errorString.contains('Network')) {
+      return 'Không thể kết nối đến máy chủ. Vui lòng kiểm tra kết nối mạng.';
     }
-    if (error.toString().contains('TimeoutException')) {
-      return 'Kết nối quá thời gian chờ';
+    if (errorString.contains('TimeoutException') || errorString.contains('timeout')) {
+      return 'Kết nối quá thời gian chờ. Vui lòng thử lại.';
     }
-    return 'Đã xảy ra lỗi: ${error.toString()}';
+    if (errorString.contains('FormatException') || errorString.contains('format')) {
+      return 'Dữ liệu phản hồi không hợp lệ';
+    }
+
+    // Generic error message (should rarely be reached now)
+    return 'Đã xảy ra lỗi không xác định';
   }
 }
