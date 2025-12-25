@@ -1,0 +1,763 @@
+================================================================================
+HƯỚNG DẪN CÀI ĐẶT VÀ CHẠY ỨNG DỤNG MYFINANCE
+Personal Finance Management Application
+Web (React) + Mobile (Flutter)
+================================================================================
+
+I. YÊU CẦU HỆ THỐNG
+
+1. Phần mềm bắt buộc:
+   - Java Development Kit (JDK) 17 trở lên
+   - Apache Maven 3.6.0 trở lên
+   - MySQL Server 8.0 trở lên
+   - Node.js 16.0 trở lên
+   - npm 8.0 trở lên
+   - Flutter SDK 3.9.2 trở lên (cho mobile app)
+   - Android Studio (cho phát triển Android)
+   - Xcode (cho phát triển iOS - chỉ trên macOS)
+
+2. Cấu hình tối thiểu:
+   - RAM: 4GB
+   - Dung lượng ổ cứng trống: 2GB
+   - Hệ điều hành: Windows 10/11, macOS, hoặc Linux
+
+3. Trình duyệt web được hỗ trợ:
+   - Google Chrome phiên bản mới nhất
+   - Mozilla Firefox phiên bản mới nhất
+   - Microsoft Edge phiên bản mới nhất
+
+================================================================================
+
+II. CÀI ĐẶT MÔI TRƯỜNG PHÁT TRIỂN
+
+A. CÀI ĐẶT JAVA JDK 17
+
+Windows:
+1. Tải JDK 17 từ Oracle hoặc OpenJDK
+2. Chạy file cài đặt và làm theo hướng dẫn
+3. Thiết lập biến môi trường JAVA_HOME:
+   - Mở System Properties > Advanced > Environment Variables
+   - Tạo biến mới JAVA_HOME với giá trị đường dẫn cài đặt JDK
+   - Thêm %JAVA_HOME%\bin vào biến PATH
+4. Kiểm tra cài đặt bằng lệnh:
+   java -version
+
+macOS/Linux:
+1. Sử dụng package manager hoặc tải từ trang chủ
+2. Thiết lập JAVA_HOME trong file ~/.bashrc hoặc ~/.zshrc:
+   export JAVA_HOME=/path/to/jdk17
+   export PATH=$JAVA_HOME/bin:$PATH
+3. Tải lại cấu hình: source ~/.bashrc
+4. Kiểm tra: java -version
+
+B. CÀI ĐẶT APACHE MAVEN
+
+Windows:
+1. Tải Maven từ https://maven.apache.org/download.cgi
+2. Giải nén vào thư mục (ví dụ: C:\Program Files\Apache\Maven)
+3. Thiết lập biến môi trường:
+   - Tạo MAVEN_HOME trỏ đến thư mục Maven
+   - Thêm %MAVEN_HOME%\bin vào PATH
+4. Kiểm tra: mvn -version
+
+macOS/Linux:
+1. Sử dụng package manager (brew install maven hoặc apt-get install maven)
+2. Hoặc tải và cấu hình thủ công tương tự Windows
+3. Kiểm tra: mvn -version
+
+C. CÀI ĐẶT MYSQL SERVER
+
+1. Tải MySQL Server 8.0 từ https://dev.mysql.com/downloads/mysql/
+2. Cài đặt MySQL Server và ghi nhớ:
+   - Root password
+   - Port (mặc định: 3306)
+3. Khởi động MySQL Server
+4. Kiểm tra kết nối:
+   mysql -u root -p
+
+D. CÀI ĐẶT NODE.JS VÀ NPM
+
+Windows:
+1. Tải Node.js LTS từ https://nodejs.org/
+2. Chạy file cài đặt (npm sẽ được cài đặt cùng)
+3. Kiểm tra:
+   node -v
+   npm -v
+
+macOS/Linux:
+1. Sử dụng package manager hoặc nvm (Node Version Manager)
+2. Cài đặt: nvm install --lts
+3. Kiểm tra phiên bản như trên
+
+E. CÀI ĐẶT FLUTTER SDK (CHO MOBILE APP)
+
+Windows:
+1. Tải Flutter SDK từ https://flutter.dev/docs/get-started/install/windows
+2. Giải nén vào thư mục (ví dụ: C:\src\flutter)
+3. Thêm flutter\bin vào biến môi trường PATH:
+   - System Properties > Environment Variables
+   - Chỉnh sửa PATH, thêm đường dẫn C:\src\flutter\bin
+4. Kiểm tra cài đặt:
+   flutter doctor
+5. Cài đặt Android Studio:
+   - Tải từ https://developer.android.com/studio
+   - Cài đặt Android SDK và Android SDK Command-line Tools
+   - Cài đặt Flutter và Dart plugins trong Android Studio
+6. Chấp nhận Android licenses:
+   flutter doctor --android-licenses
+
+macOS:
+1. Tải Flutter SDK từ https://flutter.dev/docs/get-started/install/macos
+2. Giải nén vào thư mục (ví dụ: ~/development/flutter)
+3. Thêm vào ~/.zshrc hoặc ~/.bashrc:
+   export PATH="$PATH:$HOME/development/flutter/bin"
+4. Tải lại cấu hình: source ~/.zshrc
+5. Kiểm tra: flutter doctor
+6. Cài đặt Xcode từ App Store (cho iOS development)
+7. Cài đặt CocoaPods: sudo gem install cocoapods
+8. Cài đặt Android Studio (cho Android development)
+9. Chấp nhận licenses: flutter doctor --android-licenses
+
+Linux:
+1. Tải Flutter SDK từ https://flutter.dev/docs/get-started/install/linux
+2. Giải nén: tar xf flutter_linux_*.tar.xz
+3. Thêm vào ~/.bashrc: export PATH="$PATH:/path/to/flutter/bin"
+4. Tải lại: source ~/.bashrc
+5. Cài đặt Android Studio
+6. Kiểm tra: flutter doctor
+7. Chấp nhận licenses: flutter doctor --android-licenses
+
+Lưu ý:
+- Chạy flutter doctor để kiểm tra các dependencies còn thiếu
+- Đảm bảo tất cả mục trong flutter doctor đều có dấu tích xanh
+
+================================================================================
+
+III. THIẾT LẬP CƠ SỞ DỮ LIỆU
+
+A. TẠO DATABASE
+
+1. Đăng nhập vào MySQL:
+   
+
+2. Tạo database mới:
+   CREATE DATABASE myfinance CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+3. Tạo user riêng (tùy chọn, khuyến nghị cho production):
+   CREATE USER 'myfinance_user'@'localhost' IDENTIFIED BY 'your_password';
+   GRANT ALL PRIVILEGES ON myfinance.* TO 'myfinance_user'@'localhost';
+   FLUSH PRIVILEGES;
+
+4. Thoát MySQL:
+   EXIT;
+
+B. KHỞI TẠO SCHEMA
+
+Lưu ý: Schema sẽ được tạo tự động khi chạy ứng dụng lần đầu thông qua
+Hibernate DDL auto-update. Nếu cần khởi tạo thủ công:
+
+1. Sử dụng file migration SQL:
+   mysql -u root -p myfinance < "MyFinance Backend/src/main/resources/db/migration/complete-database-init.sql"
+
+2. Hoặc cho phép Hibernate tạo tự động (xem phần cấu hình Backend)
+
+================================================================================
+
+IV. CÀI ĐẶT VÀ CẤU HÌNH BACKEND
+
+A. TRUY CẬP THỨ MỤC BACKEND
+
+cd "MyFinance-Project\MyFinance Backend"
+
+Lưu ý: Thay đổi đường dẫn phù hợp với vị trí project trên máy của bạn.
+
+B. CẤU HÌNH APPLICATION.PROPERTIES
+
+Mở file: src/main/resources/application.properties
+
+Cấu hình kết nối database:
+
+spring.datasource.url=jdbc:mysql://localhost:3306/myfinance?useSSL=false&serverTimezone=Asia/Ho_Chi_Minh
+spring.datasource.username=root
+spring.datasource.password=your_mysql_password
+spring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver
+
+Cấu hình JPA/Hibernate:
+
+spring.jpa.hibernate.ddl-auto=update
+spring.jpa.show-sql=false
+spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.MySQL8Dialect
+spring.jpa.properties.hibernate.format_sql=true
+
+Cấu hình JWT:
+
+jwt.secret=your_jwt_secret_key_here_minimum_256_bits
+jwt.expiration=86400000
+
+Cấu hình SMTP (cho chức năng email):
+
+spring.mail.host=smtp.mailtrap.io
+spring.mail.port=2525
+spring.mail.username=your_mailtrap_username
+spring.mail.password=your_mailtrap_password
+spring.mail.properties.mail.smtp.auth=true
+spring.mail.properties.mail.smtp.starttls.enable=true
+
+Cấu hình Frontend URL (cho email reset password):
+
+app.frontend.url=http://localhost:3000
+
+Lưu ý quan trọng:
+- Thay your_mysql_password bằng mật khẩu MySQL thực tế
+- Thay your_jwt_secret_key_here bằng chuỗi ngẫu nhiên dài tối thiểu 256 bit
+- Cấu hình SMTP nếu cần sử dụng chức năng gửi email
+- Đối với production, sử dụng biến môi trường thay vì hard-code
+
+C. CÀI ĐẶT DEPENDENCIES
+
+mvn clean install
+
+Lệnh này sẽ:
+- Tải tất cả dependencies từ Maven Central
+- Biên dịch source code
+- Chạy unit tests
+- Đóng gói ứng dụng thành file JAR
+
+D. CHẠY ỨNG DỤNG BACKEND
+
+Cách 1 - Sử dụng Maven:
+
+mvn spring-boot:run
+
+Cách 2 - Chạy JAR file trực tiếp:
+
+java -jar target/myfinance-backend-0.0.1-SNAPSHOT.jar
+
+Cách 3 - Sử dụng IDE (IntelliJ IDEA, Eclipse):
+
+1. Import project as Maven project
+2. Tìm class MyFinanceApplication.java
+3. Right-click > Run 'MyFinanceApplication'
+
+E. KIỂM TRA BACKEND HOẠT ĐỘNG
+
+1. Mở trình duyệt và truy cập:
+   http://localhost:8080
+
+2. Kiểm tra API endpoints:
+   http://localhost:8080/api/auth/check-admin-exists
+
+3. Nếu thấy response JSON, backend đã hoạt động thành công
+
+F. TẠO TÀI KHOẢN ADMIN (LẦN ĐẦU CHẠY)
+
+Sử dụng Postman hoặc curl để tạo admin:
+
+POST http://localhost:8080/api/admin/setup/create-admin
+Content-Type: application/x-www-form-urlencoded
+
+Body:
+email=admin@myfinance.com
+password=admin123
+fullName=System Administrator
+roleType=ADMIN
+
+Hoặc sử dụng curl:
+
+curl -X POST http://localhost:8080/api/admin/setup/create-admin ^
+  -H "Content-Type: application/x-www-form-urlencoded" ^
+  -d "email=admin@myfinance.com&password=admin123&fullName=System Administrator&roleType=ADMIN"
+
+================================================================================
+
+V. CÀI ĐẶT VÀ CẤU HÌNH FRONTEND
+
+A. TRUY CẬP THỨ MỤC FRONTEND
+
+Mở terminal/command prompt mới (giữ backend đang chạy):
+
+cd "D:\P1\Java_Project_Collections\MyFinance-Project\myfinance-frontend"
+
+B. CÀI ĐẶT DEPENDENCIES
+
+npm install
+
+Lệnh này sẽ tải tất cả dependencies từ package.json bao gồm:
+- React 19.1.1
+- React Router DOM 7.8.2
+- Tailwind CSS 3.4.0
+- Lucide React 0.545.0
+- Recharts 3.2.1
+- jsPDF, xlsx, và các thư viện khác
+
+Thời gian cài đặt: 3-5 phút tùy tốc độ mạng.
+
+C. CÂU HÌNH BACKEND API URL (NẾU CẦN)
+
+Nếu backend chạy ở địa chỉ khác localhost:8080, cần cấu hình:
+
+Tạo file .env trong thư mục myfinance-frontend:
+
+REACT_APP_API_URL=http://localhost:8080
+
+D. CHẠY ỨNG DỤNG FRONTEND
+
+Chế độ development:
+
+npm start
+
+Ứng dụng sẽ tự động mở trình duyệt tại:
+http://localhost:3000
+
+Chế độ production (build):
+
+npm run build
+
+Sau khi build xong, deploy thư mục build/ lên web server.
+
+E. KIỂM TRA FRONTEND HOẠT ĐỘNG
+
+1. Trình duyệt tự động mở http://localhost:3000
+2. Trang đăng nhập sẽ hiển thị
+3. Thử đăng nhập với tài khoản admin đã tạo:
+   Email: admin@myfinance.com
+   Password: admin123
+
+================================================================================
+
+VI. CÀI ĐẶT VÀ CẤU HÌNH MOBILE APP (FLUTTER)
+
+A. TRUY CẬP THƯ MỤC MOBILE
+
+Mở terminal/command prompt mới (giữ backend đang chạy):
+
+cd "D:\P1\Java_Project_Collections\MyFinance-Project\myfinance_mobile"
+
+B. CÀI ĐẶT DEPENDENCIES
+
+flutter pub get
+
+Lệnh này sẽ tải tất cả dependencies từ pubspec.yaml bao gồm:
+- dio 5.4.0 - HTTP client
+- flutter_secure_storage 9.2.2 - Lưu trữ JWT token an toàn
+- provider 6.1.2 - State management
+- fl_chart 0.68.0 - Biểu đồ và charts
+- intl 0.19.0 - Định dạng số và ngày tháng
+- csv 6.0.0, path_provider 2.1.0, share_plus 7.2.1 - Export CSV
+
+Thời gian cài đặt: 2-3 phút tùy tốc độ mạng.
+
+C. CẤU HÌNH API ENDPOINT
+
+Tạo file lib/config/api_config.dart (nếu chưa có):
+
+class ApiConfig {
+  static const String baseUrl = 'http://10.0.2.2:8080/api';
+  static const int connectTimeout = 30000;
+  static const int receiveTimeout = 30000;
+}
+
+Lưu ý về API URL:
+- Android Emulator: Sử dụng http://10.0.2.2:8080/api
+- iOS Simulator: Sử dụng http://localhost:8080/api
+- Real Device: Sử dụng IP của máy chạy backend (ví dụ: http://192.168.1.100:8080/api)
+
+D. CHẠY ỨNG DỤNG MOBILE
+
+Bước 1: Khởi động emulator/simulator hoặc kết nối thiết bị thật
+
+Android Emulator:
+1. Mở Android Studio
+2. Tools > AVD Manager
+3. Chọn một device và nhấn Play
+4. Hoặc sử dụng command line:
+   emulator -avd Pixel_5_API_33
+
+iOS Simulator (chỉ trên macOS):
+1. Mở Xcode
+2. Xcode > Open Developer Tool > Simulator
+3. Hoặc sử dụng command line:
+   open -a Simulator
+
+Thiết bị thật:
+Android:
+1. Bật Developer Options trên điện thoại
+2. Bật USB Debugging
+3. Kết nối qua USB
+4. Kiểm tra: flutter devices
+
+iOS:
+1. Kết nối iPhone/iPad qua USB
+2. Trust computer trên thiết bị
+3. Mở Xcode, thêm thiết bị vào signing
+4. Kiểm tra: flutter devices
+
+Bước 2: Kiểm tra devices đã kết nối
+
+flutter devices
+
+Bước 3: Chạy ứng dụng
+
+Chạy trên device đã chọn:
+
+flutter run
+
+Chọn device cụ thể:
+
+flutter run -d <device_id>
+
+Chạy với hot reload:
+
+flutter run --hot
+
+Chế độ release (tối ưu hiệu năng):
+
+flutter run --release
+
+E. KIỂM TRA MOBILE APP HOẠT ĐỘNG
+
+1. App tự động cài đặt và khởi động trên emulator/device
+2. Màn hình đăng nhập sẽ hiển thị
+3. Thử đăng nhập với tài khoản admin:
+   Email: admin@myfinance.com
+   Password: admin123
+4. Kiểm tra các chức năng:
+   - Xem dashboard
+   - Thêm transaction
+   - Tạo budget
+   - Xem reports
+
+F. DEBUG VÀ LOGS
+
+Xem logs trong terminal:
+
+flutter logs
+
+Xem logs của device cụ thể:
+
+flutter logs -d <device_id>
+
+Debug mode với DevTools:
+
+flutter run --observatory-port=9200
+Sau đó mở: http://localhost:9200
+
+G. HOT RELOAD VÀ HOT RESTART
+
+Khi app đang chạy trong debug mode:
+- Nhấn 'r' để hot reload (giữ state)
+- Nhấn 'R' để hot restart (reset state)
+- Nhấn 'q' để thoát
+
+H. BUILD APK/IPA CHO TESTING
+
+Build Android APK (debug):
+
+flutter build apk --debug
+
+Build Android APK (release):
+
+flutter build apk --release
+
+File output: build/app/outputs/flutter-apk/app-release.apk
+
+Build Android App Bundle (cho Google Play):
+
+flutter build appbundle --release
+
+File output: build/app/outputs/bundle/release/app-release.aab
+
+Build iOS (chỉ trên macOS):
+
+flutter build ios --release
+
+Sau đó mở Xcode để archive và export IPA:
+
+cd ios
+open Runner.xcworkspace
+
+I. CẤU HÌNH CHO PRODUCTION
+
+Android (android/app/build.gradle.kts):
+
+1. Cập nhật applicationId, versionCode, versionName
+2. Cấu hình signing key cho release build
+3. Cập nhật minSdkVersion nếu cần
+
+iOS (ios/Runner/Info.plist):
+
+1. Cập nhật CFBundleIdentifier
+2. Cập nhật CFBundleShortVersionString
+3. Cấu hình permissions (camera, location, etc.)
+
+API Configuration:
+
+Tạo file .env hoặc cấu hình build flavors cho các môi trường khác nhau:
+- Development: http://localhost:8080/api
+- Staging: https://staging-api.yourdomain.com/api
+- Production: https://api.yourdomain.com/api
+
+J. CÀI ĐẶT APK LÊN THIẾT BÂT THẬT
+
+Cách 1 - Sử dụng ADB (Android Debug Bridge):
+
+adb install build/app/outputs/flutter-apk/app-release.apk
+
+Cách 2 - Copy file APK:
+
+1. Copy file app-release.apk vào thiết bị
+2. Mở File Manager trên điện thoại
+3. Tìm và nhấn vào file APK
+4. Cho phép cài đặt từ nguồn không xác định nếu được hỏi
+5. Nhấn Install
+
+Cách 3 - Sử dụng Flutter:
+
+flutter install
+
+================================================================================
+
+VII. KIỂM TRA TOÀN BỘ HỆ THỐNG
+
+A. KIỂM TRA KẾT NỐI BACKEND-FRONTEND-MOBILE
+
+1. Truy cập web http://localhost:3000
+2. Mở mobile app trên emulator/device
+3. Đăng ký tài khoản mới hoặc đăng nhập trên cả 2 platform
+4. Tạo category mới trên web, kiểm tra đồng bộ trên mobile
+5. Thêm transaction trên mobile, kiểm tra đồng bộ trên web
+6. Tạo budget trên web, xem trên mobile
+7. Xem reports trên cả 2 platform
+
+B. KIỂM TRA DATABASE
+
+Đăng nhập MySQL và kiểm tra:
+
+mysql -u root -p
+USE myfinance;
+SHOW TABLES;
+SELECT * FROM users;
+SELECT * FROM categories;
+
+C. KIỂM TRA LOGS
+
+Backend logs:
+- Console terminal nơi chạy mvn spring-boot:run
+- Kiểm tra thông báo lỗi nếu có
+
+Frontend logs:
+- Browser Developer Tools (F12) > Console tab
+- Kiểm tra network requests
+
+Mobile logs:
+- Terminal đang chạy flutter run
+- Hoặc chạy: flutter logs
+- Android Studio > Logcat (cho Android)
+- Xcode > Console (cho iOS)
+
+================================================================================
+
+VIII. CÁC VẤN ĐỀ THƯỜNG GẶP VÀ CÁCH KHẮC PHỤC
+
+A. BACKEND KHÔNG KHỞI ĐỘNG
+
+Vấn đề 1: Port 8080 đã được sử dụng
+Giải pháp:
+- Tìm và tắt process đang dùng port 8080
+- Hoặc thay đổi port trong application.properties:
+  server.port=8081
+
+Vấn đề 2: Không kết nối được MySQL
+Giải pháp:
+- Kiểm tra MySQL Server đang chạy
+- Kiểm tra username/password trong application.properties
+- Kiểm tra database myfinance đã được tạo
+- Kiểm tra firewall không chặn port 3306
+
+Vấn đề 3: Maven build thất bại
+Giải pháp:
+- Xóa thư mục ~/.m2/repository và chạy lại mvn clean install
+- Kiểm tra kết nối internet
+- Kiểm tra Java version: java -version
+
+B. FRONTEND KHÔNG KHỞI ĐỘNG
+
+Vấn đề 1: npm install thất bại
+Giải pháp:
+- Xóa thư mục node_modules và file package-lock.json
+- Chạy lại: npm install
+- Hoặc dùng: npm install --legacy-peer-deps
+
+Vấn đề 2: Port 3000 đã được sử dụng
+Giải pháp:
+- Tìm và tắt process đang dùng port 3000
+- Hoặc React sẽ tự động đề xuất port khác (3001, 3002,...)
+
+Vấn đề 3: CORS error khi gọi API
+Giải pháp:
+- Kiểm tra WebConfig.java trong backend đã cấu hình CORS
+- Kiểm tra backend đang chạy tại đúng port 8080
+
+C. VẤN ĐỀ DATABASE
+
+Vấn đề 1: Table không được tạo tự động
+Giải pháp:
+- Kiểm tra spring.jpa.hibernate.ddl-auto=update
+- Hoặc chạy script SQL thủ công từ file migration
+
+Vấn đề 2: Encoding tiếng Việt bị lỗi
+Giải pháp:
+- Kiểm tra database charset: utf8mb4
+- Kiểm tra table collation: utf8mb4_unicode_ci
+
+Vấn đề 3: Mất kết nối database
+Giải pháp:
+- Thêm vào application.properties:
+  spring.datasource.hikari.connection-timeout=30000
+  spring.datasource.hikari.maximum-pool-size=10
+
+D. VẤN ĐỀ MOBILE APP
+
+Vấn đề 1: flutter command not found
+Giải pháp:
+- Kiểm tra Flutter đã được thêm vào PATH
+- Chạy: flutter doctor để kiểm tra cài đặt
+- Khởi động lại terminal sau khi cài đặt Flutter
+
+Vấn đề 2: No devices found
+Giải pháp:
+- Kiểm tra emulator/simulator đang chạy
+- Kiểm tra USB debugging đã bật (cho thiết bị thật)
+- Chạy: flutter devices để xem danh sách devices
+- Khởi động lại ADB: adb kill-server && adb start-server
+
+Vấn đề 3: Gradle build failed (Android)
+Giải pháp:
+- Xóa thư mục build: flutter clean
+- Chạy lại: flutter pub get
+- Kiểm tra Android SDK đã cài đặt đầy đủ
+- Cập nhật Android Studio và Android SDK tools
+- Kiểm tra Gradle version trong android/gradle/wrapper/gradle-wrapper.properties
+
+Vấn đề 4: CocoaPods error (iOS)
+Giải pháp:
+- Cài đặt lại CocoaPods: sudo gem install cocoapods
+- Xóa Podfile.lock và Pods: cd ios && rm -rf Pods Podfile.lock
+- Chạy: pod install
+- Nếu vẫn lỗi: pod repo update
+
+Vấn đề 5: Không kết nối được API
+Giải pháp:
+- Kiểm tra backend đang chạy tại port 8080
+- Android Emulator: Sử dụng 10.0.2.2 thay vì localhost
+- iOS Simulator: Sử dụng localhost
+- Thiết bị thật: Sử dụng IP của máy (ipconfig hoặc ifconfig)
+- Tắt firewall tạm thời để test
+- Kiểm tra API URL trong lib/config/api_config.dart
+
+Vấn đề 6: flutter_secure_storage error
+Giải pháp:
+Android:
+- Cập nhật minSdkVersion lên 18 trong android/app/build.gradle.kts
+- Thêm permission trong AndroidManifest.xml nếu cần
+
+iOS:
+- Không cần cấu hình đặc biệt
+- Kiểm tra iOS deployment target >= 12.0
+
+Vấn đề 7: Build iOS thất bại
+Giải pháp:
+- Mở Xcode, chọn team và signing certificate
+- Cập nhật bundle identifier
+- Chạy: flutter clean && flutter pub get
+- Build lại từ Xcode để xem lỗi chi tiết
+
+Vấn đề 8: Hot reload không hoạt động
+Giải pháp:
+- Nhấn 'R' để hot restart
+- Dừng và chạy lại app: flutter run
+- Kiểm tra không có lỗi syntax trong code
+
+================================================================================
+
+IX. DỪNG ỨNG DỤNG
+
+A. DỪNG BACKEND
+
+- Nhấn Ctrl+C trong terminal đang chạy backend
+- Hoặc kill process theo PID nếu chạy background
+
+B. DỪNG FRONTEND
+
+- Nhấn Ctrl+C trong terminal đang chạy frontend (npm start)
+- Build version không cần dừng (chỉ là static files)
+
+C. DỪNG MOBILE APP
+
+- Nhấn 'q' trong terminal đang chạy flutter run
+- Hoặc Ctrl+C để force quit
+- Đóng emulator/simulator nếu muốn
+
+D. DỪNG MYSQL (TÙY CHỌN)
+
+Windows:
+- Services > MySQL > Stop
+
+macOS/Linux:
+- sudo service mysql stop
+- hoặc mysql.server stop
+
+
+================================================================================
+
+XI. TÀI LIỆU THAM KHẢO
+
+1. Tài liệu dự án:
+   - MyFinance_eProject_Documentation_FILLED.docx - Tài liệu kỹ thuật đầy đủ
+
+2. API Documentation:
+   - Swagger UI: http://localhost:8080/swagger-ui.html (nếu đã cấu hình)
+   - Postman collection: Có thể export từ code
+
+3. Source code:
+   - Backend: MyFinance Backend/src/main/java/com/myfinance/
+   - Frontend Web: myfinance-frontend/src/
+   - Mobile: myfinance_mobile/lib/
+
+4. Database schema:
+   - Migration files: MyFinance Backend/src/main/resources/db/migration/
+
+5. Mobile development:
+   - Flutter documentation: https://flutter.dev/docs
+   - Dart documentation: https://dart.dev/guides
+   - Android deployment: https://flutter.dev/docs/deployment/android
+   - iOS deployment: https://flutter.dev/docs/deployment/ios
+
+================================================================================
+
+XII. THÔNG TIN HỖ TRỢ
+
+Trong quá trình phát triển hoặc triển khai, nếu gặp vấn đề:
+
+1. Kiểm tra logs trong console/terminal
+2. Kiểm tra browser Developer Tools > Console
+
+Tài khoản mặc định:
+- Admin Email: admin@myfinance.com
+- Admin Password: admin123
+- Lưu ý: Thay đổi password sau khi đăng nhập lần đầu
+
+Cấu hình mặc định:
+- Backend port: 8080
+- Frontend Web port: 3000
+- Database port: 3306
+- Database name: myfinance
+- Mobile API endpoint (Android Emulator): http://10.0.2.2:8080/api
+- Mobile API endpoint (iOS Simulator): http://localhost:8080/api
+
+Platforms hỗ trợ:
+- Web: Chrome, Firefox, Edge (phiên bản mới nhất)
+- Mobile: Android 5.0+ (API 21+), iOS 12.0+
+
+================================================================================
+
